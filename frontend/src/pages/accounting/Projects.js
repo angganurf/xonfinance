@@ -20,8 +20,10 @@ const AccountingProjects = () => {
     description: '',
     contract_date: '',
     duration: '',
-    location: ''
+    location: '',
+    project_value: ''
   });
+  const [editingProject, setEditingProject] = useState(null);
 
   useEffect(() => {
     loadProjects();
