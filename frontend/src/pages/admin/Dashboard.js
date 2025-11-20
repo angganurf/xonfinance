@@ -25,7 +25,12 @@ const AdminDashboard = () => {
     totalProjects: 0,
     unbilledBudget: 0,
     unbilledPercentage: 0,
-    totalRevenue: 0
+    totalKasMasuk: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    profitMargin: 0,
+    remainingBudget: 0,
+    budgetUsedPercentage: 0
   });
   const [loading, setLoading] = useState(true);
 
