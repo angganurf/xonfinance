@@ -12,6 +12,7 @@ import { Building2 } from 'lucide-react';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('employee');
