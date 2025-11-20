@@ -101,7 +101,7 @@ export const Login = () => {
     try {
       const result = await login(email, password);
       toast.success('Login berhasil!');
-      redirectToDashboard(result.user.role);
+      redirectToDashboard(result.user.role, loginRole);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Login gagal');
     } finally {
