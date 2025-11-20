@@ -176,6 +176,7 @@ class ProjectInput(BaseModel):
     contract_date: Optional[str] = None
     duration: Optional[int] = None
     location: Optional[str] = None
+    project_value: Optional[float] = 0.0
 
 class RABItemInput(BaseModel):
     project_id: str
