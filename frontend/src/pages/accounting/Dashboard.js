@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import ProjectProgressBar from '../../components/ProjectProgressBar';
 import api from '../../utils/api';
 import { TrendingUp, DollarSign, Briefcase, PieChart as PieIcon } from 'lucide-react';
 
@@ -10,6 +11,7 @@ const AccountingDashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [projectAllocation, setProjectAllocation] = useState([]);
+  const [projectsProgress, setProjectsProgress] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -17,15 +19,17 @@ const AccountingDashboard = () => {
 
   const loadData = async () => {
     try {
-      const [summaryRes, transRes, monthlyRes, allocRes] = await Promise.all([
+      const [summaryRes, transRes, monthlyRes, allocRes, progressRes] = await Promise.all([
         api.get('/financial/summary'),
         api.get('/transactions/recent'),
         api.get('/financial/monthly'),
-        api.get('/financial/project-allocation')
+        api.get('/financial/project-allocation'),
+        api.get('/financial/projects-progress')
       ]);
       
       setSummary(summaryRes.data);
       setTransactions(transRes.data);
+      setProjectsProgress(progressRes.data);
       
       // Transform monthly data for charts
       const monthly = Object.keys(monthlyRes.data).map(month => ({
@@ -113,6 +117,18 @@ const AccountingDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Project Progress Section */}
+        {projectsProgress.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold text-slate-800 mb-4">Progress Anggaran Proyek</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="projects-progress-section">
+              {projectsProgress.map((project) => (
+                <ProjectProgressBar key={project.project_id} project={project} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
