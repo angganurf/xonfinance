@@ -919,6 +919,50 @@ async def get_project_allocation(user: User = Depends(get_current_user)):
     
     return allocation
 
+@api_router.get("/financial/projects-progress")
+async def get_projects_progress(user: User = Depends(get_current_user)):
+    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    
+    projects_progress = []
+    for project in projects:
+        project_value = project.get('project_value', 0)
+        
+        # Get transactions for this project
+        transactions = await db.transactions.find({"project_id": project['id']}, {"_id": 0}).to_list(1000)
+        
+        # Calculate income and expenses
+        income = 0
+        expenses = 0
+        
+        for trans in transactions:
+            amount = trans.get('amount', 0)
+            category = trans.get('category', '')
+            
+            if category in ['kas_masuk', 'uang_masuk']:
+                income += amount
+            else:
+                expenses += amount
+        
+        # Calculate percentages
+        income_percentage = (income / project_value * 100) if project_value > 0 else 0
+        expenses_percentage = (expenses / project_value * 100) if project_value > 0 else 0
+        remaining_percentage = 100 - income_percentage if income_percentage <= 100 else 0
+        
+        projects_progress.append({
+            "project_id": project['id'],
+            "project_name": project['name'],
+            "project_value": project_value,
+            "income": income,
+            "expenses": expenses,
+            "balance": income - expenses,
+            "income_percentage": round(income_percentage, 1),
+            "expenses_percentage": round(expenses_percentage, 1),
+            "remaining_percentage": round(remaining_percentage, 1),
+            "status": project.get('status', 'active')
+        })
+    
+    return projects_progress
+
 @api_router.get("/financial/project/{project_id}")
 async def get_project_financial(project_id: str, user: User = Depends(get_current_user)):
     # Get project
