@@ -177,24 +177,45 @@ const Settings = () => {
                   <li>• Tanggal export</li>
                 </ul>
               </div>
-              <Button 
-                onClick={handleExportData} 
-                disabled={exportLoading}
-                className="w-full"
-                data-testid="export-data-btn"
-              >
-                {exportLoading ? (
-                  <span className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Exporting...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    Download Data
-                  </span>
-                )}
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  onClick={() => handleExportData('json')} 
+                  disabled={exportLoading}
+                  className="w-full"
+                  data-testid="export-json-btn"
+                >
+                  {exportLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Exporting...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      JSON
+                    </span>
+                  )}
+                </Button>
+                <Button 
+                  onClick={() => handleExportData('csv')} 
+                  disabled={exportLoading}
+                  variant="outline"
+                  className="w-full"
+                  data-testid="export-csv-btn"
+                >
+                  {exportLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Exporting...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </span>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
