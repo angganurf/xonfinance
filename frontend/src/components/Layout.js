@@ -128,19 +128,23 @@ export const Layout = ({ children }) => {
 
           <nav className="space-y-2" data-testid="sidebar-nav">
             {getMenuItems().map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                data-testid={`nav-link-${item.label.toLowerCase().replace(' ', '-')}`}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  location.pathname === item.path
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="text-xl">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </Link>
+              item.label === '---' ? (
+                <div key={item.path} className="border-t border-slate-600 my-4"></div>
+              ) : (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  data-testid={`nav-link-${item.label.toLowerCase().replace(' ', '-')}`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    location.pathname === item.path
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </Link>
+              )
             ))}
           </nav>
         </div>
