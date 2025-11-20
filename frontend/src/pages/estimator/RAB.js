@@ -56,9 +56,19 @@ const EstimatorRAB = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Determine final category
+      const finalCategory = isCustomCategory && formData.customCategory.trim() 
+        ? formData.customCategory.trim() 
+        : formData.category;
+      
+      // Add to custom categories list if it's a new custom category
+      if (isCustomCategory && formData.customCategory.trim() && !customCategories.includes(formData.customCategory.trim())) {
+        setCustomCategories([...customCategories, formData.customCategory.trim()]);
+      }
+      
       const data = {
         project_id: selectedProject,
-        category: formData.category,
+        category: finalCategory,
         description: formData.description,
         unit_price: parseFloat(formData.unit_price),
         quantity: parseFloat(formData.quantity),
@@ -67,10 +77,21 @@ const EstimatorRAB = () => {
       await api.post('/rab', data);
       toast.success('Item RAB berhasil ditambahkan');
       setOpen(false);
-      setFormData({ category: 'persiapan', description: '', unit_price: '', quantity: '', unit: '' });
+      setFormData({ category: 'persiapan', customCategory: '', description: '', unit_price: '', quantity: '', unit: '' });
+      setIsCustomCategory(false);
       loadRAB();
     } catch (error) {
       toast.error('Gagal menambahkan item RAB');
+    }
+  };
+  
+  const handleCategoryChange = (value) => {
+    if (value === 'custom') {
+      setIsCustomCategory(true);
+      setFormData({...formData, category: '', customCategory: ''});
+    } else {
+      setIsCustomCategory(false);
+      setFormData({...formData, category: value, customCategory: ''});
     }
   };
 
