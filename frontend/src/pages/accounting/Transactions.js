@@ -10,7 +10,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Plus, Upload, Edit, Trash2, MoreVertical, Trash } from 'lucide-react';
+import { Plus, Edit, Trash2, MoreVertical, Trash } from 'lucide-react';
 import api from '../../utils/api';
 
 const AccountingTransactions = () => {
@@ -28,6 +28,7 @@ const AccountingTransactions = () => {
     amount: '',
     quantity: '',
     unit: '',
+    status: '',
     receipt: '',
     transaction_date: new Date().toISOString().split('T')[0]
   });
@@ -59,6 +60,7 @@ const AccountingTransactions = () => {
         amount: transaction.amount.toString(),
         quantity: transaction.quantity?.toString() || '',
         unit: transaction.unit || '',
+        status: transaction.status || '',
         receipt: transaction.receipt || '',
         transaction_date: transaction.transaction_date?.split('T')[0] || new Date().toISOString().split('T')[0]
       });
@@ -71,6 +73,7 @@ const AccountingTransactions = () => {
         amount: '',
         quantity: '',
         unit: '',
+        status: '',
         receipt: '',
         transaction_date: new Date().toISOString().split('T')[0]
       });
@@ -95,9 +98,25 @@ const AccountingTransactions = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.project_id) {
+      toast.error('Pilih proyek terlebih dahulu');
+      return;
+    }
+    
     try {
-      const data = {...formData, amount: parseFloat(formData.amount)};
+      const data = {
+        project_id: formData.project_id,
+        category: formData.category,
+        description: formData.description,
+        amount: parseFloat(formData.amount),
+        transaction_date: formData.transaction_date
+      };
+      
       if (formData.quantity) data.quantity = parseFloat(formData.quantity);
+      if (formData.unit) data.unit = formData.unit;
+      if (formData.status) data.status = formData.status;
+      if (formData.receipt) data.receipt = formData.receipt;
       
       if (editingTransaction) {
         await api.patch(`/transactions/${editingTransaction.id}`, data);
@@ -111,7 +130,8 @@ const AccountingTransactions = () => {
       setEditingTransaction(null);
       loadData();
     } catch (error) {
-      toast.error(editingTransaction ? 'Gagal update transaksi' : 'Gagal menambahkan transaksi');
+      console.error('Transaction error:', error);
+      toast.error(error.response?.data?.detail || 'Gagal menyimpan transaksi');
     }
   };
 
@@ -131,7 +151,6 @@ const AccountingTransactions = () => {
 
   const handleClearAll = async () => {
     try {
-      // Delete all transactions one by one
       const deletePromises = transactions.map(trans => 
         api.delete(`/transactions/${trans.id}`)
       );
@@ -142,6 +161,26 @@ const AccountingTransactions = () => {
     } catch (error) {
       toast.error('Gagal menghapus transaksi');
     }
+  };
+
+  const getCategoryLabel = (category) => {
+    const labels = {
+      kas_masuk: 'Kas Masuk',
+      uang_masuk: 'Kas Masuk',
+      bahan: 'Bahan',
+      upah: 'Upah',
+      alat: 'Alat',
+      vendor: 'Vendor',
+      operasional: 'Operasional',
+      aset: 'Aset',
+      hutang: 'Hutang'
+    };
+    return labels[category] || category;
+  };
+
+  const getCategoryColor = (category) => {
+    const isIncome = category === 'kas_masuk' || category === 'uang_masuk' || category === 'hutang';
+    return isIncome ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800';
   };
 
   return (
@@ -171,7 +210,7 @@ const AccountingTransactions = () => {
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label>Proyek</Label>
+                    <Label>Proyek *</Label>
                     <Select value={formData.project_id} onValueChange={(v) => setFormData({...formData, project_id: v})} required>
                       <SelectTrigger data-testid="transaction-project-select"><SelectValue placeholder="Pilih proyek" /></SelectTrigger>
                       <SelectContent>
@@ -185,6 +224,8 @@ const AccountingTransactions = () => {
                       <SelectTrigger data-testid="transaction-category-select"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="kas_masuk">Kas Masuk</SelectItem>
+                        <SelectItem value="hutang">Hutang (Pinjaman/Tempo)</SelectItem>
+                        <SelectItem value="aset">Aset (Kendaraan/Mesin)</SelectItem>
                         <SelectItem value="bahan">Bahan</SelectItem>
                         <SelectItem value="upah">Upah</SelectItem>
                         <SelectItem value="alat">Alat</SelectItem>
@@ -194,25 +235,34 @@ const AccountingTransactions = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label>Deskripsi</Label>
+                    <Label>Deskripsi *</Label>
                     <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} required data-testid="transaction-description-input" />
                   </div>
                   {formData.category === 'bahan' && (
-                    <>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Quantity</Label>
-                          <Input type="number" step="0.01" value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} data-testid="transaction-quantity-input" />
-                        </div>
-                        <div>
-                          <Label>Satuan</Label>
-                          <Input value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} data-testid="transaction-unit-input" />
-                        </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Quantity</Label>
+                        <Input type="number" step="0.01" value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} data-testid="transaction-quantity-input" />
                       </div>
-                    </>
+                      <div>
+                        <Label>Satuan</Label>
+                        <Input value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} data-testid="transaction-unit-input" />
+                      </div>
+                    </div>
+                  )}
+                  {formData.category === 'aset' && (
+                    <div>
+                      <Label>Status Aset</Label>
+                      <Input 
+                        value={formData.status} 
+                        onChange={(e) => setFormData({...formData, status: e.target.value})} 
+                        placeholder="Contoh: Aktif, Maintenance, Rusak, dll"
+                        data-testid="transaction-status-input"
+                      />
+                    </div>
                   )}
                   <div>
-                    <Label>Jumlah (Rp)</Label>
+                    <Label>Jumlah (Rp) *</Label>
                     <Input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} required data-testid="transaction-amount-input" />
                   </div>
                   <div>
@@ -252,7 +302,7 @@ const AccountingTransactions = () => {
                 </thead>
                 <tbody>
                   {transactions.map((trans) => {
-                    const isIncome = trans.category === 'kas_masuk' || trans.category === 'uang_masuk';
+                    const isIncome = trans.category === 'kas_masuk' || trans.category === 'uang_masuk' || trans.category === 'hutang';
                     const date = new Date(trans.transaction_date);
                     const formattedDate = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                     const formattedTime = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -265,14 +315,15 @@ const AccountingTransactions = () => {
                             <div className="text-slate-500 text-xs">{formattedTime}</div>
                           </div>
                         </td>
-                        <td className="p-3">{trans.description}</td>
                         <td className="p-3">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            isIncome ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {trans.category === 'kas_masuk' ? 'Kas Masuk' : 
-                             trans.category === 'uang_masuk' ? 'Kas Masuk' :
-                             trans.category.charAt(0).toUpperCase() + trans.category.slice(1)}
+                          <div>
+                            <p className="font-medium">{trans.description}</p>
+                            {trans.status && <p className="text-xs text-slate-500">Status: {trans.status}</p>}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <span className={`px-2 py-1 rounded-full text-xs ${getCategoryColor(trans.category)}`}>
+                            {getCategoryLabel(trans.category)}
                           </span>
                         </td>
                         <td className={`p-3 text-right font-bold ${
@@ -319,7 +370,6 @@ const AccountingTransactions = () => {
         </Card>
       </div>
 
-      {/* Delete Single Transaction Dialog */}
       <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
         <AlertDialogContent data-testid="delete-transaction-dialog">
           <AlertDialogHeader>
@@ -342,7 +392,6 @@ const AccountingTransactions = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Clear All Transactions Dialog */}
       <AlertDialog open={clearAllDialog} onOpenChange={setClearAllDialog}>
         <AlertDialogContent data-testid="clear-all-dialog">
           <AlertDialogHeader>
