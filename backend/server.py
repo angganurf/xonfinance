@@ -228,6 +228,10 @@ def verify_password(password: str, hashed: str) -> bool:
 
 # ============= AUTH ENDPOINTS =============
 
+@api_router.get("/")
+async def root():
+    return {"message": "XON Architect API", "status": "online"}
+
 @api_router.post("/auth/register")
 async def register(input: RegisterInput):
     # Check if user exists
