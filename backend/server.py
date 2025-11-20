@@ -921,7 +921,7 @@ async def get_project_financial(project_id: str, user: User = Depends(get_curren
         amount = trans.get('amount', 0)
         category = trans.get('category', '')
         
-        if category == 'uang_masuk':
+        if category in ['uang_masuk', 'kas_masuk']:
             total_income += amount
         else:
             total_expense += amount
