@@ -1150,6 +1150,105 @@ async def get_users(role: Optional[str] = None, user: User = Depends(get_current
     users = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(1000)
     return users
 
+# ============= ADMIN MEMBER MANAGEMENT ENDPOINTS =============
+
+@api_router.get("/admin/members")
+async def get_all_members(user: User = Depends(get_current_user)):
+    # Only admin can access
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    return users
+
+@api_router.post("/admin/members")
+async def create_member(input: RegisterInput, user: User = Depends(get_current_user)):
+    # Only admin can create users
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    # Check if email exists
+    existing = await db.users.find_one({"email": input.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Check if username exists
+    existing_username = await db.users.find_one({"username": input.username})
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
+    # Create user
+    new_user = User(
+        email=input.email,
+        username=input.username,
+        name=input.name,
+        role=input.role,
+        password_hash=hash_password(input.password)
+    )
+    
+    user_dict = new_user.model_dump(by_alias=False)
+    user_dict["created_at"] = user_dict["created_at"].isoformat()
+    await db.users.insert_one(user_dict)
+    
+    return {"message": "User created successfully", "id": new_user.id}
+
+@api_router.patch("/admin/members/{user_id}")
+async def update_member(user_id: str, update_data: dict, user: User = Depends(get_current_user)):
+    # Only admin can update users
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    # Find user
+    existing_user = await db.users.find_one({"id": user_id})
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prepare update data
+    update_fields = {}
+    if "name" in update_data:
+        update_fields["name"] = update_data["name"]
+    if "email" in update_data:
+        # Check if email already used by another user
+        email_check = await db.users.find_one({"email": update_data["email"], "id": {"$ne": user_id}})
+        if email_check:
+            raise HTTPException(status_code=400, detail="Email already used by another user")
+        update_fields["email"] = update_data["email"]
+    if "username" in update_data:
+        # Check if username already used by another user
+        username_check = await db.users.find_one({"username": update_data["username"], "id": {"$ne": user_id}})
+        if username_check:
+            raise HTTPException(status_code=400, detail="Username already used by another user")
+        update_fields["username"] = update_data["username"]
+    if "role" in update_data:
+        update_fields["role"] = update_data["role"]
+    if "password" in update_data and update_data["password"]:
+        update_fields["password_hash"] = hash_password(update_data["password"])
+    
+    if update_fields:
+        await db.users.update_one({"id": user_id}, {"$set": update_fields})
+    
+    return {"message": "User updated successfully"}
+
+@api_router.delete("/admin/members/{user_id}")
+async def delete_member(user_id: str, user: User = Depends(get_current_user)):
+    # Only admin can delete users
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    # Prevent admin from deleting themselves
+    if user.id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    
+    # Find and delete user
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Delete user sessions
+    await db.user_sessions.delete_many({"user_id": user_id})
+    
+    return {"message": "User deleted successfully"}
+
 # Include router
 app.include_router(api_router)
 
