@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Header, Depends, UploadFile, File
+from fastapi.responses import StreamingResponse, FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +7,21 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
-
+from datetime import datetime, timezone, timedelta
+import bcrypt
+import httpx
+import base64
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,54 +31,841 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
+# Create the main app
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# ============= MODELS =============
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+class User(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
+    email: str
+    name: str
+    picture: Optional[str] = None
+    role: str  # accounting, estimator, site_supervisor, employee
+    password_hash: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class UserSession(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    user_id: str
+    session_token: str
+    expires_at: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class Project(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    type: str  # interior/arsitektur
+    description: Optional[str] = None
+    contract_date: Optional[datetime] = None
+    duration: Optional[int] = None  # days
+    location: Optional[str] = None
+    status: str = "active"  # active, waiting, completed
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+class RABItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    category: str  # persiapan, struktur, dinding, finishing, etc
+    description: str
+    unit_price: float
+    quantity: float
+    unit: str
+    total: float
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+class Transaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    category: str  # upah, bahan, alat, vendor, operasional
+    description: str
+    amount: float
+    quantity: Optional[float] = None
+    unit: Optional[str] = None
+    receipt: Optional[str] = None  # base64 image
+    created_by: str
+    transaction_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TimeScheduleItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    description: str
+    value: float
+    duration_days: int
+    start_week: int
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Task(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    title: str
+    description: Optional[str] = None
+    assigned_to: str
+    status: str = "pending"  # pending, in_progress, completed
+    due_date: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class WorkReport(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    task_id: str
+    employee_id: str
+    report: str
+    progress: int  # 0-100
+    photos: Optional[List[str]] = []  # base64 images
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    message: str
+    type: str  # info, warning, success, error
+    read: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# ============= INPUT MODELS =============
+
+class RegisterInput(BaseModel):
+    email: str
+    password: str
+    name: str
+    role: str
+
+class LoginInput(BaseModel):
+    email: str
+    password: str
+
+class ProjectInput(BaseModel):
+    name: str
+    type: str
+    description: Optional[str] = None
+    contract_date: Optional[str] = None
+    duration: Optional[int] = None
+    location: Optional[str] = None
+
+class RABItemInput(BaseModel):
+    project_id: str
+    category: str
+    description: str
+    unit_price: float
+    quantity: float
+    unit: str
+
+class TransactionInput(BaseModel):
+    project_id: str
+    category: str
+    description: str
+    amount: float
+    quantity: Optional[float] = None
+    unit: Optional[str] = None
+    receipt: Optional[str] = None
+    transaction_date: Optional[str] = None
+
+class TimeScheduleInput(BaseModel):
+    project_id: str
+    description: str
+    value: float
+    duration_days: int
+    start_week: int
+
+class TaskInput(BaseModel):
+    project_id: str
+    title: str
+    description: Optional[str] = None
+    assigned_to: str
+    due_date: Optional[str] = None
+
+class WorkReportInput(BaseModel):
+    task_id: str
+    report: str
+    progress: int
+    photos: Optional[List[str]] = []
+
+# ============= AUTH HELPERS =============
+
+async def get_current_user(request: Request, authorization: Optional[str] = Header(None)) -> User:
+    # Check cookie first
+    session_token = request.cookies.get("session_token")
     
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    # Fallback to Authorization header
+    if not session_token and authorization:
+        if authorization.startswith("Bearer "):
+            session_token = authorization.replace("Bearer ", "")
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Find session
+    session = await db.user_sessions.find_one({"session_token": session_token})
+    if not session or datetime.fromisoformat(session["expires_at"]) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    
+    # Find user
+    user_doc = await db.users.find_one({"_id": session["user_id"]})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return User(**user_doc)
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# Include the router in the main app
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+# ============= AUTH ENDPOINTS =============
+
+@api_router.post("/auth/register")
+async def register(input: RegisterInput):
+    # Check if user exists
+    existing = await db.users.find_one({"email": input.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user
+    user = User(
+        email=input.email,
+        name=input.name,
+        role=input.role,
+        password_hash=hash_password(input.password)
+    )
+    
+    user_dict = user.model_dump(by_alias=True)
+    user_dict["created_at"] = user_dict["created_at"].isoformat()
+    await db.users.insert_one(user_dict)
+    
+    return {"message": "User registered successfully", "id": user.id}
+
+@api_router.post("/auth/login")
+async def login(input: LoginInput, response: Response):
+    # Find user
+    user_doc = await db.users.find_one({"email": input.email})
+    if not user_doc or not user_doc.get("password_hash"):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Verify password
+    if not verify_password(input.password, user_doc["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Create session
+    session_token = str(uuid.uuid4())
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    session = UserSession(
+        user_id=user_doc["_id"],
+        session_token=session_token,
+        expires_at=expires_at
+    )
+    
+    session_dict = session.model_dump()
+    session_dict["expires_at"] = session_dict["expires_at"].isoformat()
+    session_dict["created_at"] = session_dict["created_at"].isoformat()
+    await db.user_sessions.insert_one(session_dict)
+    
+    # Set cookie
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=7*24*60*60,
+        path="/"
+    )
+    
+    user = User(**user_doc)
+    return {
+        "message": "Login successful",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role
+        },
+        "session_token": session_token
+    }
+
+@api_router.post("/auth/google")
+async def google_auth(request: Request, response: Response):
+    data = await request.json()
+    session_id = data.get("session_id")
+    
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Session ID required")
+    
+    # Get session data from Emergent Auth
+    async with httpx.AsyncClient() as client:
+        auth_response = await client.get(
+            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+            headers={"X-Session-ID": session_id}
+        )
+        
+        if auth_response.status_code != 200:
+            raise HTTPException(status_code=401, detail="Invalid session")
+        
+        user_data = auth_response.json()
+    
+    # Check if user exists
+    user_doc = await db.users.find_one({"email": user_data["email"]})
+    
+    if not user_doc:
+        # Create new user with default role
+        user = User(
+            email=user_data["email"],
+            name=user_data["name"],
+            picture=user_data.get("picture"),
+            role="employee"  # default role
+        )
+        user_dict = user.model_dump(by_alias=True)
+        user_dict["created_at"] = user_dict["created_at"].isoformat()
+        await db.users.insert_one(user_dict)
+        user_id = user.id
+    else:
+        user_id = user_doc["_id"]
+    
+    # Create session
+    session_token = user_data["session_token"]
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    session = UserSession(
+        user_id=user_id,
+        session_token=session_token,
+        expires_at=expires_at
+    )
+    
+    session_dict = session.model_dump()
+    session_dict["expires_at"] = session_dict["expires_at"].isoformat()
+    session_dict["created_at"] = session_dict["created_at"].isoformat()
+    await db.user_sessions.insert_one(session_dict)
+    
+    # Set cookie
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=7*24*60*60,
+        path="/"
+    )
+    
+    user_doc = await db.users.find_one({"_id": user_id})
+    user = User(**user_doc)
+    
+    return {
+        "message": "Login successful",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "picture": user.picture
+        },
+        "session_token": session_token
+    }
+
+@api_router.get("/auth/me")
+async def get_me(user: User = Depends(get_current_user)):
+    return {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "role": user.role,
+        "picture": user.picture
+    }
+
+@api_router.post("/auth/logout")
+async def logout(request: Request, response: Response):
+    session_token = request.cookies.get("session_token")
+    if session_token:
+        await db.user_sessions.delete_one({"session_token": session_token})
+    
+    response.delete_cookie(key="session_token", path="/")
+    return {"message": "Logged out successfully"}
+
+# ============= PROJECT ENDPOINTS =============
+
+@api_router.post("/projects")
+async def create_project(input: ProjectInput, user: User = Depends(get_current_user)):
+    project = Project(
+        name=input.name,
+        type=input.type,
+        description=input.description,
+        contract_date=datetime.fromisoformat(input.contract_date) if input.contract_date else None,
+        duration=input.duration,
+        location=input.location,
+        created_by=user.id
+    )
+    
+    project_dict = project.model_dump()
+    project_dict["created_at"] = project_dict["created_at"].isoformat()
+    if project_dict["contract_date"]:
+        project_dict["contract_date"] = project_dict["contract_date"].isoformat()
+    
+    await db.projects.insert_one(project_dict)
+    
+    # Create notification for site supervisors
+    supervisors = await db.users.find({"role": "site_supervisor"}).to_list(100)
+    for supervisor in supervisors:
+        notif = Notification(
+            user_id=supervisor["_id"],
+            title="Proyek Baru",
+            message=f"Proyek baru '{project.name}' telah dibuat",
+            type="info"
+        )
+        notif_dict = notif.model_dump()
+        notif_dict["created_at"] = notif_dict["created_at"].isoformat()
+        await db.notifications.insert_one(notif_dict)
+    
+    return {"message": "Project created", "id": project.id}
+
+@api_router.get("/projects")
+async def get_projects(user: User = Depends(get_current_user)):
+    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    for p in projects:
+        if isinstance(p.get("created_at"), str):
+            p["created_at"] = datetime.fromisoformat(p["created_at"])
+        if p.get("contract_date") and isinstance(p["contract_date"], str):
+            p["contract_date"] = datetime.fromisoformat(p["contract_date"])
+    return projects
+
+@api_router.get("/projects/{project_id}")
+async def get_project(project_id: str, user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    if isinstance(project.get("created_at"), str):
+        project["created_at"] = datetime.fromisoformat(project["created_at"])
+    if project.get("contract_date") and isinstance(project["contract_date"], str):
+        project["contract_date"] = datetime.fromisoformat(project["contract_date"])
+    
+    return project
+
+@api_router.patch("/projects/{project_id}")
+async def update_project(project_id: str, updates: dict, user: User = Depends(get_current_user)):
+    result = await db.projects.update_one({"id": project_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project updated"}
+
+# ============= RAB ENDPOINTS =============
+
+@api_router.post("/rab")
+async def create_rab_item(input: RABItemInput, user: User = Depends(get_current_user)):
+    total = input.unit_price * input.quantity
+    rab_item = RABItem(
+        project_id=input.project_id,
+        category=input.category,
+        description=input.description,
+        unit_price=input.unit_price,
+        quantity=input.quantity,
+        unit=input.unit,
+        total=total
+    )
+    
+    rab_dict = rab_item.model_dump()
+    rab_dict["created_at"] = rab_dict["created_at"].isoformat()
+    await db.rab_items.insert_one(rab_dict)
+    
+    return {"message": "RAB item created", "id": rab_item.id}
+
+@api_router.get("/rab/{project_id}")
+async def get_rab_items(project_id: str, user: User = Depends(get_current_user)):
+    items = await db.rab_items.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    return items
+
+@api_router.delete("/rab/{item_id}")
+async def delete_rab_item(item_id: str, user: User = Depends(get_current_user)):
+    result = await db.rab_items.delete_one({"id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="RAB item not found")
+    return {"message": "RAB item deleted"}
+
+@api_router.get("/rab/{project_id}/export")
+async def export_rab_pdf(project_id: str, user: User = Depends(get_current_user)):
+    # Get project
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Get RAB items
+    items = await db.rab_items.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    
+    # Create PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Title
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#1e40af'),
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+    elements.append(Paragraph(f"RAB - {project['name']}", title_style))
+    elements.append(Spacer(1, 12))
+    
+    # Project Info
+    info_style = styles['Normal']
+    elements.append(Paragraph(f"<b>Tipe:</b> {project.get('type', '-')}", info_style))
+    elements.append(Paragraph(f"<b>Lokasi:</b> {project.get('location', '-')}", info_style))
+    elements.append(Paragraph(f"<b>Durasi:</b> {project.get('duration', '-')} hari", info_style))
+    elements.append(Spacer(1, 20))
+    
+    # RAB Table
+    if items:
+        # Group by category
+        categories = {}
+        for item in items:
+            cat = item['category']
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append(item)
+        
+        # Build table data
+        table_data = [['No', 'Uraian Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan', 'Jumlah']]
+        
+        total_all = 0
+        no = 1
+        for cat, cat_items in categories.items():
+            # Category header
+            table_data.append([cat.upper(), '', '', '', '', ''])
+            
+            cat_total = 0
+            for item in cat_items:
+                table_data.append([
+                    str(no),
+                    item['description'],
+                    item['unit'],
+                    f"{item['quantity']:.2f}",
+                    f"Rp {item['unit_price']:,.0f}",
+                    f"Rp {item['total']:,.0f}"
+                ])
+                cat_total += item['total']
+                no += 1
+            
+            # Category subtotal
+            table_data.append(['', f'Subtotal {cat}', '', '', '', f"Rp {cat_total:,.0f}"])
+            total_all += cat_total
+        
+        # Grand total
+        table_data.append(['', 'TOTAL', '', '', '', f"Rp {total_all:,.0f}"])
+        
+        # Create table
+        table = Table(table_data, colWidths=[20*mm, 70*mm, 20*mm, 25*mm, 35*mm, 35*mm])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#e0e7ff')),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ]))
+        
+        elements.append(table)
+    else:
+        elements.append(Paragraph("Tidak ada data RAB", styles['Normal']))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=RAB_{project['name']}.pdf"}
+    )
+
+# ============= TRANSACTION ENDPOINTS =============
+
+@api_router.post("/transactions")
+async def create_transaction(input: TransactionInput, user: User = Depends(get_current_user)):
+    transaction = Transaction(
+        project_id=input.project_id,
+        category=input.category,
+        description=input.description,
+        amount=input.amount,
+        quantity=input.quantity,
+        unit=input.unit,
+        receipt=input.receipt,
+        transaction_date=datetime.fromisoformat(input.transaction_date) if input.transaction_date else datetime.now(timezone.utc),
+        created_by=user.id
+    )
+    
+    trans_dict = transaction.model_dump()
+    trans_dict["transaction_date"] = trans_dict["transaction_date"].isoformat()
+    trans_dict["created_at"] = trans_dict["created_at"].isoformat()
+    await db.transactions.insert_one(trans_dict)
+    
+    # Notify accounting
+    accountants = await db.users.find({"role": "accounting"}).to_list(100)
+    for acc in accountants:
+        notif = Notification(
+            user_id=acc["_id"],
+            title="Transaksi Baru",
+            message=f"Transaksi {input.category} sebesar Rp {input.amount:,.0f}",
+            type="info"
+        )
+        notif_dict = notif.model_dump()
+        notif_dict["created_at"] = notif_dict["created_at"].isoformat()
+        await db.notifications.insert_one(notif_dict)
+    
+    return {"message": "Transaction created", "id": transaction.id}
+
+@api_router.get("/transactions")
+async def get_transactions(project_id: Optional[str] = None, user: User = Depends(get_current_user)):
+    query = {"project_id": project_id} if project_id else {}
+    transactions = await db.transactions.find(query, {"_id": 0}).to_list(1000)
+    return transactions
+
+@api_router.get("/transactions/recent")
+async def get_recent_transactions(user: User = Depends(get_current_user)):
+    transactions = await db.transactions.find({}, {"_id": 0}).sort("created_at", -1).limit(10).to_list(10)
+    return transactions
+
+# ============= FINANCIAL ENDPOINTS =============
+
+@api_router.get("/financial/summary")
+async def get_financial_summary(user: User = Depends(get_current_user)):
+    # Get all transactions
+    all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
+    
+    # Calculate totals
+    total_revenue = 0
+    total_cogs = 0
+    total_opex = 0
+    
+    for trans in all_transactions:
+        amount = trans.get('amount', 0)
+        category = trans.get('category', '')
+        
+        if category == 'bahan':
+            total_cogs += amount
+        elif category in ['upah', 'alat']:
+            total_cogs += amount
+        elif category in ['operasional', 'vendor']:
+            total_opex += amount
+    
+    # Get all projects with RAB
+    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    for project in projects:
+        rab_items = await db.rab_items.find({"project_id": project['id']}, {"_id": 0}).to_list(1000)
+        for item in rab_items:
+            total_revenue += item.get('total', 0)
+    
+    net_profit = total_revenue - total_cogs - total_opex
+    cash_balance = total_revenue - total_cogs - total_opex
+    total_assets = cash_balance
+    
+    return {
+        "cash_balance": cash_balance,
+        "net_profit": net_profit,
+        "total_assets": total_assets,
+        "total_revenue": total_revenue,
+        "total_cogs": total_cogs,
+        "total_opex": total_opex
+    }
+
+@api_router.get("/financial/monthly")
+async def get_monthly_financial(user: User = Depends(get_current_user)):
+    # Get transactions for last 6 months
+    six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
+    transactions = await db.transactions.find({
+        "transaction_date": {"$gte": six_months_ago.isoformat()}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Group by month
+    monthly_data = {}
+    for trans in transactions:
+        trans_date = datetime.fromisoformat(trans['transaction_date']) if isinstance(trans['transaction_date'], str) else trans['transaction_date']
+        month_key = trans_date.strftime('%Y-%m')
+        
+        if month_key not in monthly_data:
+            monthly_data[month_key] = {
+                'revenue': 0,
+                'cogs': 0,
+                'opex': 0,
+                'net_profit': 0
+            }
+        
+        amount = trans.get('amount', 0)
+        category = trans.get('category', '')
+        
+        if category in ['bahan', 'upah', 'alat']:
+            monthly_data[month_key]['cogs'] += amount
+        elif category in ['operasional', 'vendor']:
+            monthly_data[month_key]['opex'] += amount
+    
+    # Calculate net profit for each month
+    for month in monthly_data:
+        monthly_data[month]['net_profit'] = monthly_data[month]['revenue'] - monthly_data[month]['cogs'] - monthly_data[month]['opex']
+    
+    return monthly_data
+
+@api_router.get("/financial/project-allocation")
+async def get_project_allocation(user: User = Depends(get_current_user)):
+    projects = await db.projects.find({"status": "active"}, {"_id": 0}).to_list(1000)
+    
+    allocation = []
+    for project in projects:
+        transactions = await db.transactions.find({"project_id": project['id']}, {"_id": 0}).to_list(1000)
+        total = sum(t.get('amount', 0) for t in transactions)
+        
+        allocation.append({
+            "name": project['name'],
+            "value": total
+        })
+    
+    return allocation
+
+# ============= TIME SCHEDULE ENDPOINTS =============
+
+@api_router.post("/schedule")
+async def create_schedule_item(input: TimeScheduleInput, user: User = Depends(get_current_user)):
+    item = TimeScheduleItem(
+        project_id=input.project_id,
+        description=input.description,
+        value=input.value,
+        duration_days=input.duration_days,
+        start_week=input.start_week
+    )
+    
+    item_dict = item.model_dump()
+    item_dict["created_at"] = item_dict["created_at"].isoformat()
+    await db.schedule_items.insert_one(item_dict)
+    
+    return {"message": "Schedule item created", "id": item.id}
+
+@api_router.get("/schedule/{project_id}")
+async def get_schedule_items(project_id: str, user: User = Depends(get_current_user)):
+    items = await db.schedule_items.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    return items
+
+# ============= TASK ENDPOINTS =============
+
+@api_router.post("/tasks")
+async def create_task(input: TaskInput, user: User = Depends(get_current_user)):
+    task = Task(
+        project_id=input.project_id,
+        title=input.title,
+        description=input.description,
+        assigned_to=input.assigned_to,
+        due_date=datetime.fromisoformat(input.due_date) if input.due_date else None
+    )
+    
+    task_dict = task.model_dump()
+    task_dict["created_at"] = task_dict["created_at"].isoformat()
+    if task_dict.get("due_date"):
+        task_dict["due_date"] = task_dict["due_date"].isoformat()
+    await db.tasks.insert_one(task_dict)
+    
+    # Notify assigned employee
+    notif = Notification(
+        user_id=input.assigned_to,
+        title="Tugas Baru",
+        message=f"Anda mendapat tugas: {input.title}",
+        type="info"
+    )
+    notif_dict = notif.model_dump()
+    notif_dict["created_at"] = notif_dict["created_at"].isoformat()
+    await db.notifications.insert_one(notif_dict)
+    
+    return {"message": "Task created", "id": task.id}
+
+@api_router.get("/tasks")
+async def get_tasks(assigned_to: Optional[str] = None, user: User = Depends(get_current_user)):
+    query = {"assigned_to": assigned_to} if assigned_to else {}
+    tasks = await db.tasks.find(query, {"_id": 0}).to_list(1000)
+    return tasks
+
+@api_router.patch("/tasks/{task_id}")
+async def update_task(task_id: str, updates: dict, user: User = Depends(get_current_user)):
+    if updates.get('status') == 'completed' and 'completed_at' not in updates:
+        updates['completed_at'] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.tasks.update_one({"id": task_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Task updated"}
+
+@api_router.post("/tasks/{task_id}/report")
+async def create_work_report(task_id: str, input: WorkReportInput, user: User = Depends(get_current_user)):
+    report = WorkReport(
+        task_id=task_id,
+        employee_id=user.id,
+        report=input.report,
+        progress=input.progress,
+        photos=input.photos
+    )
+    
+    report_dict = report.model_dump()
+    report_dict["created_at"] = report_dict["created_at"].isoformat()
+    await db.work_reports.insert_one(report_dict)
+    
+    # Update task progress
+    await db.tasks.update_one(
+        {"id": task_id},
+        {"$set": {"status": "in_progress" if input.progress < 100 else "completed"}}
+    )
+    
+    return {"message": "Work report created", "id": report.id}
+
+@api_router.get("/tasks/{task_id}/reports")
+async def get_work_reports(task_id: str, user: User = Depends(get_current_user)):
+    reports = await db.work_reports.find({"task_id": task_id}, {"_id": 0}).to_list(1000)
+    return reports
+
+# ============= NOTIFICATION ENDPOINTS =============
+
+@api_router.get("/notifications")
+async def get_notifications(user: User = Depends(get_current_user)):
+    notifications = await db.notifications.find({"user_id": user.id}, {"_id": 0}).sort("created_at", -1).limit(50).to_list(50)
+    return notifications
+
+@api_router.patch("/notifications/{notif_id}/read")
+async def mark_notification_read(notif_id: str, user: User = Depends(get_current_user)):
+    result = await db.notifications.update_one(
+        {"id": notif_id, "user_id": user.id},
+        {"$set": {"read": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return {"message": "Notification marked as read"}
+
+@api_router.get("/notifications/unread/count")
+async def get_unread_count(user: User = Depends(get_current_user)):
+    count = await db.notifications.count_documents({"user_id": user.id, "read": False})
+    return {"count": count}
+
+# ============= USER ENDPOINTS =============
+
+@api_router.get("/users")
+async def get_users(role: Optional[str] = None, user: User = Depends(get_current_user)):
+    query = {"role": role} if role else {}
+    users = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(1000)
+    return users
+
+# Include router
 app.include_router(api_router)
 
 app.add_middleware(
@@ -77,7 +876,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
