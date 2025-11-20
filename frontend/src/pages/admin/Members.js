@@ -556,7 +556,7 @@ const Members = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-role">Role</Label>
+                <Label htmlFor="edit-role">Role Utama</Label>
                 <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
                   <SelectTrigger>
                     <SelectValue />
@@ -568,6 +568,24 @@ const Members = () => {
                     <SelectItem value="employee">Employee</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label>Role Tambahan (Opsional)</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {['accounting', 'estimator', 'site_supervisor', 'employee'].map((role) => (
+                    <label key={role} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.roles.includes(role)}
+                        onChange={() => handleRoleToggle(role)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm capitalize">
+                        {role === 'site_supervisor' ? 'Site Supervisor' : role}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button type="button" variant="outline" onClick={() => {setIsEditDialogOpen(false); resetForm();}}>
