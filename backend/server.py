@@ -904,6 +904,38 @@ async def get_project_allocation(user: User = Depends(get_current_user)):
     
     return allocation
 
+@api_router.get("/financial/project/{project_id}")
+async def get_project_financial(project_id: str, user: User = Depends(get_current_user)):
+    # Get project
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Get transactions
+    transactions = await db.transactions.find({"project_id": project_id}, {"_id": 0}).to_list(10000)
+    
+    total_income = 0
+    total_expense = 0
+    
+    for trans in transactions:
+        amount = trans.get('amount', 0)
+        category = trans.get('category', '')
+        
+        if category == 'uang_masuk':
+            total_income += amount
+        else:
+            total_expense += amount
+    
+    net = total_income - total_expense
+    
+    return {
+        "project": project,
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "net": net,
+        "transactions": transactions
+    }
+
 # ============= TIME SCHEDULE ENDPOINTS =============
 
 @api_router.post("/schedule")
