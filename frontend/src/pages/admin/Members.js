@@ -281,12 +281,14 @@ const Members = () => {
               </Button>
             )}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Tambah Member
-              </Button>
-            </DialogTrigger>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Tambah Member
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+          </div>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Tambah Member Baru</DialogTitle>
