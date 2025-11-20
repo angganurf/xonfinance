@@ -795,6 +795,20 @@ async def get_recent_transactions(user: User = Depends(get_current_user)):
     transactions = await db.transactions.find({}, {"_id": 0}).sort("created_at", -1).limit(10).to_list(10)
     return transactions
 
+@api_router.patch("/transactions/{transaction_id}")
+async def update_transaction(transaction_id: str, updates: dict, user: User = Depends(get_current_user)):
+    result = await db.transactions.update_one({"id": transaction_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return {"message": "Transaction updated"}
+
+@api_router.delete("/transactions/{transaction_id}")
+async def delete_transaction(transaction_id: str, user: User = Depends(get_current_user)):
+    result = await db.transactions.delete_one({"id": transaction_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return {"message": "Transaction deleted"}
+
 # ============= FINANCIAL ENDPOINTS =============
 
 @api_router.get("/financial/summary")
