@@ -69,15 +69,27 @@ class Project(BaseModel):
     created_by: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class RABItem(BaseModel):
+class RAB(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     project_id: str
-    category: str  # persiapan, struktur, dinding, finishing, etc
+    project_name: str
+    status: str = "draft"  # draft, approved
+    discount: float = 0.0
+    tax: float = 11.0  # percentage
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    approved_at: Optional[datetime] = None
+
+class RABItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    rab_id: str
+    project_id: str
+    category: str  # persiapan, struktur, dinding, finishing, etc (custom)
     description: str
     unit_price: float
     quantity: float
-    unit: str
+    unit: str  # m³, m, m²
     total: float
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
