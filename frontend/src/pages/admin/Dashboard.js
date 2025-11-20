@@ -303,13 +303,13 @@ const AdminDashboard = () => {
 
         {/* Stats Overview - Row 2: P&L Full Width */}
         <div className="grid grid-cols-1 gap-6 mb-8">
-          {/* P&L (Profit & Loss) */}
+          {/* P&L (Profit & Loss) - Full Width */}
           <Card>
             <CardContent className="pt-6">
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-semibold text-slate-700">Profit & Loss (P&L)</p>
-                  <div className={`px-2 py-1 rounded text-xs font-semibold ${
+                  <p className="text-lg font-semibold text-slate-700">Profit & Loss (P&L)</p>
+                  <div className={`px-3 py-1.5 rounded text-sm font-semibold ${
                     stats.netProfit >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                   }`}>
                     {stats.profitMargin}% margin
@@ -317,84 +317,56 @@ const AdminDashboard = () => {
                 </div>
               </div>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 {/* Project Value */}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600">Total Nilai Proyek</span>
-                  <span className="text-sm font-semibold text-blue-600">
-                    Rp {stats.totalProjectValue.toLocaleString('id-ID')}
-                  </span>
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-slate-600 mb-2">Total Nilai Proyek</p>
+                  <p className="text-xl font-bold text-blue-600">
+                    Rp {(stats.totalProjectValue / 1000000).toFixed(0)}jt
+                  </p>
+                </div>
+                
+                {/* Minus sign */}
+                <div className="flex items-center justify-center">
+                  <span className="text-2xl font-bold text-slate-400">−</span>
                 </div>
                 
                 {/* Kas Masuk */}
-                <div className="flex justify-between items-center pl-4 border-l-2 border-green-200">
-                  <span className="text-xs text-slate-600">Kas Masuk</span>
-                  <span className="text-xs font-semibold text-green-600">
-                    Rp {stats.totalKasMasuk.toLocaleString('id-ID')}
-                  </span>
+                <div className="text-center p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                  <p className="text-xs text-slate-600 mb-2">Kas Masuk</p>
+                  <p className="text-xl font-bold text-green-600">
+                    Rp {(stats.totalKasMasuk / 1000000).toFixed(0)}jt
+                  </p>
+                </div>
+                
+                {/* Plus sign */}
+                <div className="flex items-center justify-center">
+                  <span className="text-2xl font-bold text-slate-400">+</span>
                 </div>
                 
                 {/* Expenses */}
-                <div className="flex justify-between items-center pl-4 border-l-2 border-red-200">
-                  <span className="text-xs text-slate-600">Pengeluaran</span>
-                  <span className="text-xs font-semibold text-red-600">
-                    Rp {stats.totalExpenses.toLocaleString('id-ID')}
-                  </span>
+                <div className="text-center p-4 bg-red-50 rounded-lg border-l-4 border-red-400">
+                  <p className="text-xs text-slate-600 mb-2">Pengeluaran</p>
+                  <p className="text-xl font-bold text-red-600">
+                    Rp {(stats.totalExpenses / 1000000).toFixed(0)}jt
+                  </p>
                 </div>
-                
-                {/* Total Transactions */}
+              </div>
+              
+              {/* Result */}
+              <div className="mt-6 pt-6 border-t-2 border-slate-200">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600">Total Transaksi</span>
-                  <span className="text-sm font-semibold text-slate-700">
-                    -Rp {(stats.totalKasMasuk + stats.totalExpenses).toLocaleString('id-ID')}
-                  </span>
-                </div>
-                
-                <div className="border-t pt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-slate-700">Net Profit (P&L)</span>
-                    <span className={`text-xl font-bold ${
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Net Profit (P&L)</p>
+                    <p className="text-xs text-slate-500">= Nilai Proyek − (Kas Masuk + Pengeluaran)</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-3xl font-bold ${
                       stats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       Rp {stats.netProfit.toLocaleString('id-ID')}
-                    </span>
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 text-right">
-                    = Nilai Proyek - Total Transaksi
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Sisa Anggaran */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex-1">
-                  <p className="text-sm text-slate-600 mb-1">Sisa Anggaran</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    Rp {stats.remainingBudget.toLocaleString('id-ID')}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Dari nilai proyek: Rp {stats.totalProjectValue.toLocaleString('id-ID')}
-                  </p>
-                </div>
-                <div className="bg-purple-100 p-3 rounded-full">
-                  <BarChart3 className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-              {/* Progress bar */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-slate-600">
-                  <span>Anggaran Terpakai</span>
-                  <span className="font-semibold">{stats.budgetUsedPercentage}%</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div 
-                    className="bg-purple-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(stats.budgetUsedPercentage, 100)}%` }}
-                  ></div>
                 </div>
               </div>
             </CardContent>
