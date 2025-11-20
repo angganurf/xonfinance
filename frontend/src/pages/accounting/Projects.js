@@ -306,6 +306,53 @@ const AccountingProjects = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {/* Progress Bars */}
+                  {progress && progress.project_value > 0 && (
+                    <div className="mt-4 pt-3 border-t space-y-3">
+                      {/* Income Progress */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-slate-600">Diterima</span>
+                          <span className="text-xs font-medium text-green-600">
+                            {progress.income_percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(progress.income_percentage, 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      {/* Expenses Progress */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-slate-600">Dibelanjakan</span>
+                          <span className="text-xs font-medium text-red-600">
+                            {progress.expenses_percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-red-500 h-1.5 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(progress.expenses_percentage, 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      {/* Balance */}
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-slate-700">Saldo:</span>
+                        <span className={`font-bold ${
+                          progress.balance >= 0 ? 'text-blue-600' : 'text-red-600'
+                        }`}>
+                          Rp {progress.balance?.toLocaleString('id-ID')}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
