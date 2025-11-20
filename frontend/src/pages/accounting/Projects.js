@@ -17,6 +17,7 @@ import api from '../../utils/api';
 const AccountingProjects = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
+  const [projectsProgress, setProjectsProgress] = useState([]);
   const [open, setOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
