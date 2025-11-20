@@ -178,13 +178,22 @@ class ProjectInput(BaseModel):
     location: Optional[str] = None
     project_value: Optional[float] = 0.0
 
+class RABInput(BaseModel):
+    project_id: str
+    project_name: str
+
 class RABItemInput(BaseModel):
+    rab_id: str
     project_id: str
     category: str
     description: str
     unit_price: float
     quantity: float
     unit: str
+
+class RABUpdateInput(BaseModel):
+    discount: Optional[float] = None
+    tax: Optional[float] = None
 
 class TransactionInput(BaseModel):
     project_id: str
