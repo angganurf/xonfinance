@@ -47,7 +47,32 @@ const Settings = () => {
         window.URL.revokeObjectURL(url);
       } else if (format === 'csv') {
         // Convert transactions to CSV
-        const headers = ['Tanggal', 'Proyek', 'Kategori', 'Deskripsi', 'Jumlah', 'Status'];\n        let csvContent = headers.join(',') + '\\n';\n        \n        transactions.data.forEach(trans => {\n          const project = projects.data.find(p => p.id === trans.project_id);\n          const row = [\n            trans.transaction_date?.split('T')[0] || '',\n            `\"${project?.name || '-'}\"`,\n            trans.category,\n            `\"${trans.description}\"`,\n            trans.amount,\n            trans.status || ''\n          ];\n          csvContent += row.join(',') + '\\n';\n        });\n\n        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });\n        const url = window.URL.createObjectURL(blob);\n        const link = document.createElement('a');\n        link.href = url;\n        link.download = `xon-architect-transactions-${new Date().toISOString().split('T')[0]}.csv`;\n        document.body.appendChild(link);\n        link.click();\n        document.body.removeChild(link);\n        window.URL.revokeObjectURL(url);\n      }\n\n      toast.success(`Data berhasil di-export (${format.toUpperCase()})!`);\n    } catch (error) {\n      console.error('Export error:', error);\n      toast.error('Gagal export data');\n    } finally {\n      setExportLoading(false);\n    }\n  };
+        const headers = ['Tanggal', 'Proyek', 'Kategori', 'Deskripsi', 'Jumlah', 'Status'];
+        let csvContent = headers.join(',') + '\n';
+        
+        transactions.data.forEach(trans => {
+          const project = projects.data.find(p => p.id === trans.project_id);
+          const row = [
+            trans.transaction_date?.split('T')[0] || '',
+            `"${project?.name || '-'}"`,
+            trans.category,
+            `"${trans.description}"`,
+            trans.amount,
+            trans.status || ''
+          ];
+          csvContent += row.join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `xon-architect-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }\n\n      toast.success(`Data berhasil di-export (${format.toUpperCase()})!`);\n    } catch (error) {\n      console.error('Export error:', error);\n      toast.error('Gagal export data');\n    } finally {\n      setExportLoading(false);\n    }\n  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
