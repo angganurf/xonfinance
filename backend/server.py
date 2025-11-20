@@ -167,7 +167,8 @@ class RegisterInput(BaseModel):
     username: str
     password: str
     name: str
-    role: str
+    role: str  # Primary role
+    roles: Optional[List[str]] = []  # Additional roles
 
 class LoginInput(BaseModel):
     email: str  # can be email or username
