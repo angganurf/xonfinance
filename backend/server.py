@@ -795,6 +795,12 @@ async def get_transactions(project_id: Optional[str] = None, user: User = Depend
 @api_router.get("/transactions/recent")
 async def get_recent_transactions(user: User = Depends(get_current_user)):
     transactions = await db.transactions.find({}, {"_id": 0}).sort("created_at", -1).limit(10).to_list(10)
+    
+    # Enrich each transaction with project name
+    for trans in transactions:
+        project = await db.projects.find_one({"id": trans.get("project_id")}, {"_id": 0, "name": 1})
+        trans["project_name"] = project.get("name") if project else "Unknown Project"
+    
     return transactions
 
 @api_router.patch("/transactions/{transaction_id}")
