@@ -287,9 +287,7 @@ const Members = () => {
                   Tambah Member
                 </Button>
               </DialogTrigger>
-            </Dialog>
-          </div>
-            <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Tambah Member Baru</DialogTitle>
                 <DialogDescription>
