@@ -288,7 +288,7 @@ async def register(input: RegisterInput):
         password_hash=hash_password(input.password)
     )
     
-    user_dict = user.model_dump(by_alias=True)
+    user_dict = user.model_dump(by_alias=False)
     user_dict["created_at"] = user_dict["created_at"].isoformat()
     await db.users.insert_one(user_dict)
     
