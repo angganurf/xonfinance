@@ -41,6 +41,7 @@ class User(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
     email: str
+    username: Optional[str] = None
     name: str
     picture: Optional[str] = None
     role: str  # accounting, estimator, site_supervisor, employee
