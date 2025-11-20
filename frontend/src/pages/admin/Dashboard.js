@@ -288,31 +288,50 @@ const AdminDashboard = () => {
               </div>
               
               <div className="space-y-3">
-                {/* Revenue */}
+                {/* Project Value */}
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600">Kas Masuk (Revenue)</span>
-                  <span className="text-sm font-semibold text-green-600">
-                    +Rp {stats.totalKasMasuk.toLocaleString('id-ID')}
+                  <span className="text-sm text-slate-600">Total Nilai Proyek</span>
+                  <span className="text-sm font-semibold text-blue-600">
+                    Rp {stats.totalProjectValue.toLocaleString('id-ID')}
+                  </span>
+                </div>
+                
+                {/* Kas Masuk */}
+                <div className="flex justify-between items-center pl-4 border-l-2 border-green-200">
+                  <span className="text-xs text-slate-600">Kas Masuk</span>
+                  <span className="text-xs font-semibold text-green-600">
+                    Rp {stats.totalKasMasuk.toLocaleString('id-ID')}
                   </span>
                 </div>
                 
                 {/* Expenses */}
+                <div className="flex justify-between items-center pl-4 border-l-2 border-red-200">
+                  <span className="text-xs text-slate-600">Pengeluaran</span>
+                  <span className="text-xs font-semibold text-red-600">
+                    Rp {stats.totalExpenses.toLocaleString('id-ID')}
+                  </span>
+                </div>
+                
+                {/* Total Transactions */}
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600">Total Pengeluaran</span>
-                  <span className="text-sm font-semibold text-red-600">
-                    -Rp {stats.totalExpenses.toLocaleString('id-ID')}
+                  <span className="text-sm text-slate-600">Total Transaksi</span>
+                  <span className="text-sm font-semibold text-slate-700">
+                    -Rp {(stats.totalKasMasuk + stats.totalExpenses).toLocaleString('id-ID')}
                   </span>
                 </div>
                 
                 <div className="border-t pt-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-slate-700">Net Profit</span>
+                    <span className="text-sm font-semibold text-slate-700">Net Profit (P&L)</span>
                     <span className={`text-xl font-bold ${
                       stats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}>
                       Rp {stats.netProfit.toLocaleString('id-ID')}
                     </span>
                   </div>
+                  <p className="text-xs text-slate-500 mt-1 text-right">
+                    = Nilai Proyek - Total Transaksi
+                  </p>
                 </div>
               </div>
             </CardContent>
