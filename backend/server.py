@@ -64,6 +64,7 @@ class Project(BaseModel):
     contract_date: Optional[datetime] = None
     duration: Optional[int] = None  # days
     location: Optional[str] = None
+    project_value: Optional[float] = 0.0  # nilai pekerjaan
     status: str = "active"  # active, waiting, completed
     created_by: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
