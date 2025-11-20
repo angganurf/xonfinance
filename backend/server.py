@@ -169,7 +169,7 @@ class RegisterInput(BaseModel):
     role: str
 
 class LoginInput(BaseModel):
-    email: str
+    email: str  # can be email or username
     password: str
 
 class ProjectInput(BaseModel):
