@@ -52,6 +52,10 @@ export const Layout = ({ children }) => {
   };
 
   const getMenuItems = () => {
+    const commonItems = [
+      { label: 'Settings', path: '/settings', icon: '⚙️' }
+    ];
+    
     switch (user?.role) {
       case 'accounting':
         return [
@@ -59,27 +63,31 @@ export const Layout = ({ children }) => {
           { label: 'Proyek', path: '/accounting/projects', icon: '📁' },
           { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
           { label: 'Laporan', path: '/accounting/reports', icon: '📈' },
+          ...commonItems
         ];
       case 'estimator':
         return [
           { label: 'Dashboard', path: '/estimator', icon: '📊' },
           { label: 'RAB', path: '/estimator/rab', icon: '📋' },
           { label: 'Proyek', path: '/estimator/projects', icon: '📁' },
+          ...commonItems
         ];
       case 'site_supervisor':
         return [
           { label: 'Dashboard', path: '/supervisor', icon: '📊' },
           { label: 'Time Schedule', path: '/supervisor/schedule', icon: '📅' },
           { label: 'Proyek', path: '/supervisor/projects', icon: '📁' },
+          ...commonItems
         ];
       case 'employee':
         return [
           { label: 'Dashboard', path: '/employee', icon: '📊' },
           { label: 'Tugas', path: '/employee/tasks', icon: '✓' },
           { label: 'Laporan', path: '/employee/reports', icon: '📝' },
+          ...commonItems
         ];
       default:
-        return [];
+        return commonItems;
     }
   };
 
