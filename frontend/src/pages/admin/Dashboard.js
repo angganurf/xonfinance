@@ -190,8 +190,8 @@ const AdminDashboard = () => {
           <p className="text-slate-600">Selamat datang, Administrator. Kelola seluruh sistem dari sini.</p>
         </div>
 
-        {/* Stats Overview - Row 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        {/* Stats Overview - Row 1: 4 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           {/* Saldo Kas */}
           <Card>
             <CardContent className="pt-6">
@@ -269,10 +269,40 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Sisa Anggaran */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600 mb-1">Sisa Anggaran</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    Rp {stats.remainingBudget.toLocaleString('id-ID')}
+                  </p>
+                </div>
+                <div className="bg-purple-100 p-3 rounded-full">
+                  <BarChart3 className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-slate-600">
+                  <span>Anggaran Terpakai</span>
+                  <span className="font-semibold">{stats.budgetUsedPercentage}%</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-purple-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(stats.budgetUsedPercentage, 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Stats Overview - Row 2: P&L and Budget */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Stats Overview - Row 2: P&L Full Width */}
+        <div className="grid grid-cols-1 gap-6 mb-8">
           {/* P&L (Profit & Loss) */}
           <Card>
             <CardContent className="pt-6">
