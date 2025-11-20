@@ -497,6 +497,20 @@ async def update_project(project_id: str, updates: dict, user: User = Depends(ge
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project updated"}
 
+@api_router.delete("/projects/{project_id}")
+async def delete_project(project_id: str, user: User = Depends(get_current_user)):
+    # Delete related data
+    await db.rab_items.delete_many({"project_id": project_id})
+    await db.rabs.delete_many({"project_id": project_id})
+    await db.transactions.delete_many({"project_id": project_id})
+    await db.schedule_items.delete_many({"project_id": project_id})
+    await db.tasks.delete_many({"project_id": project_id})
+    
+    result = await db.projects.delete_one({"id": project_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project deleted"}
+
 # ============= RAB ENDPOINTS =============
 
 @api_router.post("/rab")
