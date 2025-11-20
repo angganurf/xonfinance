@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Bell, LogOut, Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import MobileNav from './MobileNav';
 import {
   DropdownMenu,
   DropdownMenuContent,
