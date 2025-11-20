@@ -26,11 +26,29 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/members"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminMembers />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Accounting Routes */}
           <Route
             path="/accounting"
             element={
-              <ProtectedRoute allowedRoles={['accounting']}>
+              <ProtectedRoute allowedRoles={['accounting', 'admin']}>
                 <AccountingDashboard />
               </ProtectedRoute>
             }
