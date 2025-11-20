@@ -14,6 +14,8 @@ import SupervisorDashboard from './pages/supervisor/Dashboard';
 import SupervisorSchedule from './pages/supervisor/Schedule';
 import EmployeeDashboard from './pages/employee/Dashboard';
 import EmployeeTasks from './pages/employee/Tasks';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminMembers from './pages/admin/Members';
 import Settings from './pages/Settings';
 import './App.css';
 
