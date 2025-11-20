@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import ProjectProgressBar from '../../components/ProjectProgressBar';
 import api from '../../utils/api';
-import { TrendingUp, DollarSign, Briefcase, PieChart as PieIcon } from 'lucide-react';
+import { TrendingUp, DollarSign, Briefcase, PieChart as PieIcon, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 
 const AccountingDashboard = () => {
   const [summary, setSummary] = useState(null);
@@ -12,6 +12,7 @@ const AccountingDashboard = () => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [projectAllocation, setProjectAllocation] = useState([]);
   const [projectsProgress, setProjectsProgress] = useState([]);
+  const [cashFlowData, setCashFlowData] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -34,12 +35,14 @@ const AccountingDashboard = () => {
       // Transform monthly data for charts
       const monthly = Object.keys(monthlyRes.data).map(month => ({
         month,
-        revenue: monthlyRes.data[month].revenue,
-        cogs: monthlyRes.data[month].cogs,
-        opex: monthlyRes.data[month].opex,
-        netProfit: monthlyRes.data[month].net_profit
+        income: monthlyRes.data[month].income || 0,
+        expenses: (monthlyRes.data[month].cogs || 0) + (monthlyRes.data[month].opex || 0),
+        cogs: monthlyRes.data[month].cogs || 0,
+        opex: monthlyRes.data[month].opex || 0,
+        netProfit: monthlyRes.data[month].net_profit || 0
       }));
       setMonthlyData(monthly);
+      setCashFlowData(monthly);
       setProjectAllocation(allocRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -47,13 +50,14 @@ const AccountingDashboard = () => {
   };
 
   const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
+  const EXPENSE_COLORS = ['#ef4444', '#f97316'];
 
   return (
     <Layout>
       <div className="space-y-6" data-testid="accounting-dashboard">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-l-4 border-l-blue-600" data-testid="cash-balance-card">
+          <Card className="border-l-4 border-l-blue-600 hover:shadow-lg transition-shadow" data-testid="cash-balance-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600">Saldo Kas</CardTitle>
             </CardHeader>
@@ -63,13 +67,14 @@ const AccountingDashboard = () => {
                   <p className="text-2xl font-bold text-slate-800" data-testid="cash-balance-value">
                     Rp {summary?.cash_balance?.toLocaleString('id-ID') || '0'}
                   </p>
+                  <p className="text-xs text-slate-500 mt-1">Cash Balance</p>
                 </div>
                 <DollarSign className="h-10 w-10 text-blue-600 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-green-600" data-testid="net-profit-card">
+          <Card className="border-l-4 border-l-green-600 hover:shadow-lg transition-shadow" data-testid="net-profit-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600">Laba Bersih</CardTitle>
             </CardHeader>
@@ -79,13 +84,14 @@ const AccountingDashboard = () => {
                   <p className="text-2xl font-bold text-slate-800" data-testid="net-profit-value">
                     Rp {summary?.net_profit?.toLocaleString('id-ID') || '0'}
                   </p>
+                  <p className="text-xs text-slate-500 mt-1">Net Profit</p>
                 </div>
                 <TrendingUp className="h-10 w-10 text-green-600 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-purple-600" data-testid="total-assets-card">
+          <Card className="border-l-4 border-l-purple-600 hover:shadow-lg transition-shadow" data-testid="total-assets-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600">Total Aset</CardTitle>
             </CardHeader>
@@ -95,13 +101,14 @@ const AccountingDashboard = () => {
                   <p className="text-2xl font-bold text-slate-800" data-testid="total-assets-value">
                     Rp {summary?.total_assets?.toLocaleString('id-ID') || '0'}
                   </p>
+                  <p className="text-xs text-slate-500 mt-1">Total Assets</p>
                 </div>
                 <Briefcase className="h-10 w-10 text-purple-600 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-orange-600" data-testid="total-revenue-card">
+          <Card className="border-l-4 border-l-orange-600 hover:shadow-lg transition-shadow" data-testid="total-revenue-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600">Total Pendapatan</CardTitle>
             </CardHeader>
@@ -111,6 +118,7 @@ const AccountingDashboard = () => {
                   <p className="text-2xl font-bold text-slate-800" data-testid="total-revenue-value">
                     Rp {summary?.total_revenue?.toLocaleString('id-ID') || '0'}
                   </p>
+                  <p className="text-xs text-slate-500 mt-1">Total Revenue</p>
                 </div>
                 <PieIcon className="h-10 w-10 text-orange-600 opacity-50" />
               </div>
@@ -130,43 +138,109 @@ const AccountingDashboard = () => {
           </div>
         )}
 
+        {/* Cash Flow Chart - Income vs Expenses */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowUpCircle className="h-5 w-5 text-green-600" />
+              <ArrowDownCircle className="h-5 w-5 text-red-600" />
+              Arus Kas - Pemasukan vs Pengeluaran
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <AreaChart data={cashFlowData}>
+                <defs>
+                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="month" stroke="#64748b" />
+                <YAxis stroke="#64748b" />
+                <Tooltip 
+                  formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  dataKey="income" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorIncome)" 
+                  name="Pemasukan"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="expenses" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorExpenses)" 
+                  name="Pengeluaran"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Line Chart */}
-          <Card>
+          {/* Net Profit Line Chart */}
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle>Laba Bersih Bulanan</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip 
+                    formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`}
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                  />
                   <Legend />
-                  <Line type="monotone" dataKey="netProfit" stroke="#3b82f6" strokeWidth={2} name="Laba Bersih" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="netProfit" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3} 
+                    name="Laba Bersih"
+                    dot={{ fill: '#3b82f6', r: 5 }}
+                    activeDot={{ r: 8 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          {/* Bar Chart */}
-          <Card>
+          {/* COGS & Opex Bar Chart */}
+          <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle>Revenue, COGS & Opex</CardTitle>
+              <CardTitle>Breakdown Pengeluaran</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip 
+                    formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`}
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                  />
                   <Legend />
-                  <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
-                  <Bar dataKey="cogs" fill="#ef4444" name="COGS" />
-                  <Bar dataKey="opex" fill="#f59e0b" name="Opex" />
+                  <Bar dataKey="cogs" fill="#ef4444" name="COGS" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="opex" fill="#f97316" name="Opex" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -175,7 +249,7 @@ const AccountingDashboard = () => {
 
         {/* Pie Chart and Recent Transactions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle>Alokasi Anggaran Per Proyek</CardTitle>
             </CardHeader>
@@ -187,7 +261,7 @@ const AccountingDashboard = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={(entry) => entry.name}
+                    label={(entry) => `${entry.name}: ${((entry.value / projectAllocation.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(0)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -202,21 +276,35 @@ const AccountingDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle>Transaksi Terbaru</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 max-h-80 overflow-y-auto" data-testid="recent-transactions">
-                {transactions.map((trans) => (
-                  <div key={trans.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg" data-testid={`transaction-${trans.id}`}>
-                    <div>
-                      <p className="font-medium text-slate-800">{trans.description}</p>
-                      <p className="text-sm text-slate-500">{trans.category}</p>
+              <div className="space-y-3 max-h-80 overflow-y-auto" data-testid="recent-transactions">
+                {transactions.map((trans) => {
+                  const isIncome = trans.category === 'kas_masuk' || trans.category === 'uang_masuk';
+                  return (
+                    <div key={trans.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors" data-testid={`transaction-${trans.id}`}>
+                      <div className="flex items-center gap-3">
+                        {isIncome ? (
+                          <ArrowUpCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <ArrowDownCircle className="h-5 w-5 text-red-600" />
+                        )}
+                        <div>
+                          <p className="font-medium text-slate-800">{trans.description}</p>
+                          <p className="text-xs text-slate-500">{trans.category}</p>
+                        </div>
+                      </div>
+                      <p className={`font-bold ${
+                        isIncome ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {isIncome ? '+' : '-'}Rp {trans.amount?.toLocaleString('id-ID')}
+                      </p>
                     </div>
-                    <p className="font-bold text-slate-800">Rp {trans.amount?.toLocaleString('id-ID')}</p>
-                  </div>
-                ))}
+                  );
+                })}
                 {transactions.length === 0 && (
                   <p className="text-center text-slate-500">Belum ada transaksi</p>
                 )}
