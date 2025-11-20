@@ -1,0 +1,110 @@
+{
+  "timestamp": "2025-11-20T11:06:23.895605",
+  "total_tests": 17,
+  "passed_tests": 17,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-20T11:06:22.624415"
+    },
+    {
+      "test_name": "User Registration",
+      "success": true,
+      "details": "User: test.accounting.1763636782@example.com",
+      "timestamp": "2025-11-20T11:06:22.912703"
+    },
+    {
+      "test_name": "User Login",
+      "success": true,
+      "details": "Token received: True",
+      "timestamp": "2025-11-20T11:06:23.194895"
+    },
+    {
+      "test_name": "Get Current User",
+      "success": true,
+      "details": "User ID: 9fd3d5f0-443a-4ce1-be21-fc669056fbd8",
+      "timestamp": "2025-11-20T11:06:23.235522"
+    },
+    {
+      "test_name": "Create Project",
+      "success": true,
+      "details": "Project ID: beb0ab99-9876-4f0a-afa9-9967b71428e7",
+      "timestamp": "2025-11-20T11:06:23.285486"
+    },
+    {
+      "test_name": "Get Projects",
+      "success": true,
+      "details": "Projects found: 1",
+      "timestamp": "2025-11-20T11:06:23.323971"
+    },
+    {
+      "test_name": "Create RAB Item",
+      "success": true,
+      "details": "RAB Item ID: 64a9c035-17c2-4f1f-8622-0b8ac824c249",
+      "timestamp": "2025-11-20T11:06:23.396923"
+    },
+    {
+      "test_name": "Get RAB Items",
+      "success": true,
+      "details": "RAB items found: 1",
+      "timestamp": "2025-11-20T11:06:23.435987"
+    },
+    {
+      "test_name": "Create Transaction",
+      "success": true,
+      "details": "Transaction created: True",
+      "timestamp": "2025-11-20T11:06:23.541560"
+    },
+    {
+      "test_name": "Get Transactions",
+      "success": true,
+      "details": "Transactions found: 1",
+      "timestamp": "2025-11-20T11:06:23.584207"
+    },
+    {
+      "test_name": "Financial Summary",
+      "success": true,
+      "details": "Summary data complete: True",
+      "timestamp": "2025-11-20T11:06:23.625836"
+    },
+    {
+      "test_name": "Create Schedule Item",
+      "success": true,
+      "details": "Schedule item created: True",
+      "timestamp": "2025-11-20T11:06:23.679263"
+    },
+    {
+      "test_name": "Get Schedule Items",
+      "success": true,
+      "details": "Schedule items found: 1",
+      "timestamp": "2025-11-20T11:06:23.714392"
+    },
+    {
+      "test_name": "Create Task",
+      "success": true,
+      "details": "Task ID: bfb73935-431d-47b4-9026-1625194d528c",
+      "timestamp": "2025-11-20T11:06:23.763299"
+    },
+    {
+      "test_name": "Get Tasks",
+      "success": true,
+      "details": "Tasks found: 1",
+      "timestamp": "2025-11-20T11:06:23.802050"
+    },
+    {
+      "test_name": "Get Users",
+      "success": true,
+      "details": "Users found: 1",
+      "timestamp": "2025-11-20T11:06:23.858333"
+    },
+    {
+      "test_name": "Get Notifications",
+      "success": true,
+      "details": "Notifications found: 2",
+      "timestamp": "2025-11-20T11:06:23.895388"
+    }
+  ]
+}
