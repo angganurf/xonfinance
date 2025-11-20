@@ -15,8 +15,11 @@ const EstimatorRAB = () => {
   const [selectedProject, setSelectedProject] = useState('');
   const [rabItems, setRabItems] = useState([]);
   const [open, setOpen] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategories, setCustomCategories] = useState([]);
   const [formData, setFormData] = useState({
     category: 'persiapan',
+    customCategory: '',
     description: '',
     unit_price: '',
     quantity: '',
