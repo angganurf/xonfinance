@@ -63,10 +63,17 @@ export const Layout = ({ children }) => {
           { label: 'Admin Dashboard', path: '/admin', icon: '🏠' },
           { label: 'Member Management', path: '/admin/members', icon: '👥' },
           { label: '---', path: '#', icon: '' },
-          { label: 'Accounting', path: '/accounting', icon: '💰' },
-          { label: 'Estimator', path: '/estimator', icon: '📋' },
-          { label: 'Site Supervisor', path: '/supervisor', icon: '🏗️' },
-          { label: 'Employee', path: '/employee', icon: '👷' },
+          { label: 'Proyek', path: '/admin/projects', icon: '📁' },
+          { label: 'Transaksi', path: '/admin/transactions', icon: '💳' },
+          { label: 'RAB', path: '/admin/rab', icon: '📋' },
+          { label: 'Time Schedule', path: '/admin/schedule', icon: '📅' },
+          { label: 'Tasks', path: '/admin/tasks', icon: '✓' },
+          { label: 'Laporan', path: '/admin/reports', icon: '📈' },
+          { label: '---', path: '#', icon: '' },
+          { label: 'View as Accounting', path: '/accounting', icon: '💰' },
+          { label: 'View as Estimator', path: '/estimator', icon: '📋' },
+          { label: 'View as Supervisor', path: '/supervisor', icon: '🏗️' },
+          { label: 'View as Employee', path: '/employee', icon: '👷' },
           ...commonItems
         ];
       case 'accounting':
