@@ -372,8 +372,9 @@ const Members = () => {
                   <Button type="submit">Tambah</Button>
                 </div>
               </form>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Filters */}
