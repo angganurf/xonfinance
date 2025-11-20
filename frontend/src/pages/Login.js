@@ -165,11 +165,11 @@ export const Login = () => {
               <TabsContent value="login" data-testid="login-form">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Email atau Username</Label>
                     <Input
                       id="email"
-                      type="email"
-                      placeholder="nama@email.com"
+                      type="text"
+                      placeholder="email atau username"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
