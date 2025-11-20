@@ -67,7 +67,7 @@ const AccountingTransactions = () => {
       toast.success('Transaksi berhasil ditambahkan');
       setOpen(false);
       setFormData({
-        project_id: '', category: 'bahan', description: '', amount: '', quantity: '', unit: '', receipt: '',
+        project_id: '', category: 'kas_masuk', description: '', amount: '', quantity: '', unit: '', receipt: '',
         transaction_date: new Date().toISOString().split('T')[0]
       });
       loadData();
