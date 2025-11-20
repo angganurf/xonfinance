@@ -630,13 +630,16 @@ async def delete_rab_item(item_id: str, user: User = Depends(get_current_user)):
 
 @api_router.get("/rabs/{rab_id}/export")
 async def export_rab_pdf(rab_id: str, user: User = Depends(get_current_user)):
+    # Get RAB
+    rab = await db.rabs.find_one({"id": rab_id}, {"_id": 0})
+    if not rab:
+        raise HTTPException(status_code=404, detail="RAB not found")
+    
     # Get project
-    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    project = await db.projects.find_one({"id": rab["project_id"]}, {"_id": 0})
     
     # Get RAB items
-    items = await db.rab_items.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    items = await db.rab_items.find({"rab_id": rab_id}, {"_id": 0}).to_list(1000)
     
     # Create PDF
     buffer = BytesIO()
