@@ -163,6 +163,7 @@ class Notification(BaseModel):
 
 class RegisterInput(BaseModel):
     email: str
+    username: str
     password: str
     name: str
     role: str
