@@ -43,6 +43,54 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/projects"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AccountingProjects />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/transactions"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AccountingTransactions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/rab"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <EstimatorRAB />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/schedule"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <SupervisorSchedule />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/tasks"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <EmployeeTasks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AccountingReports />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Accounting Routes */}
           <Route
