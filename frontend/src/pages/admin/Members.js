@@ -95,8 +95,18 @@ const Members = () => {
 
     // Filter by role
     if (filterRole !== 'all') {
-      filtered = filtered.filter(member => member.role === filterRole);
+      filtered = filtered.filter(member => 
+        member.role === filterRole || 
+        (member.roles && member.roles.includes(filterRole))
+      );
     }
+
+    // Sort: Admin first, then alphabetically
+    filtered.sort((a, b) => {
+      if (a.role === 'admin' && b.role !== 'admin') return -1;
+      if (a.role !== 'admin' && b.role === 'admin') return 1;
+      return a.name.localeCompare(b.name);
+    });
 
     setFilteredMembers(filtered);
   };
