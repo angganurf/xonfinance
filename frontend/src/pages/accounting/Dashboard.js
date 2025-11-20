@@ -294,7 +294,15 @@ const AccountingDashboard = () => {
                         )}
                         <div>
                           <p className="font-medium text-slate-800">{trans.description}</p>
-                          <p className="text-xs text-slate-500">{trans.category}</p>
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <span>{trans.category}</span>
+                            {trans.project_name && (
+                              <>
+                                <span>•</span>
+                                <span className="text-blue-600 font-medium">{trans.project_name}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <p className={`font-bold ${
