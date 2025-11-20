@@ -51,22 +51,45 @@ const AdminDashboard = () => {
         return sum + (project.project_value || 0);
       }, 0);
       
-      // Calculate unbilled budget (project value - received amount)
-      const unbilledBudget = projectsRes.data.reduce((sum, project) => {
-        const received = project.received || 0;
-        const projectValue = project.project_value || 0;
-        return sum + (projectValue - received);
+      // Calculate total kas masuk (income from all projects)
+      const totalKasMasuk = transactionsRes.data.reduce((sum, trans) => {
+        if (trans.category === 'kas_masuk' || trans.category === 'uang_masuk') {
+          return sum + (trans.amount || 0);
+        }
+        return sum;
       }, 0);
+      
+      // Calculate unbilled budget (project value - kas masuk)
+      const unbilledBudget = totalProjectValue - totalKasMasuk;
       
       // Calculate percentages
       const unbilledPercentage = totalProjectValue > 0 
         ? Math.round((unbilledBudget / totalProjectValue) * 100) 
         : 0;
       
-      // Calculate cash percentage from total revenue
-      const totalRevenue = financialRes.data.total_revenue || 0;
-      const cashPercentage = totalRevenue > 0
-        ? Math.round((financialRes.data.cash_balance / totalRevenue) * 100)
+      // Calculate total expenses (all non-income transactions)
+      const totalExpenses = transactionsRes.data.reduce((sum, trans) => {
+        if (trans.category !== 'kas_masuk' && trans.category !== 'uang_masuk' && trans.category !== 'aset') {
+          return sum + (trans.amount || 0);
+        }
+        return sum;
+      }, 0);
+      
+      // Calculate P&L (Profit & Loss)
+      const netProfit = totalKasMasuk - totalExpenses;
+      const profitMargin = totalKasMasuk > 0
+        ? Math.round((netProfit / totalKasMasuk) * 100)
+        : 0;
+      
+      // Calculate remaining budget (project value - total expenses)
+      const remainingBudget = totalProjectValue - totalExpenses;
+      const budgetUsedPercentage = totalProjectValue > 0
+        ? Math.round((totalExpenses / totalProjectValue) * 100)
+        : 0;
+      
+      // Calculate cash percentage from total kas masuk
+      const cashPercentage = totalKasMasuk > 0
+        ? Math.round((financialRes.data.cash_balance / totalKasMasuk) * 100)
         : 0;
       
       setStats({
@@ -76,7 +99,12 @@ const AdminDashboard = () => {
         totalProjects: projectsRes.data.length,
         unbilledBudget,
         unbilledPercentage,
-        totalRevenue
+        totalKasMasuk,
+        totalExpenses,
+        netProfit,
+        profitMargin,
+        remainingBudget,
+        budgetUsedPercentage
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
