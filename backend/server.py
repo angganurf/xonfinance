@@ -880,6 +880,7 @@ async def get_monthly_financial(user: User = Depends(get_current_user)):
         if month_key not in monthly_data:
             monthly_data[month_key] = {
                 'revenue': 0,
+                'income': 0,
                 'cogs': 0,
                 'opex': 0,
                 'net_profit': 0
@@ -888,7 +889,10 @@ async def get_monthly_financial(user: User = Depends(get_current_user)):
         amount = trans.get('amount', 0)
         category = trans.get('category', '')
         
-        if category in ['bahan', 'upah', 'alat']:
+        if category in ['kas_masuk', 'uang_masuk']:
+            monthly_data[month_key]['income'] += amount
+            monthly_data[month_key]['revenue'] += amount
+        elif category in ['bahan', 'upah', 'alat']:
             monthly_data[month_key]['cogs'] += amount
         elif category in ['operasional', 'vendor']:
             monthly_data[month_key]['opex'] += amount
