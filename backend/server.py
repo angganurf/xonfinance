@@ -822,6 +822,8 @@ async def get_financial_summary(user: User = Depends(get_current_user)):
     total_income = 0  # Kas Masuk
     total_cogs = 0
     total_opex = 0
+    total_assets = 0  # Pembelian Aset
+    total_liabilities = 0  # Hutang
     
     for trans in all_transactions:
         amount = trans.get('amount', 0)
@@ -835,6 +837,10 @@ async def get_financial_summary(user: User = Depends(get_current_user)):
             total_cogs += amount
         elif category in ['operasional', 'vendor']:
             total_opex += amount
+        elif category == 'aset':
+            total_assets += amount
+        elif category == 'hutang':
+            total_liabilities += amount
     
     # Get all projects and sum project values
     projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
