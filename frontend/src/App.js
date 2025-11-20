@@ -14,6 +14,7 @@ import SupervisorDashboard from './pages/supervisor/Dashboard';
 import SupervisorSchedule from './pages/supervisor/Schedule';
 import EmployeeDashboard from './pages/employee/Dashboard';
 import EmployeeTasks from './pages/employee/Tasks';
+import Settings from './pages/Settings';
 import './App.css';
 
 function App() {
