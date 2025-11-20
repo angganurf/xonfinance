@@ -141,9 +141,8 @@ export const Login = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-1">
                 <TabsTrigger value="login" data-testid="tab-login">Login</TabsTrigger>
-                <TabsTrigger value="register" data-testid="tab-register">Daftar</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login" data-testid="login-form">
