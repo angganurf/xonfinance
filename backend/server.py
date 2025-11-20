@@ -93,13 +93,21 @@ class RABItem(BaseModel):
     total: float
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class TransactionItem(BaseModel):
+    description: str
+    quantity: float
+    unit: str
+    unit_price: float
+    total: float
+
 class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     project_id: str
-    category: str  # upah, bahan, alat, vendor, operasional
+    category: str  # upah, bahan, alat, vendor, operasional, uang_masuk
     description: str
     amount: float
+    items: Optional[List[TransactionItem]] = []  # for multiple items (bahan)
     quantity: Optional[float] = None
     unit: Optional[str] = None
     receipt: Optional[str] = None  # base64 image
