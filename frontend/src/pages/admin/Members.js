@@ -154,6 +154,54 @@ const Members = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      await api.post('/admin/members/bulk-delete', selectedMembers);
+      toast.success(`${selectedMembers.length} member berhasil dihapus`);
+      setIsBulkDeleteDialogOpen(false);
+      setSelectedMembers([]);
+      setSelectAll(false);
+      fetchMembers();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Gagal menghapus member');
+    }
+  };
+
+  const toggleSelectMember = (memberId) => {
+    setSelectedMembers(prev => {
+      if (prev.includes(memberId)) {
+        return prev.filter(id => id !== memberId);
+      } else {
+        return [...prev, memberId];
+      }
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedMembers([]);
+      setSelectAll(false);
+    } else {
+      // Select all non-admin users
+      const nonAdminIds = filteredMembers
+        .filter(m => m.role !== 'admin')
+        .map(m => m.id);
+      setSelectedMembers(nonAdminIds);
+      setSelectAll(true);
+    }
+  };
+
+  const handleRoleToggle = (role) => {
+    setFormData(prev => {
+      const roles = prev.roles || [];
+      if (roles.includes(role)) {
+        return { ...prev, roles: roles.filter(r => r !== role) };
+      } else {
+        return { ...prev, roles: [...roles, role] };
+      }
+    });
+  };
+
   const openEditDialog = (member) => {
     setSelectedMember(member);
     setFormData({
