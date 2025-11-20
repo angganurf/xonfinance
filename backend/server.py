@@ -816,8 +816,8 @@ async def get_financial_summary(user: User = Depends(get_current_user)):
     # Get all transactions
     all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
     
-    # Calculate totals
-    total_revenue = 0
+    # Calculate totals from transactions
+    total_income = 0  # Kas Masuk
     total_cogs = 0
     total_opex = 0
     
@@ -825,29 +825,40 @@ async def get_financial_summary(user: User = Depends(get_current_user)):
         amount = trans.get('amount', 0)
         category = trans.get('category', '')
         
-        if category == 'bahan':
+        if category in ['kas_masuk', 'uang_masuk']:
+            total_income += amount
+        elif category == 'bahan':
             total_cogs += amount
         elif category in ['upah', 'alat']:
             total_cogs += amount
         elif category in ['operasional', 'vendor']:
             total_opex += amount
     
-    # Get all projects with RAB
+    # Get all projects and sum project values
     projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    total_project_value = 0
     for project in projects:
-        rab_items = await db.rab_items.find({"project_id": project['id']}, {"_id": 0}).to_list(1000)
-        for item in rab_items:
-            total_revenue += item.get('total', 0)
+        total_project_value += project.get('project_value', 0)
     
+    # Total Revenue = Project Values + Kas Masuk
+    total_revenue = total_project_value + total_income
+    
+    # Saldo Kas = Kas Masuk - Pengeluaran
+    cash_balance = total_income - total_cogs - total_opex
+    
+    # Laba Bersih = Total Revenue - Total Pengeluaran
     net_profit = total_revenue - total_cogs - total_opex
-    cash_balance = total_revenue - total_cogs - total_opex
-    total_assets = cash_balance
+    
+    # Total Aset = Cash Balance (simplified)
+    total_assets = cash_balance if cash_balance > 0 else 0
     
     return {
         "cash_balance": cash_balance,
         "net_profit": net_profit,
         "total_assets": total_assets,
         "total_revenue": total_revenue,
+        "total_income": total_income,
+        "total_project_value": total_project_value,
         "total_cogs": total_cogs,
         "total_opex": total_opex
     }
