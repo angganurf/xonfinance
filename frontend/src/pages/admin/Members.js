@@ -209,7 +209,8 @@ const Members = () => {
       email: member.email,
       username: member.username || '',
       password: '',
-      role: member.role
+      role: member.role,
+      roles: member.roles || []
     });
     setIsEditDialogOpen(true);
   };
