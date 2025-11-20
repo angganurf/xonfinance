@@ -203,6 +203,7 @@ class TransactionInput(BaseModel):
     amount: float
     quantity: Optional[float] = None
     unit: Optional[str] = None
+    status: Optional[str] = None
     receipt: Optional[str] = None
     transaction_date: Optional[str] = None
 
