@@ -96,6 +96,98 @@
 # END - Testing Protocol - DO NOT EDIT OR REMOVE THIS SECTION
 #====================================================================================================
 
+user_problem_statement: |
+  User meminta:
+  1. Menambahkan pilihan role pada halaman login (dropdown "Login Sebagai")
+  2. Membuat akun admin dengan username "admin" dan password "admin" yang bisa masuk ke semua role
+  3. Memperbaiki semua error login dan menu yang ada
+
+backend:
+  - task: "Memperbaiki login authentication dengan UUID (id field)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed KeyError: 'id' by adding UUID id field to all users. Fixed login endpoint to use id instead of _id. Fixed get_current_user to use id field."
+  
+  - task: "Membuat akun admin dengan role 'admin'"
+    implemented: true
+    working: true
+    file: "database"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Created admin user with email='admin', password='admin', role='admin'. Tested login via curl and confirmed successful."
+
+frontend:
+  - task: "Menambahkan dropdown 'Login Sebagai' di halaman login"
+    implemented: true
+    working: true
+    file: "Login.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added role selector dropdown with options: Accounting, Estimator, Site Supervisor, Employee. Modified redirectToDashboard to handle admin role and redirect based on selected role."
+  
+  - task: "Menampilkan nama proyek di Dashboard - Transaksi Terbaru"
+    implemented: true
+    working: true
+    file: "Dashboard.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added project_name field display in recent transactions section. Project name shown in blue color below category."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Login dengan role selector"
+    - "Login dengan akun admin dan test akses ke berbagai role"
+    - "Verifikasi nama proyek tampil di dashboard"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implementasi selesai:
+      1. ✅ Fixed login bugs (UUID id field issue)
+      2. ✅ Created admin user (email: admin, password: admin, role: admin)
+      3. ✅ Added role selector dropdown on login page
+      4. ✅ Modified redirect logic to handle admin accessing all roles
+      
+      Test credentials:
+      - Admin: email="admin", password="admin" (can access all roles via dropdown)
+      - Accounting: email="idrus@gmail.com", password="password123"
+      - Estimator: email="khoer@gmail.com", password="password123"
+      - Site Supervisor: email="faisal1@gmail.com", password="password123"
+      - Employee: email="faisal@gmail.com", password="password123"
+      
+      Testing needed:
+      1. Test login with different users
+      2. Test admin login with different role selections
+      3. Verify dashboard shows project names in recent transactions
+      4. E2E flow: login -> navigate to dashboard -> check data display
 
 
 #====================================================================================================
