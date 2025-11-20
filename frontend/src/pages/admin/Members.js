@@ -46,14 +46,18 @@ const Members = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     username: '',
     password: '',
-    role: 'employee'
+    role: 'employee',
+    roles: []
   });
 
   useEffect(() => {
