@@ -457,11 +457,16 @@ const Members = () => {
                         <UserIcon className="h-6 w-6 text-slate-600" />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <h3 className="font-bold text-slate-800">{member.name}</h3>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(member.role)}`}>
                             {getRoleLabel(member.role)}
                           </span>
+                          {member.roles && member.roles.length > 0 && member.roles.map((role) => (
+                            <span key={role} className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(role)}`}>
+                              +{getRoleLabel(role)}
+                            </span>
+                          ))}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-slate-600">
                           <div className="flex items-center gap-1">
