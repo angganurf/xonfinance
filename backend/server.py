@@ -628,8 +628,8 @@ async def delete_rab_item(item_id: str, user: User = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="RAB item not found")
     return {"message": "RAB item deleted"}
 
-@api_router.get("/rab/{project_id}/export")
-async def export_rab_pdf(project_id: str, user: User = Depends(get_current_user)):
+@api_router.get("/rabs/{rab_id}/export")
+async def export_rab_pdf(rab_id: str, user: User = Depends(get_current_user)):
     # Get project
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
