@@ -1,0 +1,99 @@
+{
+  "timestamp": "2025-11-20T14:20:35.270761",
+  "total_tests": 15,
+  "passed_tests": 15,
+  "success_rate": 100.0,
+  "tokens_obtained": 5,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-20T14:20:33.534640"
+    },
+    {
+      "test_name": "Login - idrus@gmail.com",
+      "success": true,
+      "details": "Email: idrus@gmail.com, Expected role: accounting, Actual role: accounting, Token received: True",
+      "timestamp": "2025-11-20T14:20:33.797504"
+    },
+    {
+      "test_name": "Login - khoer@gmail.com",
+      "success": true,
+      "details": "Email: khoer@gmail.com, Expected role: estimator, Actual role: estimator, Token received: True",
+      "timestamp": "2025-11-20T14:20:34.061452"
+    },
+    {
+      "test_name": "Login - faisal1@gmail.com",
+      "success": true,
+      "details": "Email: faisal1@gmail.com, Expected role: site_supervisor, Actual role: site_supervisor, Token received: True",
+      "timestamp": "2025-11-20T14:20:34.325220"
+    },
+    {
+      "test_name": "Login - faisal@gmail.com",
+      "success": true,
+      "details": "Email: faisal@gmail.com, Expected role: employee, Actual role: employee, Token received: True",
+      "timestamp": "2025-11-20T14:20:34.588681"
+    },
+    {
+      "test_name": "Login - admin",
+      "success": true,
+      "details": "Email: admin, Expected role: admin, Actual role: admin, Token received: True",
+      "timestamp": "2025-11-20T14:20:34.848583"
+    },
+    {
+      "test_name": "Get Current User - idrus@gmail.com",
+      "success": true,
+      "details": "Email: idrus@gmail.com, Expected role: accounting, Actual role: accounting, Email matches: True",
+      "timestamp": "2025-11-20T14:20:34.883746"
+    },
+    {
+      "test_name": "Get Current User - khoer@gmail.com",
+      "success": true,
+      "details": "Email: khoer@gmail.com, Expected role: estimator, Actual role: estimator, Email matches: True",
+      "timestamp": "2025-11-20T14:20:34.960882"
+    },
+    {
+      "test_name": "Get Current User - faisal1@gmail.com",
+      "success": true,
+      "details": "Email: faisal1@gmail.com, Expected role: site_supervisor, Actual role: site_supervisor, Email matches: True",
+      "timestamp": "2025-11-20T14:20:34.996571"
+    },
+    {
+      "test_name": "Get Current User - faisal@gmail.com",
+      "success": true,
+      "details": "Email: faisal@gmail.com, Expected role: employee, Actual role: employee, Email matches: True",
+      "timestamp": "2025-11-20T14:20:35.036587"
+    },
+    {
+      "test_name": "Get Current User - admin",
+      "success": true,
+      "details": "Email: admin, Expected role: admin, Actual role: admin, Email matches: True",
+      "timestamp": "2025-11-20T14:20:35.112534"
+    },
+    {
+      "test_name": "Recent Transactions - Project Name",
+      "success": true,
+      "details": "Transactions found: 7, All have project_name: True, Sample: Rumah faisal",
+      "timestamp": "2025-11-20T14:20:35.154261"
+    },
+    {
+      "test_name": "Authentication - Invalid Token",
+      "success": true,
+      "details": "Expected 401 status, got: unknown",
+      "timestamp": "2025-11-20T14:20:35.193455"
+    },
+    {
+      "test_name": "Authentication - No Token",
+      "success": true,
+      "details": "Expected 401 status, got: unknown",
+      "timestamp": "2025-11-20T14:20:35.230741"
+    },
+    {
+      "test_name": "Protected Endpoint - Valid Token",
+      "success": true,
+      "details": "Projects endpoint accessible: True, Response type: <class 'list'>",
+      "timestamp": "2025-11-20T14:20:35.270528"
+    }
+  ]
+}
