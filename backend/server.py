@@ -848,27 +848,29 @@ async def get_financial_summary(user: User = Depends(get_current_user)):
     for project in projects:
         total_project_value += project.get('project_value', 0)
     
-    # Total Revenue = Project Values + Kas Masuk
-    total_revenue = total_project_value + total_income
+    # Total Revenue = Project Values + Kas Masuk + Hutang
+    total_revenue = total_project_value + total_income + total_liabilities
     
-    # Saldo Kas = Kas Masuk - Pengeluaran
-    cash_balance = total_income - total_cogs - total_opex
+    # Saldo Kas = Kas Masuk + Hutang - Pengeluaran - Aset
+    cash_balance = total_income + total_liabilities - total_cogs - total_opex - total_assets
     
-    # Laba Bersih = Total Revenue - Total Pengeluaran
-    net_profit = total_revenue - total_cogs - total_opex
+    # Laba Bersih = Total Revenue - Total Pengeluaran - Aset
+    net_profit = total_revenue - total_cogs - total_opex - total_assets
     
-    # Total Aset = Cash Balance (simplified)
-    total_assets = cash_balance if cash_balance > 0 else 0
+    # Total Aset = Aset yang dibeli + Cash Balance (jika positif)
+    total_assets_value = total_assets + (cash_balance if cash_balance > 0 else 0)
     
     return {
         "cash_balance": cash_balance,
         "net_profit": net_profit,
-        "total_assets": total_assets,
+        "total_assets": total_assets_value,
         "total_revenue": total_revenue,
         "total_income": total_income,
         "total_project_value": total_project_value,
         "total_cogs": total_cogs,
-        "total_opex": total_opex
+        "total_opex": total_opex,
+        "total_assets_purchased": total_assets,
+        "total_liabilities": total_liabilities
     }
 
 @api_router.get("/financial/monthly")
