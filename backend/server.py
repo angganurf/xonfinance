@@ -1231,6 +1231,44 @@ async def delete_member(user_id: str, user: User = Depends(get_current_user)):
     
     return {"message": "User deleted successfully"}
 
+@api_router.post("/admin/members/bulk-delete")
+async def bulk_delete_members(user_ids: List[str], user: User = Depends(get_current_user)):
+    # Only admin can delete users
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    # Prevent admin from deleting themselves
+    if user.id in user_ids:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    
+    # Delete users
+    result = await db.users.delete_many({"id": {"$in": user_ids}})
+    
+    # Delete user sessions
+    await db.user_sessions.delete_many({"user_id": {"$in": user_ids}})
+    
+    return {"message": f"{result.deleted_count} users deleted successfully", "deleted_count": result.deleted_count}
+
+@api_router.patch("/admin/members/bulk-update")
+async def bulk_update_members(data: dict, user: User = Depends(get_current_user)):
+    # Only admin can update users
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    user_ids = data.get("user_ids", [])
+    update_fields = data.get("update_fields", {})
+    
+    if not user_ids or not update_fields:
+        raise HTTPException(status_code=400, detail="user_ids and update_fields are required")
+    
+    # Update users
+    result = await db.users.update_many(
+        {"id": {"$in": user_ids}},
+        {"$set": update_fields}
+    )
+    
+    return {"message": f"{result.modified_count} users updated successfully", "modified_count": result.modified_count}
+
 # Include router
 app.include_router(api_router)
 
