@@ -159,21 +159,43 @@ const AccountingTransactions = () => {
               <table className="w-full" data-testid="transactions-table">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-3">Tanggal</th>
+                    <th className="text-left p-3">Waktu</th>
                     <th className="text-left p-3">Deskripsi</th>
                     <th className="text-left p-3">Kategori</th>
                     <th className="text-right p-3">Jumlah</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((trans) => (
-                    <tr key={trans.id} className="border-b hover:bg-slate-50" data-testid={`transaction-row-${trans.id}`}>
-                      <td className="p-3">{trans.transaction_date?.split('T')[0]}</td>
-                      <td className="p-3">{trans.description}</td>
-                      <td className="p-3"><span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">{trans.category}</span></td>
-                      <td className="p-3 text-right font-medium">Rp {trans.amount?.toLocaleString('id-ID')}</td>
-                    </tr>
-                  ))}
+                  {transactions.map((trans) => {
+                    const isIncome = trans.category === 'kas_masuk' || trans.category === 'uang_masuk';
+                    const date = new Date(trans.transaction_date);
+                    const formattedDate = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const formattedTime = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    
+                    return (
+                      <tr key={trans.id} className="border-b hover:bg-slate-50" data-testid={`transaction-row-${trans.id}`}>
+                        <td className="p-3">
+                          <div className="text-sm">
+                            <div className="font-medium">{formattedDate}</div>
+                            <div className="text-slate-500 text-xs">{formattedTime}</div>
+                          </div>
+                        </td>
+                        <td className="p-3">{trans.description}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            isIncome ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {trans.category === 'kas_masuk' ? 'Kas Masuk' : 
+                             trans.category === 'uang_masuk' ? 'Kas Masuk' :
+                             trans.category.charAt(0).toUpperCase() + trans.category.slice(1)}
+                          </span>
+                        </td>
+                        <td className={`p-3 text-right font-bold ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
+                          {isIncome ? '+' : '-'}Rp {trans.amount?.toLocaleString('id-ID')}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
