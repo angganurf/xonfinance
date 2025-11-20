@@ -93,7 +93,7 @@ const AdminDashboard = () => {
       icon: DollarSign,
       path: '/accounting',
       color: 'bg-blue-500',
-      stats: `${stats.totalTransactions} transaksi`
+      stats: `Saldo: Rp ${(stats.cashBalance / 1000000).toFixed(0)}jt`
     },
     {
       title: 'Estimator',
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
       icon: Calculator,
       path: '/estimator',
       color: 'bg-green-500',
-      stats: `${stats.totalProjects} proyek`
+      stats: `${stats.totalProjects} proyek aktif`
     },
     {
       title: 'Site Supervisor',
