@@ -289,7 +289,7 @@ async def register(input: RegisterInput):
 @api_router.post("/auth/login")
 async def login(input: LoginInput, response: Response):
     # Find user
-    user_doc = await db.users.find_one({"email": input.email})
+    user_doc = await db.users.find_one({"email": input.email}, {"_id": 0})
     if not user_doc or not user_doc.get("password_hash"):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
@@ -332,7 +332,8 @@ async def login(input: LoginInput, response: Response):
             "name": user.name,
             "role": user.role
         },
-        "session_token": session_token
+        "session_token": session_token,
+        "token": session_token
     }
 
 @api_router.post("/auth/google")
