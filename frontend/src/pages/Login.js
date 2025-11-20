@@ -114,7 +114,7 @@ export const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await register(email, password, name, role);
+      await register(email, username, password, name, role);
       toast.success('Registrasi berhasil! Silakan login.');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registrasi gagal');
