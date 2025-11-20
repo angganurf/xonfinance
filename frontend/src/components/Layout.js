@@ -58,6 +58,17 @@ export const Layout = ({ children }) => {
     ];
     
     switch (user?.role) {
+      case 'admin':
+        return [
+          { label: 'Admin Dashboard', path: '/admin', icon: '🏠' },
+          { label: 'Member Management', path: '/admin/members', icon: '👥' },
+          { label: '---', path: '#', icon: '' },
+          { label: 'Accounting', path: '/accounting', icon: '💰' },
+          { label: 'Estimator', path: '/estimator', icon: '📋' },
+          { label: 'Site Supervisor', path: '/supervisor', icon: '🏗️' },
+          { label: 'Employee', path: '/employee', icon: '👷' },
+          ...commonItems
+        ];
       case 'accounting':
         return [
           { label: 'Dashboard', path: '/accounting', icon: '📊' },
