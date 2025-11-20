@@ -272,6 +272,18 @@ export const Login = () => {
                     />
                   </div>
                   <div>
+                    <Label htmlFor="reg-username">Username</Label>
+                    <Input
+                      id="reg-username"
+                      type="text"
+                      placeholder="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                      data-testid="register-username-input"
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="reg-password">Password</Label>
                     <Input
                       id="reg-password"
