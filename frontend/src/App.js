@@ -144,6 +144,16 @@ function App() {
             }
           />
 
+          {/* Settings Route - Available for all roles */}
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
         <Toaster position="top-right" />
