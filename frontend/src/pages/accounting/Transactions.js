@@ -17,7 +17,7 @@ const AccountingTransactions = () => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     project_id: '',
-    category: 'bahan',
+    category: 'kas_masuk',
     description: '',
     amount: '',
     quantity: '',
