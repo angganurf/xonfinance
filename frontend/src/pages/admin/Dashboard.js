@@ -19,10 +19,13 @@ import { toast } from 'sonner';
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
-    totalUsers: 0,
+    cashBalance: 0,
+    cashPercentage: 0,
+    totalProjectValue: 0,
     totalProjects: 0,
-    totalTransactions: 0,
-    cashBalance: 0
+    unbilledBudget: 0,
+    unbilledPercentage: 0,
+    totalRevenue: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -34,9 +37,6 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch users
-      const usersRes = await api.get('/admin/members');
-      
       // Fetch projects
       const projectsRes = await api.get('/projects');
       
@@ -46,11 +46,37 @@ const AdminDashboard = () => {
       // Fetch transactions
       const transactionsRes = await api.get('/transactions');
       
+      // Calculate total project value (contract value)
+      const totalProjectValue = projectsRes.data.reduce((sum, project) => {
+        return sum + (project.project_value || 0);
+      }, 0);
+      
+      // Calculate unbilled budget (project value - received amount)
+      const unbilledBudget = projectsRes.data.reduce((sum, project) => {
+        const received = project.received || 0;
+        const projectValue = project.project_value || 0;
+        return sum + (projectValue - received);
+      }, 0);
+      
+      // Calculate percentages
+      const unbilledPercentage = totalProjectValue > 0 
+        ? Math.round((unbilledBudget / totalProjectValue) * 100) 
+        : 0;
+      
+      // Calculate cash percentage from total revenue
+      const totalRevenue = financialRes.data.total_revenue || 0;
+      const cashPercentage = totalRevenue > 0
+        ? Math.round((financialRes.data.cash_balance / totalRevenue) * 100)
+        : 0;
+      
       setStats({
-        totalUsers: usersRes.data.length,
+        cashBalance: financialRes.data.cash_balance,
+        cashPercentage,
+        totalProjectValue,
         totalProjects: projectsRes.data.length,
-        totalTransactions: transactionsRes.data.length,
-        cashBalance: financialRes.data.cash_balance
+        unbilledBudget,
+        unbilledPercentage,
+        totalRevenue
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
