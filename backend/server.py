@@ -104,12 +104,13 @@ class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     project_id: str
-    category: str  # upah, bahan, alat, vendor, operasional, kas_masuk/uang_masuk
+    category: str  # upah, bahan, alat, vendor, operasional, kas_masuk, aset, hutang
     description: str
     amount: float
     items: Optional[List[TransactionItem]] = []  # for multiple items (bahan)
     quantity: Optional[float] = None
     unit: Optional[str] = None
+    status: Optional[str] = None  # for aset: custom status like "Aktif", "Maintenance", etc
     receipt: Optional[str] = None  # base64 image
     created_by: str
     transaction_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
