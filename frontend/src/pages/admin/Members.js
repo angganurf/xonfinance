@@ -262,9 +262,25 @@ const Members = () => {
           <div>
             <h1 className="text-3xl font-bold text-slate-800">Member Management</h1>
             <p className="text-slate-600">Kelola semua pengguna sistem</p>
+            {selectedMembers.length > 0 && (
+              <p className="text-sm text-blue-600 mt-1">
+                {selectedMembers.length} member dipilih
+              </p>
+            )}
           </div>
           
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <div className="flex gap-2">
+            {selectedMembers.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => setIsBulkDeleteDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Hapus ({selectedMembers.length})
+              </Button>
+            )}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
