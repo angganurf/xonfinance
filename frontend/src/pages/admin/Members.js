@@ -423,13 +423,36 @@ const Members = () => {
                 Tidak ada member ditemukan
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
+                {/* Select All */}
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={toggleSelectAll}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm font-medium text-slate-700">
+                    Pilih Semua (kecuali Admin)
+                  </span>
+                </div>
+
                 {filteredMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors"
+                    className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
+                      selectedMembers.includes(member.id) ? 'bg-blue-50 border-blue-300' : 'hover:bg-slate-50'
+                    }`}
                   >
                     <div className="flex items-center gap-4 flex-1">
+                      {member.role !== 'admin' && (
+                        <input
+                          type="checkbox"
+                          checked={selectedMembers.includes(member.id)}
+                          onChange={() => toggleSelectMember(member.id)}
+                          className="w-5 h-5"
+                        />
+                      )}
                       <div className="bg-slate-100 p-3 rounded-full">
                         <UserIcon className="h-6 w-6 text-slate-600" />
                       </div>
