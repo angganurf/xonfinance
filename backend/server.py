@@ -44,7 +44,8 @@ class User(BaseModel):
     username: Optional[str] = None
     name: str
     picture: Optional[str] = None
-    role: str  # accounting, estimator, site_supervisor, employee
+    role: str  # Primary role or single role (for backward compatibility)
+    roles: Optional[List[str]] = []  # Multiple roles support
     password_hash: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
