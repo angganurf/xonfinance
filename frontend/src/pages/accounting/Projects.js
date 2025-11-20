@@ -38,8 +38,12 @@ const AccountingProjects = () => {
 
   const loadProjects = async () => {
     try {
-      const response = await api.get('/projects');
-      setProjects(response.data);
+      const [projectsRes, progressRes] = await Promise.all([
+        api.get('/projects'),
+        api.get('/financial/projects-progress')
+      ]);
+      setProjects(projectsRes.data);
+      setProjectsProgress(progressRes.data);
     } catch (error) {
       toast.error('Gagal memuat proyek');
     }
