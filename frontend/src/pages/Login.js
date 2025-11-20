@@ -53,7 +53,30 @@ export const Login = () => {
     }
   };
 
-  const redirectToDashboard = (userRole) => {
+  const redirectToDashboard = (userRole, selectedRole = null) => {
+    // If user is admin, redirect based on selected role
+    if (userRole === 'admin') {
+      const targetRole = selectedRole || loginRole;
+      switch (targetRole) {
+        case 'accounting':
+          navigate('/accounting');
+          break;
+        case 'estimator':
+          navigate('/estimator');
+          break;
+        case 'site_supervisor':
+          navigate('/supervisor');
+          break;
+        case 'employee':
+          navigate('/employee');
+          break;
+        default:
+          navigate('/accounting');
+      }
+      return;
+    }
+    
+    // Regular user - redirect based on their role
     switch (userRole) {
       case 'accounting':
         navigate('/accounting');
