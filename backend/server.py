@@ -513,10 +513,79 @@ async def delete_project(project_id: str, user: User = Depends(get_current_user)
 
 # ============= RAB ENDPOINTS =============
 
-@api_router.post("/rab")
+@api_router.post("/rabs")
+async def create_rab(input: RABInput, user: User = Depends(get_current_user)):
+    rab = RAB(
+        project_id=input.project_id,
+        project_name=input.project_name
+    )
+    
+    rab_dict = rab.model_dump()
+    rab_dict["created_at"] = rab_dict["created_at"].isoformat()
+    await db.rabs.insert_one(rab_dict)
+    
+    return {"message": "RAB created", "id": rab.id}
+
+@api_router.get("/rabs")
+async def get_all_rabs(user: User = Depends(get_current_user)):
+    rabs = await db.rabs.find({}, {"_id": 0}).to_list(1000)
+    return rabs
+
+@api_router.get("/rabs/{rab_id}")
+async def get_rab(rab_id: str, user: User = Depends(get_current_user)):
+    rab = await db.rabs.find_one({"id": rab_id}, {"_id": 0})
+    if not rab:
+        raise HTTPException(status_code=404, detail="RAB not found")
+    return rab
+
+@api_router.patch("/rabs/{rab_id}")
+async def update_rab(rab_id: str, input: RABUpdateInput, user: User = Depends(get_current_user)):
+    updates = {}
+    if input.discount is not None:
+        updates["discount"] = input.discount
+    if input.tax is not None:
+        updates["tax"] = input.tax
+    
+    result = await db.rabs.update_one({"id": rab_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="RAB not found")
+    return {"message": "RAB updated"}
+
+@api_router.post("/rabs/{rab_id}/approve")
+async def approve_rab(rab_id: str, user: User = Depends(get_current_user)):
+    rab = await db.rabs.find_one({"id": rab_id}, {"_id": 0})
+    if not rab:
+        raise HTTPException(status_code=404, detail="RAB not found")
+    
+    # Update RAB status
+    await db.rabs.update_one(
+        {"id": rab_id},
+        {"$set": {"status": "approved", "approved_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Update project status to active
+    await db.projects.update_one(
+        {"id": rab["project_id"]},
+        {"$set": {"status": "active"}}
+    )
+    
+    return {"message": "RAB approved and project activated"}
+
+@api_router.delete("/rabs/{rab_id}")
+async def delete_rab(rab_id: str, user: User = Depends(get_current_user)):
+    # Delete all items first
+    await db.rab_items.delete_many({"rab_id": rab_id})
+    
+    result = await db.rabs.delete_one({"id": rab_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="RAB not found")
+    return {"message": "RAB deleted"}
+
+@api_router.post("/rab-items")
 async def create_rab_item(input: RABItemInput, user: User = Depends(get_current_user)):
     total = input.unit_price * input.quantity
     rab_item = RABItem(
+        rab_id=input.rab_id,
         project_id=input.project_id,
         category=input.category,
         description=input.description,
@@ -532,12 +601,27 @@ async def create_rab_item(input: RABItemInput, user: User = Depends(get_current_
     
     return {"message": "RAB item created", "id": rab_item.id}
 
-@api_router.get("/rab/{project_id}")
-async def get_rab_items(project_id: str, user: User = Depends(get_current_user)):
-    items = await db.rab_items.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+@api_router.get("/rab-items/{rab_id}")
+async def get_rab_items(rab_id: str, user: User = Depends(get_current_user)):
+    items = await db.rab_items.find({"rab_id": rab_id}, {"_id": 0}).to_list(1000)
     return items
 
-@api_router.delete("/rab/{item_id}")
+@api_router.patch("/rab-items/{item_id}")
+async def update_rab_item(item_id: str, updates: dict, user: User = Depends(get_current_user)):
+    # Recalculate total if unit_price or quantity changed
+    if "unit_price" in updates or "quantity" in updates:
+        item = await db.rab_items.find_one({"id": item_id})
+        if item:
+            unit_price = updates.get("unit_price", item["unit_price"])
+            quantity = updates.get("quantity", item["quantity"])
+            updates["total"] = unit_price * quantity
+    
+    result = await db.rab_items.update_one({"id": item_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="RAB item not found")
+    return {"message": "RAB item updated"}
+
+@api_router.delete("/rab-items/{item_id}")
 async def delete_rab_item(item_id: str, user: User = Depends(get_current_user)):
     result = await db.rab_items.delete_one({"id": item_id})
     if result.deleted_count == 0:
