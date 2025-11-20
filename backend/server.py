@@ -702,8 +702,24 @@ async def export_rab_pdf(rab_id: str, user: User = Depends(get_current_user)):
             table_data.append(['', f'Subtotal {cat}', '', '', '', f"Rp {cat_total:,.0f}"])
             total_all += cat_total
         
-        # Grand total
-        table_data.append(['', 'TOTAL', '', '', '', f"Rp {total_all:,.0f}"])
+        # Subtotal, Discount, Tax, Grand Total
+        table_data.append(['', 'SUBTOTAL', '', '', '', f"Rp {total_all:,.0f}"])
+        
+        discount = rab.get('discount', 0)
+        tax_rate = rab.get('tax', 11)
+        
+        if discount > 0:
+            discount_amount = total_all * (discount / 100)
+            table_data.append(['', f'DISKON ({discount}%)', '', '', '', f"Rp -{discount_amount:,.0f}"])
+            total_after_discount = total_all - discount_amount
+        else:
+            total_after_discount = total_all
+        
+        tax_amount = total_after_discount * (tax_rate / 100)
+        table_data.append(['', f'PAJAK ({tax_rate}%)', '', '', '', f"Rp {tax_amount:,.0f}"])
+        
+        grand_total = total_after_discount + tax_amount
+        table_data.append(['', 'TOTAL', '', '', '', f"Rp {grand_total:,.0f}"])
         
         # Create table
         table = Table(table_data, colWidths=[20*mm, 70*mm, 20*mm, 25*mm, 35*mm, 35*mm])
