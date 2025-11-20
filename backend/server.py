@@ -1232,10 +1232,17 @@ async def delete_member(user_id: str, user: User = Depends(get_current_user)):
     return {"message": "User deleted successfully"}
 
 @api_router.post("/admin/members/bulk-delete")
-async def bulk_delete_members(user_ids: List[str], user: User = Depends(get_current_user)):
+async def bulk_delete_members(request: Request, user: User = Depends(get_current_user)):
     # Only admin can delete users
     if user.role != "admin":
         raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    # Get user_ids from request body
+    data = await request.json()
+    user_ids = data if isinstance(data, list) else data.get("user_ids", [])
+    
+    if not user_ids:
+        raise HTTPException(status_code=400, detail="No user IDs provided")
     
     # Prevent admin from deleting themselves
     if user.id in user_ids:
