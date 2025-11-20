@@ -10,17 +10,20 @@ import { Textarea } from '../../components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, MoreVertical, Trash } from 'lucide-react';
+import { Plus, Edit, Trash2, MoreVertical, Trash, X, ArrowUpDown } from 'lucide-react';
 import api from '../../utils/api';
 
 const AccountingTransactions = () => {
   const [transactions, setTransactions] = useState([]);
+  const [sortedTransactions, setSortedTransactions] = useState([]);
   const [projects, setProjects] = useState([]);
   const [open, setOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [clearAllDialog, setClearAllDialog] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: 'transaction_date', direction: 'desc' });
+  
   const [formData, setFormData] = useState({
     project_id: '',
     category: 'kas_masuk',
@@ -32,10 +35,18 @@ const AccountingTransactions = () => {
     receipt: '',
     transaction_date: new Date().toISOString().split('T')[0]
   });
+  
+  const [bahanItems, setBahanItems] = useState([
+    { description: '', unit_price: '', quantity: '', unit: '', total: 0 }
+  ]);
 
   useEffect(() => {
     loadData();
   }, []);
+  
+  useEffect(() => {
+    sortTransactions();
+  }, [transactions, sortConfig]);
 
   const loadData = async () => {
     try {
@@ -48,6 +59,36 @@ const AccountingTransactions = () => {
     } catch (error) {
       toast.error('Gagal memuat data');
     }
+  };
+  
+  const sortTransactions = () => {
+    const sorted = [...transactions].sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      
+      if (sortConfig.key === 'transaction_date') {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      } else if (sortConfig.key === 'amount') {
+        aValue = parseFloat(aValue);
+        bValue = parseFloat(bValue);
+      } else {
+        aValue = String(aValue).toLowerCase();
+        bValue = String(bValue).toLowerCase();
+      }
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    setSortedTransactions(sorted);
+  };
+  
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
   };
 
   const handleOpenDialog = (transaction = null) => {
@@ -64,6 +105,11 @@ const AccountingTransactions = () => {
         receipt: transaction.receipt || '',
         transaction_date: transaction.transaction_date?.split('T')[0] || new Date().toISOString().split('T')[0]
       });
+      if (transaction.items && transaction.items.length > 0) {
+        setBahanItems(transaction.items);
+      } else {
+        setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0 }]);
+      }
     } else {
       setEditingTransaction(null);
       setFormData({
@@ -77,8 +123,36 @@ const AccountingTransactions = () => {
         receipt: '',
         transaction_date: new Date().toISOString().split('T')[0]
       });
+      setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0 }]);
     }
     setOpen(true);
+  };
+  
+  const handleBahanItemChange = (index, field, value) => {
+    const updatedItems = [...bahanItems];
+    updatedItems[index][field] = value;
+    
+    if (field === 'unit_price' || field === 'quantity') {
+      const unitPrice = parseFloat(updatedItems[index].unit_price) || 0;
+      const quantity = parseFloat(updatedItems[index].quantity) || 0;
+      updatedItems[index].total = unitPrice * quantity;
+    }
+    
+    setBahanItems(updatedItems);
+  };
+  
+  const addBahanItem = () => {
+    setBahanItems([...bahanItems, { description: '', unit_price: '', quantity: '', unit: '', total: 0 }]);
+  };
+  
+  const removeBahanItem = (index) => {
+    if (bahanItems.length > 1) {
+      setBahanItems(bahanItems.filter((_, i) => i !== index));
+    }
+  };
+  
+  const calculateTotalBahan = () => {
+    return bahanItems.reduce((sum, item) => sum + (item.total || 0), 0);
   };
 
   const handleImageUpload = (e) => {
@@ -108,14 +182,32 @@ const AccountingTransactions = () => {
       const data = {
         project_id: formData.project_id,
         category: formData.category,
-        description: formData.description,
-        amount: parseFloat(formData.amount),
         transaction_date: formData.transaction_date
       };
       
-      if (formData.quantity) data.quantity = parseFloat(formData.quantity);
-      if (formData.unit) data.unit = formData.unit;
-      if (formData.status) data.status = formData.status;
+      if (formData.category === 'bahan') {
+        const validItems = bahanItems.filter(item => item.description && item.unit_price && item.quantity);
+        if (validItems.length === 0) {
+          toast.error('Tambahkan minimal 1 item bahan');
+          return;
+        }
+        data.description = `Pembelian Bahan (${validItems.length} item)`;
+        data.amount = calculateTotalBahan();
+        data.items = validItems.map(item => ({
+          description: item.description,
+          unit_price: parseFloat(item.unit_price),
+          quantity: parseFloat(item.quantity),
+          unit: item.unit,
+          total: item.total
+        }));
+      } else {
+        data.description = formData.description;
+        data.amount = parseFloat(formData.amount);
+        if (formData.quantity) data.quantity = parseFloat(formData.quantity);
+        if (formData.unit) data.unit = formData.unit;
+        if (formData.status) data.status = formData.status;
+      }
+      
       if (formData.receipt) data.receipt = formData.receipt;
       
       if (editingTransaction) {
@@ -182,6 +274,16 @@ const AccountingTransactions = () => {
     const isIncome = category === 'kas_masuk' || category === 'uang_masuk' || category === 'hutang';
     return isIncome ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800';
   };
+  
+  const SortButton = ({ column, label }) => (
+    <button
+      onClick={() => handleSort(column)}
+      className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+    >
+      {label}
+      <ArrowUpDown className="h-3 w-3" />
+    </button>
+  );
 
   return (
     <Layout>
@@ -204,7 +306,7 @@ const AccountingTransactions = () => {
                   <Plus className="mr-2 h-4 w-4" /> Tambah Transaksi
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="transaction-dialog">
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="transaction-dialog">
                 <DialogHeader>
                   <DialogTitle>{editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi'}</DialogTitle>
                 </DialogHeader>
@@ -234,37 +336,116 @@ const AccountingTransactions = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label>Deskripsi *</Label>
-                    <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} required data-testid="transaction-description-input" />
-                  </div>
-                  {formData.category === 'bahan' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Quantity</Label>
-                        <Input type="number" step="0.01" value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} data-testid="transaction-quantity-input" />
+                  
+                  {formData.category === 'bahan' ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-lg font-semibold">Daftar Bahan</Label>
+                        <Button type="button" size="sm" onClick={addBahanItem} data-testid="add-bahan-item">
+                          <Plus className="h-4 w-4 mr-1" /> Tambah Bahan
+                        </Button>
                       </div>
-                      <div>
-                        <Label>Satuan</Label>
-                        <Input value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} data-testid="transaction-unit-input" />
+                      {bahanItems.map((item, index) => (
+                        <Card key={index} className="p-4">
+                          <div className="flex items-start gap-2">
+                            <div className="flex-1 space-y-3">
+                              <div>
+                                <Label className="text-xs">Deskripsi Bahan</Label>
+                                <Input
+                                  value={item.description}
+                                  onChange={(e) => handleBahanItemChange(index, 'description', e.target.value)}
+                                  placeholder="Nama bahan"
+                                  data-testid={`bahan-desc-${index}`}
+                                />
+                              </div>
+                              <div className="grid grid-cols-4 gap-2">
+                                <div>
+                                  <Label className="text-xs">Harga Satuan</Label>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={item.unit_price}
+                                    onChange={(e) => handleBahanItemChange(index, 'unit_price', e.target.value)}
+                                    placeholder="0"
+                                    data-testid={`bahan-price-${index}`}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Quantity</Label>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={item.quantity}
+                                    onChange={(e) => handleBahanItemChange(index, 'quantity', e.target.value)}
+                                    placeholder="0"
+                                    data-testid={`bahan-qty-${index}`}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Satuan</Label>
+                                  <Input
+                                    value={item.unit}
+                                    onChange={(e) => handleBahanItemChange(index, 'unit', e.target.value)}
+                                    placeholder="pcs/kg/m"
+                                    data-testid={`bahan-unit-${index}`}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Jumlah</Label>
+                                  <Input
+                                    value={`Rp ${item.total.toLocaleString('id-ID')}`}
+                                    disabled
+                                    className="bg-slate-100 font-bold"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            {bahanItems.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeBahanItem(index)}
+                                className="text-red-600 hover:text-red-700"
+                                data-testid={`remove-bahan-${index}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </Card>
+                      ))}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-blue-900">Total Keseluruhan:</span>
+                          <span className="text-xl font-bold text-blue-900">Rp {calculateTotalBahan().toLocaleString('id-ID')}</span>
+                        </div>
                       </div>
                     </div>
+                  ) : (
+                    <>
+                      <div>
+                        <Label>Deskripsi *</Label>
+                        <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} required data-testid="transaction-description-input" />
+                      </div>
+                      {formData.category === 'aset' && (
+                        <div>
+                          <Label>Status Aset</Label>
+                          <Input 
+                            value={formData.status} 
+                            onChange={(e) => setFormData({...formData, status: e.target.value})} 
+                            placeholder="Contoh: Aktif, Maintenance, Rusak, dll"
+                            data-testid="transaction-status-input"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <Label>Jumlah (Rp) *</Label>
+                        <Input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} required data-testid="transaction-amount-input" />
+                      </div>
+                    </>
                   )}
-                  {formData.category === 'aset' && (
-                    <div>
-                      <Label>Status Aset</Label>
-                      <Input 
-                        value={formData.status} 
-                        onChange={(e) => setFormData({...formData, status: e.target.value})} 
-                        placeholder="Contoh: Aktif, Maintenance, Rusak, dll"
-                        data-testid="transaction-status-input"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <Label>Jumlah (Rp) *</Label>
-                    <Input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} required data-testid="transaction-amount-input" />
-                  </div>
+                  
                   <div>
                     <Label>Tanggal Transaksi</Label>
                     <Input type="date" value={formData.transaction_date} onChange={(e) => setFormData({...formData, transaction_date: e.target.value})} data-testid="transaction-date-input" />
@@ -293,15 +474,23 @@ const AccountingTransactions = () => {
               <table className="w-full" data-testid="transactions-table">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-3">Waktu</th>
-                    <th className="text-left p-3">Deskripsi</th>
-                    <th className="text-left p-3">Kategori</th>
-                    <th className="text-right p-3">Jumlah</th>
+                    <th className="text-left p-3">
+                      <SortButton column="transaction_date" label="Waktu" />
+                    </th>
+                    <th className="text-left p-3">
+                      <SortButton column="description" label="Deskripsi" />
+                    </th>
+                    <th className="text-left p-3">
+                      <SortButton column="category" label="Kategori" />
+                    </th>
+                    <th className="text-right p-3">
+                      <SortButton column="amount" label="Jumlah" />
+                    </th>
                     <th className="text-center p-3">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((trans) => {
+                  {sortedTransactions.map((trans) => {
                     const isIncome = trans.category === 'kas_masuk' || trans.category === 'uang_masuk' || trans.category === 'hutang';
                     const date = new Date(trans.transaction_date);
                     const formattedDate = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -319,6 +508,9 @@ const AccountingTransactions = () => {
                           <div>
                             <p className="font-medium">{trans.description}</p>
                             {trans.status && <p className="text-xs text-slate-500">Status: {trans.status}</p>}
+                            {trans.items && trans.items.length > 0 && (
+                              <p className="text-xs text-blue-600">{trans.items.length} item bahan</p>
+                            )}
                           </div>
                         </td>
                         <td className="p-3">
@@ -360,7 +552,7 @@ const AccountingTransactions = () => {
                   })}
                 </tbody>
               </table>
-              {transactions.length === 0 && (
+              {sortedTransactions.length === 0 && (
                 <div className="py-12 text-center text-slate-500">
                   <p>Belum ada transaksi</p>
                 </div>
