@@ -225,8 +225,11 @@ export const Layout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main data-testid="main-content">{children}</main>
+        <main data-testid="main-content" className="pb-20 lg:pb-6">{children}</main>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileNav />
     </div>
   );
 };
