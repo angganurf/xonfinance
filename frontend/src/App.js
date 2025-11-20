@@ -56,6 +56,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/accounting/projects/:projectId"
+            element={
+              <ProtectedRoute allowedRoles={['accounting']}>
+                {React.createElement(require('./pages/accounting/ProjectDetail').default)}
+              </ProtectedRoute>
+            }
+          />
 
           {/* Estimator Routes */}
           <Route
