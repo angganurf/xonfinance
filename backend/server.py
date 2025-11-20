@@ -269,30 +269,8 @@ async def root():
 
 @api_router.post("/auth/register")
 async def register(input: RegisterInput):
-    # Check if email exists
-    existing = await db.users.find_one({"email": input.email})
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Check if username exists
-    existing_username = await db.users.find_one({"username": input.username})
-    if existing_username:
-        raise HTTPException(status_code=400, detail="Username already taken")
-    
-    # Create user
-    user = User(
-        email=input.email,
-        username=input.username,
-        name=input.name,
-        role=input.role,
-        password_hash=hash_password(input.password)
-    )
-    
-    user_dict = user.model_dump(by_alias=False)
-    user_dict["created_at"] = user_dict["created_at"].isoformat()
-    await db.users.insert_one(user_dict)
-    
-    return {"message": "User registered successfully", "id": user.id}
+    # Public registration disabled - only admin can create users
+    raise HTTPException(status_code=403, detail="Public registration is disabled. Please contact administrator.")
 
 @api_router.post("/auth/login")
 async def login(input: LoginInput, response: Response):
