@@ -141,17 +141,43 @@ const EstimatorRAB = () => {
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label>Kategori</Label>
-                    <Select value={formData.category} onValueChange={(v) => setFormData({...formData, category: v})}>
+                    <Label>Kategori Pekerjaan</Label>
+                    <Select 
+                      value={isCustomCategory ? 'custom' : formData.category} 
+                      onValueChange={handleCategoryChange}
+                    >
                       <SelectTrigger data-testid="rab-category-select"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="persiapan">Persiapan</SelectItem>
                         <SelectItem value="struktur">Struktur</SelectItem>
                         <SelectItem value="dinding">Dinding</SelectItem>
                         <SelectItem value="finishing">Finishing</SelectItem>
+                        {customCategories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                        <SelectItem value="custom">
+                          <span className="text-blue-600 font-semibold">+ Ketik Custom</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {isCustomCategory && (
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <Label className="text-blue-800">Nama Kategori Custom</Label>
+                      <Input 
+                        value={formData.customCategory}
+                        onChange={(e) => setFormData({...formData, customCategory: e.target.value})}
+                        placeholder="Contoh: Plumbing, Elektrikal, MEP, dll"
+                        required
+                        className="mt-2 border-blue-300 focus:border-blue-500"
+                        data-testid="rab-custom-category-input"
+                      />
+                      <p className="text-xs text-blue-600 mt-1">
+                        Kategori ini akan otomatis ditambahkan ke daftar
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <Label>Deskripsi Pekerjaan</Label>
                     <Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} required data-testid="rab-description-input" />
