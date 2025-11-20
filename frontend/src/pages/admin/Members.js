@@ -225,7 +225,8 @@ const Members = () => {
       email: '',
       username: '',
       password: '',
-      role: 'employee'
+      role: 'employee',
+      roles: []
     });
     setSelectedMember(null);
   };
