@@ -241,7 +241,9 @@ const AccountingProjects = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="projects-grid">
-          {projects.map((project) => (
+          {projects.map((project) => {
+            const progress = projectsProgress.find(p => p.project_id === project.id);
+            return (
             <Card key={project.id} className="hover:shadow-lg transition-shadow relative" data-testid={`project-card-${project.id}`}>
               <CardHeader>
                 <div className="flex items-start justify-between">
