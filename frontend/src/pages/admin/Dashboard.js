@@ -155,53 +155,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Saldo Kas */}
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Total Users</p>
-                  <p className="text-3xl font-bold text-slate-800">{stats.totalUsers}</p>
-                </div>
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Total Proyek</p>
-                  <p className="text-3xl font-bold text-slate-800">{stats.totalProjects}</p>
-                </div>
-                <div className="bg-green-100 p-3 rounded-full">
-                  <BarChart3 className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Transaksi</p>
-                  <p className="text-3xl font-bold text-slate-800">{stats.totalTransactions}</p>
-                </div>
-                <div className="bg-orange-100 p-3 rounded-full">
-                  <TrendingUp className="h-6 w-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex-1">
                   <p className="text-sm text-slate-600 mb-1">Saldo Kas</p>
                   <p className="text-2xl font-bold text-green-600">
                     Rp {stats.cashBalance.toLocaleString('id-ID')}
@@ -209,6 +168,67 @@ const AdminDashboard = () => {
                 </div>
                 <div className="bg-green-100 p-3 rounded-full">
                   <DollarSign className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-slate-600">
+                  <span>Dari Total Pendapatan</span>
+                  <span className="font-semibold">{stats.cashPercentage}%</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(stats.cashPercentage, 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Total Nilai Proyek */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600 mb-1">Total Nilai Proyek</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    Rp {stats.totalProjectValue.toLocaleString('id-ID')}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">{stats.totalProjects} Proyek</p>
+                </div>
+                <div className="bg-blue-100 p-3 rounded-full">
+                  <BarChart3 className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Anggaran Belum Ditagihkan */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600 mb-1">Belum Ditagihkan</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    Rp {stats.unbilledBudget.toLocaleString('id-ID')}
+                  </p>
+                </div>
+                <div className="bg-orange-100 p-3 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-orange-600" />
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-slate-600">
+                  <span>Dari Total Nilai Proyek</span>
+                  <span className="font-semibold">{stats.unbilledPercentage}%</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-orange-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(stats.unbilledPercentage, 100)}%` }}
+                  ></div>
                 </div>
               </div>
             </CardContent>
