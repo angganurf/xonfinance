@@ -104,7 +104,7 @@ class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     project_id: str
-    category: str  # upah, bahan, alat, vendor, operasional, uang_masuk
+    category: str  # upah, bahan, alat, vendor, operasional, kas_masuk/uang_masuk
     description: str
     amount: float
     items: Optional[List[TransactionItem]] = []  # for multiple items (bahan)
