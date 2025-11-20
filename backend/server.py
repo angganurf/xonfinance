@@ -1201,6 +1201,8 @@ async def update_member(user_id: str, update_data: dict, user: User = Depends(ge
         update_fields["username"] = update_data["username"]
     if "role" in update_data:
         update_fields["role"] = update_data["role"]
+    if "roles" in update_data:
+        update_fields["roles"] = update_data["roles"]
     if "password" in update_data and update_data["password"]:
         update_fields["password_hash"] = hash_password(update_data["password"])
     
