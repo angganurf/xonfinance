@@ -309,7 +309,8 @@ const AccountingProjects = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
 
         {projects.length === 0 && (
