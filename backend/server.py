@@ -302,7 +302,7 @@ async def login(input: LoginInput, response: Response):
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
     
     session = UserSession(
-        user_id=user_doc["_id"],
+        user_id=user_doc["id"],
         session_token=session_token,
         expires_at=expires_at
     )
