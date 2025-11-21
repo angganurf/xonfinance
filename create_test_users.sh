@@ -18,7 +18,7 @@ CREATE_ACC=$(curl -s -X POST "$BACKEND_URL/admin/members" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "email":"accounting@test.com",
+    "email":"359f2223359f2223",
     "username":"accounting",
     "password":"test123",
     "name":"Test Accounting",
