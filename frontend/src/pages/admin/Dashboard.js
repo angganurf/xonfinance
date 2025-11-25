@@ -80,11 +80,8 @@ const AdminDashboard = () => {
         return sum;
       }, 0);
       
-      // Calculate total ALL transactions (kas masuk + expenses)
-      const totalAllTransactions = totalKasMasuk + totalExpenses;
-      
-      // Calculate P&L (Profit & Loss) = Total Nilai Proyek - Total Semua Transaksi
-      const netProfit = totalProjectValue - totalAllTransactions;
+      // Calculate P&L (Profit & Loss) = Total Nilai Proyek - Total Pengeluaran
+      const netProfit = totalProjectValue - totalExpenses;
       const profitMargin = totalProjectValue > 0
         ? Math.round((netProfit / totalProjectValue) * 100)
         : 0;
