@@ -863,6 +863,9 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
                     await db.inventory.insert_one(inv_dict)
         elif input.quantity and input.unit:
             # Handle single item (for 'alat' or simple 'bahan')
+            # Use status from input (default to receiving if not provided)
+            item_status = input.status if input.status else 'receiving'
+            
             existing = await db.inventory.find_one({
                 "item_name": input.description,
                 "category": input.category,
@@ -870,57 +873,52 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
             })
             
             unit_price = input.amount / input.quantity if input.quantity > 0 else input.amount
-            adjusted_quantity = input.quantity * quantity_multiplier
             
             if existing:
-                # Update existing inventory quantity
-                new_quantity = existing["quantity"] + adjusted_quantity
+                # Update existing inventory quantity based on status
+                if item_status == 'receiving':
+                    new_qty_in_warehouse = existing.get("quantity_in_warehouse", 0) + input.quantity
+                    new_qty_out_warehouse = existing.get("quantity_out_warehouse", 0)
+                else:  # out_warehouse
+                    new_qty_in_warehouse = existing.get("quantity_in_warehouse", 0)
+                    new_qty_out_warehouse = existing.get("quantity_out_warehouse", 0) + input.quantity
                 
-                # Don't allow negative inventory
-                if new_quantity < 0:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Stok tidak cukup untuk '{input.description}'. Stok tersedia: {existing['quantity']}, diminta: {input.quantity}"
-                    )
-                
-                new_total_value = new_quantity * unit_price
-                
-                # Update status based on quantity
-                new_status = "Habis" if new_quantity == 0 else existing.get("status", "Tersedia")
+                new_total_quantity = new_qty_in_warehouse + new_qty_out_warehouse
+                new_total_value = new_total_quantity * unit_price
                 
                 await db.inventory.update_one(
                     {"id": existing["id"]},
                     {"$set": {
-                        "quantity": new_quantity,
+                        "quantity_in_warehouse": new_qty_in_warehouse,
+                        "quantity_out_warehouse": new_qty_out_warehouse,
+                        "quantity": new_total_quantity,
                         "total_value": new_total_value,
                         "unit_price": unit_price,
-                        "status": new_status,
                         "updated_at": datetime.now(timezone.utc).isoformat()
                     }}
                 )
             else:
-                # Only create new inventory for receiving (incoming stock)
-                if input.status == 'receiving':
-                    inventory = Inventory(
-                        item_name=input.description,
-                        category=input.category,
-                        quantity=input.quantity,
-                        unit=input.unit,
-                        unit_price=unit_price,
-                        total_value=input.amount,
-                        project_id=input.project_id,
-                        transaction_id=transaction.id,
-                        status="Tersedia"
-                    )
-                    inv_dict = inventory.model_dump()
-                    inv_dict["created_at"] = inv_dict["created_at"].isoformat()
-                    inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
-                    await db.inventory.insert_one(inv_dict)
-                else:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Item '{input.description}' tidak ditemukan di inventory. Tidak bisa melakukan Out Warehouse."
-                    )
+                # Create new inventory item
+                qty_in_warehouse = input.quantity if item_status == 'receiving' else 0
+                qty_out_warehouse = input.quantity if item_status == 'out_warehouse' else 0
+                
+                inventory = Inventory(
+                    item_name=input.description,
+                    category=input.category,
+                    quantity_in_warehouse=qty_in_warehouse,
+                    quantity_out_warehouse=qty_out_warehouse,
+                    quantity=input.quantity,
+                    unit=input.unit,
+                    unit_price=unit_price,
+                    total_value=input.amount,
+                    project_id=input.project_id,
+                    transaction_id=transaction.id,
+                    status="Tersedia"
+                )
+                inv_dict = inventory.model_dump()
+                inv_dict["created_at"] = inv_dict["created_at"].isoformat()
+                inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
+                await db.inventory.insert_one(inv_dict)
     
     # Notify accounting
     accountants = await db.users.find({"role": "accounting"}).to_list(100)
