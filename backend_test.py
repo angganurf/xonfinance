@@ -701,17 +701,32 @@ class XONArchitectAPITester:
 
 def main():
     tester = XONArchitectAPITester()
-    success = tester.run_all_tests()
+    
+    # Check if we should run only inventory tests
+    if len(sys.argv) > 1 and sys.argv[1] == "inventory":
+        success = tester.run_inventory_only_tests()
+        test_type = "inventory"
+    else:
+        success = tester.run_all_tests()
+        test_type = "all"
+    
+    # Create test_reports directory if it doesn't exist
+    import os
+    os.makedirs('/app/test_reports', exist_ok=True)
     
     # Save detailed results
-    with open('/app/test_reports/backend_test_results.json', 'w') as f:
+    filename = f'/app/test_reports/backend_{test_type}_test_results.json'
+    with open(filename, 'w') as f:
         json.dump({
+            "test_type": test_type,
             "timestamp": datetime.now().isoformat(),
             "total_tests": tester.tests_run,
             "passed_tests": tester.tests_passed,
             "success_rate": (tester.tests_passed / tester.tests_run * 100) if tester.tests_run > 0 else 0,
             "test_results": tester.test_results
         }, f, indent=2)
+    
+    print(f"\n📄 Detailed results saved to: {filename}")
     
     return 0 if success else 1
 
