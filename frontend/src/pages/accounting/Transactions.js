@@ -145,7 +145,7 @@ const AccountingTransactions = () => {
   };
   
   const addBahanItem = () => {
-    setBahanItems([...bahanItems, { description: '', unit_price: '', quantity: '', unit: '', total: 0 }]);
+    setBahanItems([...bahanItems, { description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving' }]);
   };
   
   const removeBahanItem = (index) => {
