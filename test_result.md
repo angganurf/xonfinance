@@ -146,20 +146,17 @@ backend:
         agent: "testing"
         comment: "VERIFIED: Auto-create inventory logic working perfectly. ✅ Creates inventory from 'bahan' transactions with items array. ✅ Creates inventory from 'alat' transactions with single item. ✅ Updates existing inventory quantity when same item added again (30 sak total from 20+10). ✅ Only creates inventory for 'bahan' and 'alat' categories, ignores others like 'upah'."
   
-  - task: "Modifikasi endpoint DELETE /transactions untuk hapus inventory terkait"
+  - task: "Status inventory lebih lengkap berdasarkan kategori"
     implemented: true
-    working: true
-    file: "server.py"
+    working: "NA"
+    file: "server.py, Inventory.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Modified delete_transaction endpoint to also delete related inventory items using transaction_id reference"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Delete cascade working correctly. When transaction is deleted, related inventory items are automatically removed from inventory collection. Tested with alat transaction - Bor Listrik Makita was properly removed when transaction deleted."
+        comment: "Updated inventory status options. Bahan: Tersedia, Order, Habis. Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. Status colors updated in frontend."
 
 frontend:
   - task: "Redesign sidebar admin dengan collapsible menu groups"
