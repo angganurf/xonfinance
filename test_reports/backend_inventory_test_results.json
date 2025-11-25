@@ -1,0 +1,93 @@
+{
+  "test_type": "inventory",
+  "timestamp": "2025-11-25T15:12:41.730471",
+  "total_tests": 14,
+  "passed_tests": 9,
+  "success_rate": 64.28571428571429,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-25T15:12:40.764575"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-25T15:12:41.071640"
+    },
+    {
+      "test_name": "Get Inventory (Empty)",
+      "success": true,
+      "details": "Inventory items found: 0",
+      "timestamp": "2025-11-25T15:12:41.162164"
+    },
+    {
+      "test_name": "Get Inventory (Filter: bahan)",
+      "success": true,
+      "details": "Bahan items found: 0",
+      "timestamp": "2025-11-25T15:12:41.239488"
+    },
+    {
+      "test_name": "Create Transaction Bahan (Items)",
+      "success": false,
+      "details": "Transaction ID: N/A",
+      "timestamp": "2025-11-25T15:12:41.331307"
+    },
+    {
+      "test_name": "Verify Inventory from Bahan",
+      "success": true,
+      "details": "Semen item found - Qty: 20.0, Unit: sak, Category: bahan, Status: Tersedia",
+      "timestamp": "2025-11-25T15:12:41.372016"
+    },
+    {
+      "test_name": "Create Transaction Alat (Single)",
+      "success": false,
+      "details": "Transaction ID: N/A",
+      "timestamp": "2025-11-25T15:12:41.412311"
+    },
+    {
+      "test_name": "Verify Inventory from Alat",
+      "success": true,
+      "details": "Bor item found - Qty: 2.0, Unit: unit, Category: alat, Unit Price: 1000000.0",
+      "timestamp": "2025-11-25T15:12:41.452492"
+    },
+    {
+      "test_name": "Create Duplicate Bahan Transaction",
+      "success": false,
+      "details": "Transaction ID: N/A",
+      "timestamp": "2025-11-25T15:12:41.496308"
+    },
+    {
+      "test_name": "Verify Inventory Quantity Updated",
+      "success": true,
+      "details": "Semen items count: 1, Expected qty: 30, Actual qty: 30.0",
+      "timestamp": "2025-11-25T15:12:41.536290"
+    },
+    {
+      "test_name": "Get Specific Inventory Item",
+      "success": true,
+      "details": "Item ID: defda441-64e7-4837-81fd-867eef4e49fc, Has project_name: True",
+      "timestamp": "2025-11-25T15:12:41.611719"
+    },
+    {
+      "test_name": "Update Inventory Item",
+      "success": false,
+      "details": "Item ID: defda441-64e7-4837-81fd-867eef4e49fc, Updated quantity and status",
+      "timestamp": "2025-11-25T15:12:41.651314"
+    },
+    {
+      "test_name": "Delete Transaction Removes Inventory",
+      "success": false,
+      "details": "No alat transaction ID available",
+      "timestamp": "2025-11-25T15:12:41.651349"
+    },
+    {
+      "test_name": "Delete Inventory Item",
+      "success": true,
+      "details": "Deleted item: Semen 50kg (ID: defda441-64e7-4837-81fd-867eef4e49fc)",
+      "timestamp": "2025-11-25T15:12:41.730240"
+    }
+  ]
+}
