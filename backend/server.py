@@ -800,6 +800,10 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
     
     # Auto-create inventory for 'bahan' or 'alat' category
     if input.category in ['bahan', 'alat']:
+        # Determine quantity multiplier based on status
+        # receiving = positive (add stock), out_warehouse = negative (reduce stock)
+        quantity_multiplier = 1 if input.status == 'receiving' else -1
+        
         if input.items and len(input.items) > 0:
             # Handle multiple items (for 'bahan' with items array)
             for item in input.items:
@@ -810,36 +814,57 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
                     "project_id": input.project_id
                 })
                 
+                adjusted_quantity = item.quantity * quantity_multiplier
+                
                 if existing:
                     # Update existing inventory quantity
-                    new_quantity = existing["quantity"] + item.quantity
+                    new_quantity = existing["quantity"] + adjusted_quantity
+                    
+                    # Don't allow negative inventory
+                    if new_quantity < 0:
+                        raise HTTPException(
+                            status_code=400, 
+                            detail=f"Stok tidak cukup untuk '{item.description}'. Stok tersedia: {existing['quantity']}, diminta: {item.quantity}"
+                        )
+                    
                     new_total_value = new_quantity * item.unit_price
+                    
+                    # Update status based on quantity
+                    new_status = "Habis" if new_quantity == 0 else "Tersedia"
+                    
                     await db.inventory.update_one(
                         {"id": existing["id"]},
                         {"$set": {
                             "quantity": new_quantity,
                             "total_value": new_total_value,
                             "unit_price": item.unit_price,
+                            "status": new_status,
                             "updated_at": datetime.now(timezone.utc).isoformat()
                         }}
                     )
                 else:
-                    # Create new inventory item
-                    inventory = Inventory(
-                        item_name=item.description,
-                        category=input.category,
-                        quantity=item.quantity,
-                        unit=item.unit,
-                        unit_price=item.unit_price,
-                        total_value=item.total,
-                        project_id=input.project_id,
-                        transaction_id=transaction.id,
-                        status="Tersedia"
-                    )
-                    inv_dict = inventory.model_dump()
-                    inv_dict["created_at"] = inv_dict["created_at"].isoformat()
-                    inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
-                    await db.inventory.insert_one(inv_dict)
+                    # Only create new inventory for receiving (incoming stock)
+                    if input.status == 'receiving':
+                        inventory = Inventory(
+                            item_name=item.description,
+                            category=input.category,
+                            quantity=item.quantity,
+                            unit=item.unit,
+                            unit_price=item.unit_price,
+                            total_value=item.total,
+                            project_id=input.project_id,
+                            transaction_id=transaction.id,
+                            status="Tersedia"
+                        )
+                        inv_dict = inventory.model_dump()
+                        inv_dict["created_at"] = inv_dict["created_at"].isoformat()
+                        inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
+                        await db.inventory.insert_one(inv_dict)
+                    else:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Item '{item.description}' tidak ditemukan di inventory. Tidak bisa melakukan Out Warehouse."
+                        )
         elif input.quantity and input.unit:
             # Handle single item (for 'alat' or simple 'bahan')
             existing = await db.inventory.find_one({
@@ -849,37 +874,57 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
             })
             
             unit_price = input.amount / input.quantity if input.quantity > 0 else input.amount
+            adjusted_quantity = input.quantity * quantity_multiplier
             
             if existing:
                 # Update existing inventory quantity
-                new_quantity = existing["quantity"] + input.quantity
+                new_quantity = existing["quantity"] + adjusted_quantity
+                
+                # Don't allow negative inventory
+                if new_quantity < 0:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Stok tidak cukup untuk '{input.description}'. Stok tersedia: {existing['quantity']}, diminta: {input.quantity}"
+                    )
+                
                 new_total_value = new_quantity * unit_price
+                
+                # Update status based on quantity
+                new_status = "Habis" if new_quantity == 0 else existing.get("status", "Tersedia")
+                
                 await db.inventory.update_one(
                     {"id": existing["id"]},
                     {"$set": {
                         "quantity": new_quantity,
                         "total_value": new_total_value,
                         "unit_price": unit_price,
+                        "status": new_status,
                         "updated_at": datetime.now(timezone.utc).isoformat()
                     }}
                 )
             else:
-                # Create new inventory item
-                inventory = Inventory(
-                    item_name=input.description,
-                    category=input.category,
-                    quantity=input.quantity,
-                    unit=input.unit,
-                    unit_price=unit_price,
-                    total_value=input.amount,
-                    project_id=input.project_id,
-                    transaction_id=transaction.id,
-                    status="Tersedia"
-                )
-                inv_dict = inventory.model_dump()
-                inv_dict["created_at"] = inv_dict["created_at"].isoformat()
-                inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
-                await db.inventory.insert_one(inv_dict)
+                # Only create new inventory for receiving (incoming stock)
+                if input.status == 'receiving':
+                    inventory = Inventory(
+                        item_name=input.description,
+                        category=input.category,
+                        quantity=input.quantity,
+                        unit=input.unit,
+                        unit_price=unit_price,
+                        total_value=input.amount,
+                        project_id=input.project_id,
+                        transaction_id=transaction.id,
+                        status="Tersedia"
+                    )
+                    inv_dict = inventory.model_dump()
+                    inv_dict["created_at"] = inv_dict["created_at"].isoformat()
+                    inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
+                    await db.inventory.insert_one(inv_dict)
+                else:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Item '{input.description}' tidak ditemukan di inventory. Tidak bisa melakukan Out Warehouse."
+                    )
     
     # Notify accounting
     accountants = await db.users.find({"role": "accounting"}).to_list(100)
