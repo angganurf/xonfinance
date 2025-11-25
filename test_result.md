@@ -200,11 +200,11 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "2.1"
-  test_sequence: 3
+  version: "3.0"
+  test_sequence: 4
   run_ui: true
   last_backend_test: "2025-11-25T15:15:00Z"
-  backend_inventory_status: "COMPLETED_SUCCESS"
+  backend_inventory_status: "UPDATED_NEEDS_TESTING"
 
 test_plan:
   current_focus: []
