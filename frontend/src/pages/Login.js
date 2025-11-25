@@ -53,15 +53,12 @@ export const Login = () => {
     }
   };
 
-  const redirectToDashboard = (userRole, selectedRole = null) => {
-    // If user is admin, redirect to admin dashboard
-    if (userRole === 'admin') {
-      navigate('/admin');
-      return;
-    }
-    
-    // Regular user - redirect based on their role
+  const redirectToDashboard = (userRole) => {
+    // Redirect based on user's actual role from database
     switch (userRole) {
+      case 'admin':
+        navigate('/admin');
+        break;
       case 'accounting':
         navigate('/accounting');
         break;
