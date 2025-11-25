@@ -474,9 +474,21 @@ const AccountingTransactions = () => {
                         </Card>
                       ))}
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-3">
                           <span className="font-semibold text-blue-900">Total Keseluruhan:</span>
                           <span className="text-xl font-bold text-blue-900">Rp {calculateTotalBahan().toLocaleString('id-ID')}</span>
+                        </div>
+                        <div className="border-t border-blue-300 pt-3 mt-3">
+                          <Label className="text-sm font-medium text-blue-900">Nama Toko/Supplier (Opsional)</Label>
+                          <Input
+                            value={supplierName}
+                            onChange={(e) => setSupplierName(e.target.value)}
+                            placeholder="Contoh: Toko Bangunan Jaya, CV Maju Makmur"
+                            className="mt-2 bg-white"
+                          />
+                          <p className="text-xs text-blue-700 mt-1">
+                            * Akan membantu tracking stok per toko di halaman Inventory
+                          </p>
                         </div>
                       </div>
                     </div>
