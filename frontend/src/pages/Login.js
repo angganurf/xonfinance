@@ -133,7 +133,6 @@ export const Login = () => {
         <Card className="shadow-xl border-0" data-testid="login-card">
           <CardHeader>
             <CardTitle>Selamat Datang</CardTitle>
-            <CardDescription>Masuk atau daftar untuk melanjutkan</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
