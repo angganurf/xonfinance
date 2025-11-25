@@ -76,54 +76,107 @@ export const Layout = ({ children }) => {
     
     switch (user?.role) {
       case 'admin':
-        return [
-          { label: 'Admin Dashboard', path: '/admin', icon: '🏠' },
-          { label: 'Member Management', path: '/admin/members', icon: '👥' },
-          { label: '---', path: '#', icon: '' },
-          { label: 'Proyek', path: '/admin/projects', icon: '📁' },
-          { label: 'Transaksi', path: '/admin/transactions', icon: '💳' },
-          { label: 'RAB', path: '/admin/rab', icon: '📋' },
-          { label: 'Time Schedule', path: '/admin/schedule', icon: '📅' },
-          { label: 'Tasks', path: '/admin/tasks', icon: '✓' },
-          { label: 'Laporan', path: '/admin/reports', icon: '📈' },
-          { label: '---', path: '#', icon: '' },
-          { label: 'View as Accounting', path: '/accounting', icon: '💰' },
-          { label: 'View as Estimator', path: '/estimator', icon: '📋' },
-          { label: 'View as Supervisor', path: '/supervisor', icon: '🏗️' },
-          { label: 'View as Employee', path: '/employee', icon: '👷' },
-          ...commonItems
-        ];
+        return {
+          type: 'grouped',
+          items: [
+            { label: 'Dashboard Admin', path: '/admin', icon: '🏠' },
+            {
+              label: 'Accounting',
+              icon: '📊',
+              group: 'accounting',
+              children: [
+                { label: 'Proyek', path: '/admin/projects', icon: '📁' },
+                { label: 'Transaksi', path: '/admin/transactions', icon: '💳' }
+              ]
+            },
+            {
+              label: 'Estimator',
+              icon: '📐',
+              group: 'estimator',
+              children: [
+                { label: 'RAB', path: '/admin/rab', icon: '📋' }
+              ]
+            },
+            {
+              label: 'Supervisor',
+              icon: '👷',
+              group: 'supervisor',
+              children: [
+                { label: 'Jadwal', path: '/admin/schedule', icon: '📅' }
+              ]
+            },
+            {
+              label: 'Employee',
+              icon: '👥',
+              group: 'employee',
+              children: [
+                { label: 'Absensi', path: '/admin/tasks', icon: '✓' }
+              ]
+            },
+            {
+              label: 'Inventory',
+              icon: '📦',
+              group: 'inventory',
+              children: [
+                { label: 'Stok Barang', path: '/admin/inventory', icon: '📦' }
+              ]
+            },
+            {
+              label: 'Pengaturan',
+              icon: '⚙️',
+              group: 'settings',
+              children: [
+                { label: 'Member Management', path: '/admin/members', icon: '👤' }
+              ]
+            }
+          ]
+        };
       case 'accounting':
-        return [
-          { label: 'Dashboard', path: '/accounting', icon: '📊' },
-          { label: 'Proyek', path: '/accounting/projects', icon: '📁' },
-          { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
-          { label: 'Laporan', path: '/accounting/reports', icon: '📈' },
-          ...commonItems
-        ];
+        return {
+          type: 'simple',
+          items: [
+            { label: 'Dashboard', path: '/accounting', icon: '📊' },
+            { label: 'Proyek', path: '/accounting/projects', icon: '📁' },
+            { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
+            { label: 'Laporan', path: '/accounting/reports', icon: '📈' },
+            ...commonItems
+          ]
+        };
       case 'estimator':
-        return [
-          { label: 'Dashboard', path: '/estimator', icon: '📊' },
-          { label: 'RAB', path: '/estimator/rab', icon: '📋' },
-          { label: 'Proyek', path: '/estimator/projects', icon: '📁' },
-          ...commonItems
-        ];
+        return {
+          type: 'simple',
+          items: [
+            { label: 'Dashboard', path: '/estimator', icon: '📊' },
+            { label: 'RAB', path: '/estimator/rab', icon: '📋' },
+            { label: 'Proyek', path: '/estimator/projects', icon: '📁' },
+            ...commonItems
+          ]
+        };
       case 'site_supervisor':
-        return [
-          { label: 'Dashboard', path: '/supervisor', icon: '📊' },
-          { label: 'Time Schedule', path: '/supervisor/schedule', icon: '📅' },
-          { label: 'Proyek', path: '/supervisor/projects', icon: '📁' },
-          ...commonItems
-        ];
+        return {
+          type: 'simple',
+          items: [
+            { label: 'Dashboard', path: '/supervisor', icon: '📊' },
+            { label: 'Time Schedule', path: '/supervisor/schedule', icon: '📅' },
+            { label: 'Proyek', path: '/supervisor/projects', icon: '📁' },
+            ...commonItems
+          ]
+        };
       case 'employee':
-        return [
-          { label: 'Dashboard', path: '/employee', icon: '📊' },
-          { label: 'Tugas', path: '/employee/tasks', icon: '✓' },
-          { label: 'Laporan', path: '/employee/reports', icon: '📝' },
-          ...commonItems
-        ];
+        return {
+          type: 'simple',
+          items: [
+            { label: 'Dashboard', path: '/employee', icon: '📊' },
+            { label: 'Tugas', path: '/employee/tasks', icon: '✓' },
+            { label: 'Laporan', path: '/employee/reports', icon: '📝' },
+            ...commonItems
+          ]
+        };
       default:
-        return commonItems;
+        return {
+          type: 'simple',
+          items: commonItems
+        };
     }
   };
 
