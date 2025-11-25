@@ -16,7 +16,6 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('employee');
-  const [loginRole, setLoginRole] = useState('accounting');
   const [loading, setLoading] = useState(false);
   const { login, register, loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
