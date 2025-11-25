@@ -246,6 +246,23 @@ class WorkReportInput(BaseModel):
     progress: int
     photos: Optional[List[str]] = []
 
+class InventoryInput(BaseModel):
+    item_name: str
+    category: str
+    quantity: float
+    unit: str
+    unit_price: float
+    project_id: str
+    transaction_id: Optional[str] = None
+    status: Optional[str] = "Tersedia"
+
+class InventoryUpdateInput(BaseModel):
+    item_name: Optional[str] = None
+    quantity: Optional[float] = None
+    unit: Optional[str] = None
+    unit_price: Optional[float] = None
+    status: Optional[str] = None
+
 # ============= AUTH HELPERS =============
 
 async def get_current_user(request: Request, authorization: Optional[str] = Header(None)) -> User:
