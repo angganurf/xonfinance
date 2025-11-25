@@ -154,15 +154,18 @@ backend:
   
   - task: "Status inventory lebih lengkap berdasarkan kategori"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py, Inventory.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Updated inventory status options. Bahan: Tersedia, Order, Habis. Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. Status colors updated in frontend."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Status inventory system working correctly. ✅ Auto-update to 'Habis' when quantity reaches 0 (tested with Pasir Cor). ✅ Status remains 'Tersedia' when quantity > 0 (tested with Gerinda Tangan). ✅ Backend properly handles status transitions based on inventory operations."
 
 frontend:
   - task: "Tambah dropdown status transaksi untuk kategori Bahan dan Alat"
