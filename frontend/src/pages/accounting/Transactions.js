@@ -106,9 +106,12 @@ const AccountingTransactions = () => {
         transaction_date: transaction.transaction_date?.split('T')[0] || new Date().toISOString().split('T')[0]
       });
       if (transaction.items && transaction.items.length > 0) {
-        setBahanItems(transaction.items);
+        setBahanItems(transaction.items.map(item => ({
+          ...item,
+          status: item.status || 'receiving'
+        })));
       } else {
-        setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0 }]);
+        setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving' }]);
       }
     } else {
       setEditingTransaction(null);
@@ -123,7 +126,7 @@ const AccountingTransactions = () => {
         receipt: '',
         transaction_date: new Date().toISOString().split('T')[0]
       });
-      setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0 }]);
+      setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving' }]);
     }
     setOpen(true);
   };
