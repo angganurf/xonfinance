@@ -885,7 +885,7 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
     accountants = await db.users.find({"role": "accounting"}).to_list(100)
     for acc in accountants:
         notif = Notification(
-            user_id=acc["_id"],
+            user_id=acc["id"],
             title="Transaksi Baru",
             message=f"Transaksi {input.category} sebesar Rp {input.amount:,.0f}",
             type="info"
