@@ -1013,6 +1013,65 @@ async def get_inventory_item(inventory_id: str, user: User = Depends(get_current
     
     return item
 
+@api_router.get("/inventory/{inventory_id}/breakdown-by-supplier")
+async def get_inventory_breakdown_by_supplier(inventory_id: str, user: User = Depends(get_current_user)):
+    """Get inventory breakdown by supplier/store"""
+    # Get inventory item
+    item = await db.inventory.find_one({"id": inventory_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    # Find all transactions for this item
+    transactions = await db.transactions.find({
+        "category": item["category"],
+        "project_id": item["project_id"]
+    }, {"_id": 0}).to_list(1000)
+    
+    # Build breakdown by supplier
+    breakdown = {}
+    
+    for trans in transactions:
+        if trans.get("items"):
+            # Handle items array
+            for trans_item in trans["items"]:
+                if trans_item["description"] == item["item_name"]:
+                    supplier = trans_item.get("supplier") or "Tidak ada nama toko"
+                    status = trans_item.get("status", "receiving")
+                    quantity = trans_item["quantity"]
+                    
+                    if supplier not in breakdown:
+                        breakdown[supplier] = {
+                            "in_warehouse": 0,
+                            "out_warehouse": 0,
+                            "total": 0
+                        }
+                    
+                    if status == "receiving":
+                        breakdown[supplier]["in_warehouse"] += quantity
+                    else:
+                        breakdown[supplier]["out_warehouse"] += quantity
+                    
+                    breakdown[supplier]["total"] += quantity
+    
+    # Convert to list
+    result = [
+        {
+            "supplier": supplier,
+            "in_warehouse": data["in_warehouse"],
+            "out_warehouse": data["out_warehouse"],
+            "total": data["total"]
+        }
+        for supplier, data in breakdown.items()
+    ]
+    
+    return {
+        "item_name": item["item_name"],
+        "total_in_warehouse": item.get("quantity_in_warehouse", 0),
+        "total_out_warehouse": item.get("quantity_out_warehouse", 0),
+        "total_quantity": item.get("quantity", 0),
+        "breakdown": result
+    }
+
 @api_router.post("/inventory")
 async def create_inventory(input: InventoryInput, user: User = Depends(get_current_user)):
     total_value = input.quantity * input.unit_price
