@@ -208,24 +208,30 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Implementasi selesai:
-      1. ✅ Fixed login bugs (UUID id field issue)
-      2. ✅ Created admin user (email: admin, password: admin, role: admin)
-      3. ✅ Added role selector dropdown on login page
-      4. ✅ Modified redirect logic to handle admin accessing all roles
+      Implementasi fitur Inventory dan Redesign Sidebar selesai:
+      
+      BACKEND:
+      1. ✅ Created Inventory model dengan semua field yang diperlukan
+      2. ✅ Created CRUD endpoints: GET, POST, PUT, DELETE /api/inventory
+      3. ✅ Modified POST /transactions untuk auto-create inventory dari kategori 'bahan' dan 'alat'
+      4. ✅ Modified DELETE /transactions untuk hapus inventory terkait
+      5. ✅ Logic update quantity jika item sudah ada (increment stok)
+      
+      FRONTEND:
+      1. ✅ Redesigned admin sidebar dengan collapsible groups
+      2. ✅ Created halaman Inventory.js dengan fitur lengkap (table, search, filter, CRUD)
+      3. ✅ Added route /admin/inventory ke App.js
+      4. ✅ Updated Layout.js untuk support grouped menu
+      
+      Testing diperlukan:
+      1. Backend: Test inventory endpoints dengan curl
+      2. Backend: Test auto-create inventory saat create transaksi bahan/alat
+      3. Frontend: Test collapsible sidebar navigation
+      4. Frontend: Test halaman inventory (tampilan, filter, search, edit/delete)
+      5. E2E: Login admin -> Create transaksi bahan -> Verify inventory bertambah
       
       Test credentials:
-      - Admin: email="admin", password="admin" (can access all roles via dropdown)
-      - Accounting: email="idrus@gmail.com", password="password123"
-      - Estimator: email="khoer@gmail.com", password="password123"
-      - Site Supervisor: email="faisal1@gmail.com", password="password123"
-      - Employee: email="faisal@gmail.com", password="password123"
-      
-      Testing needed:
-      1. Test login with different users
-      2. Test admin login with different role selections
-      3. Verify dashboard shows project names in recent transactions
-      4. E2E flow: login -> navigate to dashboard -> check data display
+      - Admin: email="admin", password="admin"
 
 
 #====================================================================================================
