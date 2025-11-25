@@ -38,8 +38,10 @@ const AccountingTransactions = () => {
   });
   
   const [bahanItems, setBahanItems] = useState([
-    { description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving' }
+    { description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving', supplier: '' }
   ]);
+  
+  const [supplierName, setSupplierName] = useState('');
 
   useEffect(() => {
     loadData();
