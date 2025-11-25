@@ -805,6 +805,10 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
     
     # Auto-create inventory for 'bahan' or 'alat' category
     if input.category in ['bahan', 'alat']:
+        # Get project type
+        project = await db.projects.find_one({"id": input.project_id}, {"_id": 0, "type": 1})
+        project_type = project.get("type", "arsitektur") if project else "arsitektur"
+        
         if input.items and len(input.items) > 0:
             # Handle multiple items (for 'bahan' with items array)
             for item in input.items:
