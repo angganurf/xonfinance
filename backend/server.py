@@ -174,6 +174,7 @@ class Inventory(BaseModel):
     unit_price: float
     total_value: float
     project_id: str
+    project_type: str = "arsitektur"  # interior, arsitektur (dari project type)
     transaction_id: str
     status: str = "Tersedia"  # Status kondisi: Tersedia, Order, Habis, Bagus, Rusak, dll
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
