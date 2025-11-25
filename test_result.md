@@ -208,14 +208,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Test inventory CRUD endpoints"
-    - "Test auto-create inventory dari transaksi bahan/alat"
     - "Test collapsible sidebar menu di admin"
     - "Test halaman Inventory admin"
-    - "E2E: Create transaksi bahan -> verify inventory created"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
+  completed_backend_tests:
+    - "Test inventory CRUD endpoints" 
+    - "Test auto-create inventory dari transaksi bahan/alat"
+    - "E2E: Create transaksi bahan -> verify inventory created"
 
 agent_communication:
   - agent: "main"
