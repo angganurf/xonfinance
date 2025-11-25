@@ -82,7 +82,7 @@ export const Login = () => {
     try {
       const result = await login(email, password);
       toast.success('Login berhasil!');
-      redirectToDashboard(result.user.role, loginRole);
+      redirectToDashboard(result.user.role);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Login gagal');
     } finally {
