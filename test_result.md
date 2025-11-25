@@ -107,20 +107,17 @@ user_problem_statement: |
   3. Auto-update inventory berdasarkan status transaksi (tambah/kurangi stok)
 
 backend:
-  - task: "Membuat model Inventory dengan fields lengkap"
+  - task: "Update logic inventory untuk support status transaksi (receiving/out_warehouse)"
     implemented: true
-    working: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Added Inventory model with fields: item_name, category, quantity, unit, unit_price, total_value, project_id, transaction_id, status, created_at, updated_at"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Inventory model working correctly. All fields present and properly typed. Model validation working as expected."
+        comment: "Modified create_transaction logic to handle 'receiving' (add stock) and 'out_warehouse' (reduce stock). Added validation to prevent negative inventory. Auto-update status to 'Habis' when quantity reaches 0."
   
   - task: "Membuat CRUD endpoints untuk inventory"
     implemented: true
