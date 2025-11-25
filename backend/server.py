@@ -396,7 +396,7 @@ async def google_auth(request: Request, response: Response):
         await db.users.insert_one(user_dict)
         user_id = user.id
     else:
-        user_id = user_doc["_id"]
+        user_id = user_doc["id"]
     
     # Create session
     session_token = user_data["session_token"]
