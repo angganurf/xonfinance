@@ -690,6 +690,471 @@ class XONArchitectAPITester:
         
         return self.tests_passed == self.tests_run
 
+    # ============= STATUS TRANSAKSI TESTS (RECEIVING & OUT WAREHOUSE) =============
+    
+    def test_status_transaksi_receiving_bahan(self):
+        """Test transaksi receiving untuk bahan (tambah stok)"""
+        if not self.project_id:
+            self.log_test("Status Transaksi Receiving Bahan", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pembelian bahan bangunan",
+            "amount": 1500000,
+            "status": "receiving",
+            "items": [
+                {
+                    "description": "Pasir Cor",
+                    "quantity": 5,
+                    "unit": "m³",
+                    "unit_price": 300000,
+                    "total": 1500000
+                }
+            ],
+            "transaction_date": "2025-01-16"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        if success and 'id' in data:
+            self.receiving_transaction_id = data['id']
+        
+        self.log_test("Status Transaksi Receiving Bahan", success, f"Transaction ID: {getattr(self, 'receiving_transaction_id', 'N/A')}")
+        return success
+
+    def test_verify_receiving_creates_inventory(self):
+        """Test bahwa receiving menambah stok inventory"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Look for Pasir Cor item
+            pasir_item = None
+            for item in data:
+                if item.get('item_name') == 'Pasir Cor' and item.get('category') == 'bahan':
+                    pasir_item = item
+                    break
+            
+            if pasir_item:
+                # Verify item details
+                correct_quantity = pasir_item.get('quantity') == 5
+                correct_unit = pasir_item.get('unit') == 'm³'
+                correct_status = pasir_item.get('status') == 'Tersedia'
+                
+                all_correct = correct_quantity and correct_unit and correct_status
+                details = f"Pasir Cor found - Qty: {pasir_item.get('quantity')}, Unit: {pasir_item.get('unit')}, Status: {pasir_item.get('status')}"
+                self.log_test("Verify Receiving Creates Inventory", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Receiving Creates Inventory", False, "Pasir Cor item not found in inventory")
+                return False
+        else:
+            self.log_test("Verify Receiving Creates Inventory", False, "Failed to get inventory data")
+            return False
+
+    def test_status_transaksi_receiving_tambah_stok(self):
+        """Test transaksi receiving lagi untuk menambah stok item yang sudah ada"""
+        if not self.project_id:
+            self.log_test("Status Transaksi Receiving Tambah Stok", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pembelian pasir tambahan",
+            "amount": 900000,
+            "status": "receiving",
+            "items": [
+                {
+                    "description": "Pasir Cor",
+                    "quantity": 3,
+                    "unit": "m³",
+                    "unit_price": 300000,
+                    "total": 900000
+                }
+            ],
+            "transaction_date": "2025-01-16"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        self.log_test("Status Transaksi Receiving Tambah Stok", success, f"Additional receiving transaction created")
+        return success
+
+    def test_verify_receiving_updates_quantity(self):
+        """Test bahwa receiving kedua menambah quantity (5+3=8)"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Count Pasir Cor items and check quantity
+            pasir_items = [item for item in data if item.get('item_name') == 'Pasir Cor' and item.get('category') == 'bahan']
+            
+            if len(pasir_items) == 1:
+                # Should be only one item with updated quantity (5 + 3 = 8)
+                pasir_item = pasir_items[0]
+                expected_quantity = 8
+                actual_quantity = pasir_item.get('quantity')
+                
+                quantity_correct = actual_quantity == expected_quantity
+                details = f"Pasir items count: {len(pasir_items)}, Expected qty: {expected_quantity}, Actual qty: {actual_quantity}"
+                self.log_test("Verify Receiving Updates Quantity", quantity_correct, details)
+                return quantity_correct
+            else:
+                self.log_test("Verify Receiving Updates Quantity", False, f"Expected 1 Pasir item, found {len(pasir_items)}")
+                return False
+        else:
+            self.log_test("Verify Receiving Updates Quantity", False, "Failed to get inventory data")
+            return False
+
+    def test_status_transaksi_out_warehouse(self):
+        """Test transaksi out_warehouse untuk mengurangi stok"""
+        if not self.project_id:
+            self.log_test("Status Transaksi Out Warehouse", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pengambilan bahan untuk proyek",
+            "amount": 900000,
+            "status": "out_warehouse",
+            "items": [
+                {
+                    "description": "Pasir Cor",
+                    "quantity": 3,
+                    "unit": "m³",
+                    "unit_price": 300000,
+                    "total": 900000
+                }
+            ],
+            "transaction_date": "2025-01-17"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        self.log_test("Status Transaksi Out Warehouse", success, f"Out warehouse transaction created")
+        return success
+
+    def test_verify_out_warehouse_reduces_quantity(self):
+        """Test bahwa out_warehouse mengurangi quantity (8-3=5)"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Find Pasir Cor item and check quantity
+            pasir_item = None
+            for item in data:
+                if item.get('item_name') == 'Pasir Cor' and item.get('category') == 'bahan':
+                    pasir_item = item
+                    break
+            
+            if pasir_item:
+                expected_quantity = 5
+                actual_quantity = pasir_item.get('quantity')
+                status = pasir_item.get('status')
+                
+                quantity_correct = actual_quantity == expected_quantity
+                status_correct = status == 'Tersedia'  # Should still be available
+                
+                all_correct = quantity_correct and status_correct
+                details = f"Expected qty: {expected_quantity}, Actual qty: {actual_quantity}, Status: {status}"
+                self.log_test("Verify Out Warehouse Reduces Quantity", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Out Warehouse Reduces Quantity", False, "Pasir Cor item not found")
+                return False
+        else:
+            self.log_test("Verify Out Warehouse Reduces Quantity", False, "Failed to get inventory data")
+            return False
+
+    def test_out_warehouse_sampai_habis(self):
+        """Test out_warehouse sampai quantity = 0"""
+        if not self.project_id:
+            self.log_test("Out Warehouse Sampai Habis", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pengambilan sisa pasir",
+            "amount": 1500000,
+            "status": "out_warehouse",
+            "items": [
+                {
+                    "description": "Pasir Cor",
+                    "quantity": 5,
+                    "unit": "m³",
+                    "unit_price": 300000,
+                    "total": 1500000
+                }
+            ],
+            "transaction_date": "2025-01-17"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        self.log_test("Out Warehouse Sampai Habis", success, f"Final out warehouse transaction created")
+        return success
+
+    def test_verify_status_habis_when_zero(self):
+        """Test bahwa status berubah menjadi 'Habis' ketika quantity = 0"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Find Pasir Cor item and check status
+            pasir_item = None
+            for item in data:
+                if item.get('item_name') == 'Pasir Cor' and item.get('category') == 'bahan':
+                    pasir_item = item
+                    break
+            
+            if pasir_item:
+                quantity = pasir_item.get('quantity')
+                status = pasir_item.get('status')
+                
+                quantity_zero = quantity == 0
+                status_habis = status == 'Habis'
+                
+                all_correct = quantity_zero and status_habis
+                details = f"Quantity: {quantity}, Status: {status}"
+                self.log_test("Verify Status Habis When Zero", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Status Habis When Zero", False, "Pasir Cor item not found")
+                return False
+        else:
+            self.log_test("Verify Status Habis When Zero", False, "Failed to get inventory data")
+            return False
+
+    def test_validation_out_warehouse_stok_tidak_cukup(self):
+        """Test validasi: out_warehouse dengan stok tidak cukup"""
+        if not self.project_id:
+            self.log_test("Validation Out Warehouse Stok Tidak Cukup", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pengambilan pasir berlebihan",
+            "amount": 3000000,
+            "status": "out_warehouse",
+            "items": [
+                {
+                    "description": "Pasir Cor",
+                    "quantity": 10,  # Lebih dari stok available (0)
+                    "unit": "m³",
+                    "unit_price": 300000,
+                    "total": 3000000
+                }
+            ],
+            "transaction_date": "2025-01-17"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 400)  # Expect 400 error
+        
+        # Check if error message contains expected text
+        error_message = data.get('detail', '') if isinstance(data, dict) else str(data)
+        has_stock_error = 'stok tidak cukup' in error_message.lower() or 'tidak ditemukan' in error_message.lower()
+        
+        validation_works = success and has_stock_error
+        details = f"HTTP 400 returned: {success}, Error message: {error_message}"
+        self.log_test("Validation Out Warehouse Stok Tidak Cukup", validation_works, details)
+        return validation_works
+
+    def test_validation_out_warehouse_item_tidak_ada(self):
+        """Test validasi: out_warehouse item yang tidak ada di inventory"""
+        if not self.project_id:
+            self.log_test("Validation Out Warehouse Item Tidak Ada", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pengambilan besi beton",
+            "amount": 2000000,
+            "status": "out_warehouse",
+            "items": [
+                {
+                    "description": "Besi Beton",  # Item yang belum pernah ada
+                    "quantity": 10,
+                    "unit": "batang",
+                    "unit_price": 200000,
+                    "total": 2000000
+                }
+            ],
+            "transaction_date": "2025-01-17"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 400)  # Expect 400 error
+        
+        # Check if error message contains expected text
+        error_message = data.get('detail', '') if isinstance(data, dict) else str(data)
+        has_not_found_error = 'tidak ditemukan di inventory' in error_message.lower() or 'tidak ditemukan' in error_message.lower()
+        
+        validation_works = success and has_not_found_error
+        details = f"HTTP 400 returned: {success}, Error message: {error_message}"
+        self.log_test("Validation Out Warehouse Item Tidak Ada", validation_works, details)
+        return validation_works
+
+    def test_transaksi_alat_receiving(self):
+        """Test transaksi alat dengan status receiving (single item)"""
+        if not self.project_id:
+            self.log_test("Transaksi Alat Receiving", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "alat",
+            "description": "Gerinda Tangan",
+            "amount": 1500000,
+            "quantity": 2,
+            "unit": "unit",
+            "status": "receiving",
+            "transaction_date": "2025-01-16"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        if success and 'id' in data:
+            self.alat_transaction_id = data['id']
+        
+        self.log_test("Transaksi Alat Receiving", success, f"Alat transaction ID: {getattr(self, 'alat_transaction_id', 'N/A')}")
+        return success
+
+    def test_verify_alat_inventory_created(self):
+        """Test bahwa inventory alat dibuat dengan benar"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Look for Gerinda Tangan item
+            gerinda_item = None
+            for item in data:
+                if item.get('item_name') == 'Gerinda Tangan' and item.get('category') == 'alat':
+                    gerinda_item = item
+                    break
+            
+            if gerinda_item:
+                # Verify item details
+                correct_quantity = gerinda_item.get('quantity') == 2
+                correct_unit = gerinda_item.get('unit') == 'unit'
+                correct_status = gerinda_item.get('status') == 'Tersedia'
+                
+                all_correct = correct_quantity and correct_unit and correct_status
+                details = f"Gerinda found - Qty: {gerinda_item.get('quantity')}, Unit: {gerinda_item.get('unit')}, Status: {gerinda_item.get('status')}"
+                self.log_test("Verify Alat Inventory Created", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Alat Inventory Created", False, "Gerinda Tangan item not found in inventory")
+                return False
+        else:
+            self.log_test("Verify Alat Inventory Created", False, "Failed to get inventory data")
+            return False
+
+    def test_alat_out_warehouse(self):
+        """Test out_warehouse untuk alat (single item)"""
+        if not self.project_id:
+            self.log_test("Alat Out Warehouse", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "alat",
+            "description": "Gerinda Tangan",
+            "amount": 750000,
+            "quantity": 1,
+            "unit": "unit",
+            "status": "out_warehouse",
+            "transaction_date": "2025-01-17"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        self.log_test("Alat Out Warehouse", success, f"Alat out warehouse transaction created")
+        return success
+
+    def test_verify_alat_quantity_reduced(self):
+        """Test bahwa quantity alat berkurang (2-1=1)"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Find Gerinda Tangan item and check quantity
+            gerinda_item = None
+            for item in data:
+                if item.get('item_name') == 'Gerinda Tangan' and item.get('category') == 'alat':
+                    gerinda_item = item
+                    break
+            
+            if gerinda_item:
+                expected_quantity = 1
+                actual_quantity = gerinda_item.get('quantity')
+                status = gerinda_item.get('status')
+                
+                quantity_correct = actual_quantity == expected_quantity
+                status_correct = status == 'Tersedia'  # Should still be available
+                
+                all_correct = quantity_correct and status_correct
+                details = f"Expected qty: {expected_quantity}, Actual qty: {actual_quantity}, Status: {status}"
+                self.log_test("Verify Alat Quantity Reduced", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Alat Quantity Reduced", False, "Gerinda Tangan item not found")
+                return False
+        else:
+            self.log_test("Verify Alat Quantity Reduced", False, "Failed to get inventory data")
+            return False
+
+    def run_status_transaksi_tests(self):
+        """Run comprehensive status transaksi tests"""
+        print("\n📦 Starting Status Transaksi Tests (Receiving & Out Warehouse)")
+        print("=" * 70)
+        
+        # Admin login for tests
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Stopping status transaksi tests.")
+            return False
+        
+        # Get existing projects for testing
+        success, projects = self.make_request('GET', '/projects')
+        if success and isinstance(projects, list) and len(projects) > 0:
+            self.project_id = projects[0]['id']
+            print(f"📋 Using project: {projects[0]['name']} (ID: {self.project_id})")
+        else:
+            # Create a project if none exists
+            if not self.test_create_project():
+                print("❌ Failed to create project for status transaksi tests.")
+                return False
+        
+        # Test 1: Transaksi Receiving Bahan (Tambah Stok)
+        print("\n🔄 Test 1: Transaksi Receiving Bahan")
+        self.test_status_transaksi_receiving_bahan()
+        self.test_verify_receiving_creates_inventory()
+        
+        # Test 2: Transaksi Receiving Lagi (Tambah Stok ke Item yang Sudah Ada)
+        print("\n🔄 Test 2: Transaksi Receiving Tambah Stok")
+        self.test_status_transaksi_receiving_tambah_stok()
+        self.test_verify_receiving_updates_quantity()
+        
+        # Test 3: Transaksi Out Warehouse (Kurangi Stok)
+        print("\n🔄 Test 3: Transaksi Out Warehouse")
+        self.test_status_transaksi_out_warehouse()
+        self.test_verify_out_warehouse_reduces_quantity()
+        
+        # Test 4: Out Warehouse Sampai Habis
+        print("\n🔄 Test 4: Out Warehouse Sampai Habis")
+        self.test_out_warehouse_sampai_habis()
+        self.test_verify_status_habis_when_zero()
+        
+        # Test 5: Validasi Stok Tidak Cukup
+        print("\n🔄 Test 5: Validasi Stok Tidak Cukup")
+        self.test_validation_out_warehouse_stok_tidak_cukup()
+        
+        # Test 6: Validasi Item Tidak Ada
+        print("\n🔄 Test 6: Validasi Item Tidak Ada")
+        self.test_validation_out_warehouse_item_tidak_ada()
+        
+        # Test 7: Transaksi Alat (Single Item)
+        print("\n🔄 Test 7: Transaksi Alat")
+        self.test_transaksi_alat_receiving()
+        self.test_verify_alat_inventory_created()
+        self.test_alat_out_warehouse()
+        self.test_verify_alat_quantity_reduced()
+        
+        return True
+
     def run_inventory_only_tests(self):
         """Run only inventory tests as requested"""
         print("🏗️ Starting Inventory Feature Tests (Backend Only)")
@@ -706,6 +1171,27 @@ class XONArchitectAPITester:
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Inventory Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
+    def run_status_transaksi_only_tests(self):
+        """Run only status transaksi tests as requested"""
+        print("📦 Starting Status Transaksi Tests (Receiving & Out Warehouse)")
+        print("=" * 70)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run status transaksi tests
+        self.run_status_transaksi_tests()
+        
+        # Print summary
+        print("\n" + "=" * 70)
+        print(f"📊 Status Transaksi Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
         success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
         print(f"📈 Success Rate: {success_rate:.1f}%")
         
