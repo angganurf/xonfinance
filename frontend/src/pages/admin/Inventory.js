@@ -128,6 +128,16 @@ const AdminInventory = () => {
       toast.error('Gagal menghapus item');
     }
   };
+  
+  const handleViewBreakdown = async (item) => {
+    try {
+      const res = await api.get(`/inventory/${item.id}/breakdown-by-supplier`);
+      setBreakdownData(res.data);
+      setBreakdownDialog(true);
+    } catch (error) {
+      toast.error('Gagal memuat breakdown per toko');
+    }
+  };
 
   const getCategoryLabel = (category) => {
     return category === 'bahan' ? 'Bahan' : 'Alat';
