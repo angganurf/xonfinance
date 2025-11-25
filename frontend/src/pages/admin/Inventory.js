@@ -275,6 +275,9 @@ const AdminInventory = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewBreakdown(item)}>
+                                <Store className="mr-2 h-4 w-4" /> Lihat Per Toko
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit
                               </DropdownMenuItem>
