@@ -337,6 +337,26 @@ const AccountingTransactions = () => {
                     </Select>
                   </div>
                   
+                  {/* Status untuk Bahan dan Alat */}
+                  {(formData.category === 'bahan' || formData.category === 'alat') && (
+                    <div>
+                      <Label>Status Transaksi *</Label>
+                      <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})} required>
+                        <SelectTrigger data-testid="transaction-status-select">
+                          <SelectValue placeholder="Pilih status transaksi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="receiving">Receiving and Putaway (Barang Masuk)</SelectItem>
+                          <SelectItem value="out_warehouse">Out Warehouse (Barang Keluar)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {formData.status === 'receiving' && '✓ Akan menambah stok inventory'}
+                        {formData.status === 'out_warehouse' && '⚠ Akan mengurangi stok inventory'}
+                      </p>
+                    </div>
+                  )}
+                  
                   {formData.category === 'bahan' ? (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
