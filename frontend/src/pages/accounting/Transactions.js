@@ -37,7 +37,7 @@ const AccountingTransactions = () => {
   });
   
   const [bahanItems, setBahanItems] = useState([
-    { description: '', unit_price: '', quantity: '', unit: '', total: 0 }
+    { description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving' }
   ]);
 
   useEffect(() => {
