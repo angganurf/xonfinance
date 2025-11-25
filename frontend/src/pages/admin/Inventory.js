@@ -216,6 +216,30 @@ const AdminInventory = () => {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-2 border-b">
+          <button
+            onClick={() => setActiveTab('interior')}
+            className={`px-6 py-3 font-medium transition-all ${
+              activeTab === 'interior'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            📐 Inventory Interior
+          </button>
+          <button
+            onClick={() => setActiveTab('arsitektur')}
+            className={`px-6 py-3 font-medium transition-all ${
+              activeTab === 'arsitektur'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            🏗️ Inventory Arsitektur
+          </button>
+        </div>
+
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row gap-4">
