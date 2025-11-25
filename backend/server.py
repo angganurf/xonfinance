@@ -818,12 +818,16 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
                 # Get item status (receiving or out_warehouse)
                 item_status = item.status if hasattr(item, 'status') and item.status else 'receiving'
                 
+                print(f"DEBUG: Processing item: {item.description}, status={item_status}, supplier={getattr(item, 'supplier', None)}")
+                
                 # Check if item already exists in inventory
                 existing = await db.inventory.find_one({
                     "item_name": item.description,
                     "category": input.category,
                     "project_id": input.project_id
                 })
+                
+                print(f"DEBUG: Existing inventory found: {existing is not None}")
                 
                 if existing:
                     # Update existing inventory quantity based on status
