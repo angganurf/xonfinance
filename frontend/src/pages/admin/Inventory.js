@@ -269,7 +269,9 @@ const AdminInventory = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            {activeTab === 'interior' ? (
+              /* Interior Tab - Single Table */
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="border-b">
                   <tr className="text-left text-sm text-slate-600">
