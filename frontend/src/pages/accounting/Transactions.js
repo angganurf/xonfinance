@@ -48,6 +48,13 @@ const AccountingTransactions = () => {
   useEffect(() => {
     sortTransactions();
   }, [transactions, sortConfig]);
+  
+  useEffect(() => {
+    // Load item names when category is bahan or alat and project is selected
+    if ((formData.category === 'bahan' || formData.category === 'alat') && formData.project_id) {
+      loadItemNames(formData.category, formData.project_id);
+    }
+  }, [formData.category, formData.project_id]);
 
   const loadData = async () => {
     try {
