@@ -221,27 +221,35 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Implementasi fitur Inventory dan Redesign Sidebar selesai:
+      Implementasi fitur Status Transaksi & Update Status Inventory selesai:
       
       BACKEND:
-      1. ✅ Created Inventory model dengan semua field yang diperlukan
-      2. ✅ Created CRUD endpoints: GET, POST, PUT, DELETE /api/inventory
-      3. ✅ Modified POST /transactions untuk auto-create inventory dari kategori 'bahan' dan 'alat'
-      4. ✅ Modified DELETE /transactions untuk hapus inventory terkait
-      5. ✅ Logic update quantity jika item sudah ada (increment stok)
+      1. ✅ Modified create_transaction logic untuk support status:
+         - 'receiving' (Receiving and Putaway) → Tambah stok inventory
+         - 'out_warehouse' (Out Warehouse) → Kurangi stok inventory
+      2. ✅ Added validation: prevent negative inventory
+         - Return HTTP 400 jika stok tidak cukup
+         - Return HTTP 400 jika item tidak ditemukan saat out warehouse
+      3. ✅ Auto-update status inventory ke 'Habis' jika quantity = 0
+      4. ✅ Support untuk bahan (items array) dan alat (single item)
       
       FRONTEND:
-      1. ✅ Redesigned admin sidebar dengan collapsible groups
-      2. ✅ Created halaman Inventory.js dengan fitur lengkap (table, search, filter, CRUD)
-      3. ✅ Added route /admin/inventory ke App.js
-      4. ✅ Updated Layout.js untuk support grouped menu
+      1. ✅ Added status dropdown di form Tambah Transaksi untuk kategori Bahan/Alat:
+         - "Receiving and Putaway (Barang Masuk)"
+         - "Out Warehouse (Barang Keluar)"
+         - Helper text: "akan menambah/mengurangi stok inventory"
+      2. ✅ Updated status options di halaman Inventory berdasarkan kategori:
+         - Bahan: Tersedia, Order (Pengambilan), Habis
+         - Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam
+      3. ✅ Updated status color mapping untuk semua status baru
       
       Testing diperlukan:
-      1. Backend: Test inventory endpoints dengan curl
-      2. Backend: Test auto-create inventory saat create transaksi bahan/alat
-      3. Frontend: Test collapsible sidebar navigation
-      4. Frontend: Test halaman inventory (tampilan, filter, search, edit/delete)
-      5. E2E: Login admin -> Create transaksi bahan -> Verify inventory bertambah
+      1. Backend: Test transaksi dengan status 'receiving' → verify stok bertambah
+      2. Backend: Test transaksi dengan status 'out_warehouse' → verify stok berkurang
+      3. Backend: Test validasi stok tidak cukup (should return error 400)
+      4. Frontend: Test dropdown status muncul ketika pilih kategori Bahan/Alat
+      5. Frontend: Test status inventory berbeda untuk Bahan vs Alat
+      6. E2E: Create transaksi receiving → verify stok bertambah → Create out warehouse → verify stok berkurang
       
       Test credentials:
       - Admin: email="admin", password="admin"
