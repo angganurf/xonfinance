@@ -152,29 +152,41 @@ backend:
         comment: "Modified delete_transaction endpoint to also delete related inventory items using transaction_id reference"
 
 frontend:
-  - task: "Menambahkan dropdown 'Login Sebagai' di halaman login"
+  - task: "Redesign sidebar admin dengan collapsible menu groups"
     implemented: true
-    working: true
-    file: "Login.js"
+    working: "NA"
+    file: "Layout.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-      - working: true
+      - working: "NA"
         agent: "main"
-        comment: "Added role selector dropdown with options: Accounting, Estimator, Site Supervisor, Employee. Modified redirectToDashboard to handle admin role and redirect based on selected role."
+        comment: "Completely redesigned admin sidebar with collapsible groups: Dashboard Admin, Accounting (Proyek, Transaksi), Estimator (RAB), Supervisor (Jadwal), Employee (Absensi), Inventory (Stok Barang), Pengaturan (Member Management). Added state management for expand/collapse with ChevronDown/ChevronRight icons."
   
-  - task: "Menampilkan nama proyek di Dashboard - Transaksi Terbaru"
+  - task: "Membuat halaman Inventory admin"
     implemented: true
-    working: true
-    file: "Dashboard.js"
+    working: "NA"
+    file: "pages/admin/Inventory.js"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: true
     status_history:
-      - working: true
+      - working: "NA"
         agent: "main"
-        comment: "Added project_name field display in recent transactions section. Project name shown in blue color below category."
+        comment: "Created full Inventory management page with table display, search functionality, category filter (all/bahan/alat), edit/delete actions. Shows item_name, category, quantity, unit, unit_price, total_value, status, project_name."
+  
+  - task: "Tambahkan route /admin/inventory"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added route /admin/inventory protected with admin role, imported AdminInventory component"
 
 metadata:
   created_by: "main_agent"
