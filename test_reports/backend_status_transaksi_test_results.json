@@ -1,0 +1,105 @@
+{
+  "test_type": "status_transaksi",
+  "timestamp": "2025-11-25T16:45:17.581866",
+  "total_tests": 16,
+  "passed_tests": 16,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-25T16:45:16.632185"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-25T16:45:16.908074"
+    },
+    {
+      "test_name": "Status Transaksi Receiving Bahan",
+      "success": true,
+      "details": "Transaction ID: 1408d93e-95ea-4ac6-abbb-a365be5d0923",
+      "timestamp": "2025-11-25T16:45:17.011546"
+    },
+    {
+      "test_name": "Verify Receiving Creates Inventory",
+      "success": true,
+      "details": "Pasir Cor found - Qty: 5.0, Unit: m\u00b3, Status: Tersedia",
+      "timestamp": "2025-11-25T16:45:17.052696"
+    },
+    {
+      "test_name": "Status Transaksi Receiving Tambah Stok",
+      "success": true,
+      "details": "Additional receiving transaction created",
+      "timestamp": "2025-11-25T16:45:17.094425"
+    },
+    {
+      "test_name": "Verify Receiving Updates Quantity",
+      "success": true,
+      "details": "Pasir items count: 1, Expected qty: 8, Actual qty: 8.0",
+      "timestamp": "2025-11-25T16:45:17.134902"
+    },
+    {
+      "test_name": "Status Transaksi Out Warehouse",
+      "success": true,
+      "details": "Out warehouse transaction created",
+      "timestamp": "2025-11-25T16:45:17.177679"
+    },
+    {
+      "test_name": "Verify Out Warehouse Reduces Quantity",
+      "success": true,
+      "details": "Expected qty: 5, Actual qty: 5.0, Status: Tersedia",
+      "timestamp": "2025-11-25T16:45:17.218552"
+    },
+    {
+      "test_name": "Out Warehouse Sampai Habis",
+      "success": true,
+      "details": "Final out warehouse transaction created",
+      "timestamp": "2025-11-25T16:45:17.301672"
+    },
+    {
+      "test_name": "Verify Status Habis When Zero",
+      "success": true,
+      "details": "Quantity: 0.0, Status: Habis",
+      "timestamp": "2025-11-25T16:45:17.341325"
+    },
+    {
+      "test_name": "Validation Out Warehouse Stok Tidak Cukup",
+      "success": true,
+      "details": "HTTP 400 returned: True, Error message: Stok tidak cukup untuk 'Pasir Cor'. Stok tersedia: 0.0, diminta: 10.0",
+      "timestamp": "2025-11-25T16:45:17.380624"
+    },
+    {
+      "test_name": "Validation Out Warehouse Item Tidak Ada",
+      "success": true,
+      "details": "HTTP 400 returned: True, Error message: Item 'Besi Beton' tidak ditemukan di inventory. Tidak bisa melakukan Out Warehouse.",
+      "timestamp": "2025-11-25T16:45:17.418080"
+    },
+    {
+      "test_name": "Transaksi Alat Receiving",
+      "success": true,
+      "details": "Alat transaction ID: 2b5b34df-d57e-4345-9267-0ff876f39c63",
+      "timestamp": "2025-11-25T16:45:17.463208"
+    },
+    {
+      "test_name": "Verify Alat Inventory Created",
+      "success": true,
+      "details": "Gerinda found - Qty: 2.0, Unit: unit, Status: Tersedia",
+      "timestamp": "2025-11-25T16:45:17.501146"
+    },
+    {
+      "test_name": "Alat Out Warehouse",
+      "success": true,
+      "details": "Alat out warehouse transaction created",
+      "timestamp": "2025-11-25T16:45:17.540818"
+    },
+    {
+      "test_name": "Verify Alat Quantity Reduced",
+      "success": true,
+      "details": "Expected qty: 1, Actual qty: 1.0, Status: Tersedia",
+      "timestamp": "2025-11-25T16:45:17.581520"
+    }
+  ]
+}
