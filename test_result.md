@@ -159,20 +159,17 @@ backend:
         comment: "Updated inventory status options. Bahan: Tersedia, Order, Habis. Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. Status colors updated in frontend."
 
 frontend:
-  - task: "Redesign sidebar admin dengan collapsible menu groups"
+  - task: "Tambah dropdown status transaksi untuk kategori Bahan dan Alat"
     implemented: true
-    working: true
-    file: "Layout.js"
+    working: "NA"
+    file: "Transactions.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Completely redesigned admin sidebar with collapsible groups: Dashboard Admin, Accounting (Proyek, Transaksi), Estimator (RAB), Supervisor (Jadwal), Employee (Absensi), Inventory (Stok Barang), Pengaturan (Member Management). Added state management for expand/collapse with ChevronDown/ChevronRight icons."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Collapsible sidebar working perfectly. ✅ All menu groups found (Dashboard Admin, Accounting, Estimator, Supervisor, Employee, Inventory, Pengaturan). ✅ Expand/collapse functionality tested - Accounting group expands to show Proyek & Transaksi sub-menu, then collapses correctly. ✅ Inventory group expands to show Stok Barang sub-menu. ✅ Navigation through collapsible menu working as designed. Screenshots captured showing expanded/collapsed states."
+        comment: "Added status dropdown in transaction form when category is 'bahan' or 'alat'. Options: 'Receiving and Putaway' (barang masuk) and 'Out Warehouse' (barang keluar). Added helper text showing 'akan menambah/mengurangi stok inventory'."
   
   - task: "Membuat halaman Inventory admin"
     implemented: true
