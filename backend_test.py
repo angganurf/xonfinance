@@ -277,6 +277,352 @@ class XONArchitectAPITester:
         self.log_test("Get Notifications", success, f"Notifications found: {notification_count}")
         return success
 
+    # ============= INVENTORY TESTS =============
+    
+    def test_admin_login(self):
+        """Test admin login for inventory tests"""
+        login_data = {
+            "email": "admin",
+            "password": "admin"
+        }
+        
+        success, data = self.make_request('POST', '/auth/login', login_data, 200)
+        if success and 'session_token' in data:
+            self.session_token = data['session_token']
+            self.user_id = data['user']['id']
+        
+        self.log_test("Admin Login", success, f"Admin token received: {bool(self.session_token)}")
+        return success
+
+    def test_get_inventory_empty(self):
+        """Test get inventory when empty"""
+        success, data = self.make_request('GET', '/inventory')
+        inventory_count = len(data) if isinstance(data, list) else 0
+        self.log_test("Get Inventory (Empty)", success, f"Inventory items found: {inventory_count}")
+        return success
+
+    def test_get_inventory_with_filter(self):
+        """Test get inventory with category filter"""
+        success, data = self.make_request('GET', '/inventory?category=bahan')
+        inventory_count = len(data) if isinstance(data, list) else 0
+        self.log_test("Get Inventory (Filter: bahan)", success, f"Bahan items found: {inventory_count}")
+        return success
+
+    def test_create_transaction_bahan_with_items(self):
+        """Test creating transaction with bahan category and items array"""
+        if not self.project_id:
+            self.log_test("Create Transaction Bahan (Items)", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pembelian bahan bangunan",
+            "amount": 1000000,
+            "items": [
+                {
+                    "description": "Semen 50kg",
+                    "quantity": 20,
+                    "unit": "sak",
+                    "unit_price": 50000,
+                    "total": 1000000
+                }
+            ],
+            "transaction_date": "2025-01-15"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        if success and 'id' in data:
+            self.transaction_bahan_id = data['id']
+        
+        self.log_test("Create Transaction Bahan (Items)", success, f"Transaction ID: {getattr(self, 'transaction_bahan_id', 'N/A')}")
+        return success
+
+    def test_verify_inventory_created_from_bahan(self):
+        """Test that inventory was created from bahan transaction"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Look for Semen 50kg item
+            semen_item = None
+            for item in data:
+                if item.get('item_name') == 'Semen 50kg' and item.get('category') == 'bahan':
+                    semen_item = item
+                    break
+            
+            if semen_item:
+                # Verify item details
+                correct_quantity = semen_item.get('quantity') == 20
+                correct_unit = semen_item.get('unit') == 'sak'
+                correct_category = semen_item.get('category') == 'bahan'
+                correct_status = semen_item.get('status') == 'Tersedia'
+                
+                all_correct = correct_quantity and correct_unit and correct_category and correct_status
+                details = f"Semen item found - Qty: {semen_item.get('quantity')}, Unit: {semen_item.get('unit')}, Category: {semen_item.get('category')}, Status: {semen_item.get('status')}"
+                self.log_test("Verify Inventory from Bahan", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Inventory from Bahan", False, "Semen 50kg item not found in inventory")
+                return False
+        else:
+            self.log_test("Verify Inventory from Bahan", False, "Failed to get inventory data")
+            return False
+
+    def test_create_transaction_alat_single_item(self):
+        """Test creating transaction with alat category (single item)"""
+        if not self.project_id:
+            self.log_test("Create Transaction Alat (Single)", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "alat",
+            "description": "Bor Listrik Makita",
+            "amount": 2000000,
+            "quantity": 2,
+            "unit": "unit",
+            "transaction_date": "2025-01-15"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        if success and 'id' in data:
+            self.transaction_alat_id = data['id']
+        
+        self.log_test("Create Transaction Alat (Single)", success, f"Transaction ID: {getattr(self, 'transaction_alat_id', 'N/A')}")
+        return success
+
+    def test_verify_inventory_created_from_alat(self):
+        """Test that inventory was created from alat transaction"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Look for Bor Listrik Makita item
+            bor_item = None
+            for item in data:
+                if item.get('item_name') == 'Bor Listrik Makita' and item.get('category') == 'alat':
+                    bor_item = item
+                    break
+            
+            if bor_item:
+                # Verify item details
+                correct_quantity = bor_item.get('quantity') == 2
+                correct_unit = bor_item.get('unit') == 'unit'
+                correct_category = bor_item.get('category') == 'alat'
+                correct_unit_price = bor_item.get('unit_price') == 1000000  # 2000000 / 2
+                
+                all_correct = correct_quantity and correct_unit and correct_category and correct_unit_price
+                details = f"Bor item found - Qty: {bor_item.get('quantity')}, Unit: {bor_item.get('unit')}, Category: {bor_item.get('category')}, Unit Price: {bor_item.get('unit_price')}"
+                self.log_test("Verify Inventory from Alat", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Inventory from Alat", False, "Bor Listrik Makita item not found in inventory")
+                return False
+        else:
+            self.log_test("Verify Inventory from Alat", False, "Failed to get inventory data")
+            return False
+
+    def test_create_duplicate_bahan_transaction(self):
+        """Test creating another transaction with same bahan item to test quantity update"""
+        if not self.project_id:
+            self.log_test("Create Duplicate Bahan Transaction", False, "No project ID available")
+            return False
+            
+        transaction_data = {
+            "project_id": self.project_id,
+            "category": "bahan",
+            "description": "Pembelian semen tambahan",
+            "amount": 500000,
+            "items": [
+                {
+                    "description": "Semen 50kg",
+                    "quantity": 10,
+                    "unit": "sak",
+                    "unit_price": 50000,
+                    "total": 500000
+                }
+            ],
+            "transaction_date": "2025-01-16"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+        if success and 'id' in data:
+            self.transaction_bahan_duplicate_id = data['id']
+        
+        self.log_test("Create Duplicate Bahan Transaction", success, f"Transaction ID: {getattr(self, 'transaction_bahan_duplicate_id', 'N/A')}")
+        return success
+
+    def test_verify_inventory_quantity_updated(self):
+        """Test that inventory quantity was updated (not new item created)"""
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list):
+            # Count Semen 50kg items and check quantity
+            semen_items = [item for item in data if item.get('item_name') == 'Semen 50kg' and item.get('category') == 'bahan']
+            
+            if len(semen_items) == 1:
+                # Should be only one item with updated quantity (20 + 10 = 30)
+                semen_item = semen_items[0]
+                expected_quantity = 30
+                actual_quantity = semen_item.get('quantity')
+                
+                quantity_correct = actual_quantity == expected_quantity
+                details = f"Semen items count: {len(semen_items)}, Expected qty: {expected_quantity}, Actual qty: {actual_quantity}"
+                self.log_test("Verify Inventory Quantity Updated", quantity_correct, details)
+                return quantity_correct
+            else:
+                self.log_test("Verify Inventory Quantity Updated", False, f"Expected 1 Semen item, found {len(semen_items)}")
+                return False
+        else:
+            self.log_test("Verify Inventory Quantity Updated", False, "Failed to get inventory data")
+            return False
+
+    def test_get_specific_inventory_item(self):
+        """Test get specific inventory item by ID"""
+        # First get all inventory to find an item ID
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list) and len(data) > 0:
+            item_id = data[0].get('id')
+            if item_id:
+                success, item_data = self.make_request('GET', f'/inventory/{item_id}')
+                has_project_name = 'project_name' in item_data if success else False
+                details = f"Item ID: {item_id}, Has project_name: {has_project_name}"
+                self.log_test("Get Specific Inventory Item", success and has_project_name, details)
+                return success and has_project_name
+            else:
+                self.log_test("Get Specific Inventory Item", False, "No item ID found")
+                return False
+        else:
+            self.log_test("Get Specific Inventory Item", False, "No inventory items available")
+            return False
+
+    def test_update_inventory_item(self):
+        """Test updating inventory item"""
+        # First get all inventory to find an item ID
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list) and len(data) > 0:
+            item_id = data[0].get('id')
+            if item_id:
+                update_data = {
+                    "quantity": 50,
+                    "status": "Dipinjam"
+                }
+                success, response = self.make_request('PUT', f'/inventory/{item_id}', update_data)
+                self.log_test("Update Inventory Item", success, f"Item ID: {item_id}, Updated quantity and status")
+                return success
+            else:
+                self.log_test("Update Inventory Item", False, "No item ID found")
+                return False
+        else:
+            self.log_test("Update Inventory Item", False, "No inventory items available")
+            return False
+
+    def test_delete_transaction_removes_inventory(self):
+        """Test that deleting transaction removes related inventory"""
+        if not hasattr(self, 'transaction_alat_id'):
+            self.log_test("Delete Transaction Removes Inventory", False, "No alat transaction ID available")
+            return False
+        
+        # First verify the Bor item exists
+        success, data = self.make_request('GET', '/inventory')
+        bor_exists_before = False
+        if success and isinstance(data, list):
+            for item in data:
+                if item.get('item_name') == 'Bor Listrik Makita':
+                    bor_exists_before = True
+                    break
+        
+        if not bor_exists_before:
+            self.log_test("Delete Transaction Removes Inventory", False, "Bor item not found before deletion")
+            return False
+        
+        # Delete the transaction
+        success, response = self.make_request('DELETE', f'/transactions/{self.transaction_alat_id}')
+        
+        if success:
+            # Verify the Bor item is removed from inventory
+            success, data = self.make_request('GET', '/inventory')
+            bor_exists_after = False
+            if success and isinstance(data, list):
+                for item in data:
+                    if item.get('item_name') == 'Bor Listrik Makita':
+                        bor_exists_after = True
+                        break
+            
+            inventory_removed = not bor_exists_after
+            details = f"Bor existed before: {bor_exists_before}, Bor exists after: {bor_exists_after}"
+            self.log_test("Delete Transaction Removes Inventory", inventory_removed, details)
+            return inventory_removed
+        else:
+            self.log_test("Delete Transaction Removes Inventory", False, "Failed to delete transaction")
+            return False
+
+    def test_delete_inventory_item(self):
+        """Test deleting inventory item directly"""
+        # First get all inventory to find an item ID
+        success, data = self.make_request('GET', '/inventory')
+        
+        if success and isinstance(data, list) and len(data) > 0:
+            item_id = data[0].get('id')
+            item_name = data[0].get('item_name', 'Unknown')
+            if item_id:
+                success, response = self.make_request('DELETE', f'/inventory/{item_id}')
+                self.log_test("Delete Inventory Item", success, f"Deleted item: {item_name} (ID: {item_id})")
+                return success
+            else:
+                self.log_test("Delete Inventory Item", False, "No item ID found")
+                return False
+        else:
+            self.log_test("Delete Inventory Item", False, "No inventory items available")
+            return False
+
+    def run_inventory_tests(self):
+        """Run comprehensive inventory tests"""
+        print("\n🏗️ Starting Inventory Feature Tests")
+        print("=" * 50)
+        
+        # Admin login for inventory tests
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Stopping inventory tests.")
+            return False
+        
+        # Get existing projects for testing
+        success, projects = self.make_request('GET', '/projects')
+        if success and isinstance(projects, list) and len(projects) > 0:
+            self.project_id = projects[0]['id']
+            print(f"📋 Using project: {projects[0]['name']} (ID: {self.project_id})")
+        else:
+            # Create a project if none exists
+            if not self.test_create_project():
+                print("❌ Failed to create project for inventory tests.")
+                return False
+        
+        # Test inventory CRUD endpoints
+        self.test_get_inventory_empty()
+        self.test_get_inventory_with_filter()
+        
+        # Test auto-create inventory from transactions
+        self.test_create_transaction_bahan_with_items()
+        self.test_verify_inventory_created_from_bahan()
+        
+        self.test_create_transaction_alat_single_item()
+        self.test_verify_inventory_created_from_alat()
+        
+        # Test quantity update logic
+        self.test_create_duplicate_bahan_transaction()
+        self.test_verify_inventory_quantity_updated()
+        
+        # Test inventory CRUD operations
+        self.test_get_specific_inventory_item()
+        self.test_update_inventory_item()
+        
+        # Test delete cascade
+        self.test_delete_transaction_removes_inventory()
+        self.test_delete_inventory_item()
+        
+        return True
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting XON Architect API Tests")
