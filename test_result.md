@@ -170,27 +170,33 @@ backend:
 frontend:
   - task: "Tambah dropdown status transaksi untuk kategori Bahan dan Alat"
     implemented: true
-    working: "NA"
+    working: true
     file: "Transactions.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added status dropdown in transaction form when category is 'bahan' or 'alat'. Options: 'Receiving and Putaway' (barang masuk) and 'Out Warehouse' (barang keluar). Added helper text showing 'akan menambah/mengurangi stok inventory'."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Status dropdown functionality working perfectly. ✅ Status dropdown appears ONLY for Bahan and Alat categories. ✅ Status dropdown does NOT appear for Upah and Operasional. ✅ Status dropdown has required asterisk (*). ✅ Both status options available: 'Receiving and Putaway (Barang Masuk)' and 'Out Warehouse (Barang Keluar)'. ✅ Helper text shows correct messages: Receiving: '✓ Akan menambah stok inventory', Out Warehouse: '⚠ Akan mengurangi stok inventory'. ✅ Status dropdown logic works identically for both Bahan and Alat categories. All requirements from review request verified successfully with comprehensive Playwright testing."
   
   - task: "Update status options di halaman Inventory berdasarkan kategori"
     implemented: true
-    working: "NA"
+    working: true
     file: "pages/admin/Inventory.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Updated status select in edit form. Bahan category shows: Tersedia, Order, Habis. Alat category shows: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. Added helper text and updated status color mapping."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Inventory status editing working correctly. ✅ Different status options for Bahan vs Alat categories implemented. ✅ Bahan status options: Tersedia, Order (Pengambilan), Habis. ✅ Alat status options: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. ✅ Status badge colors display correctly with proper color mapping. ✅ Status editing functionality accessible through dropdown menu and working properly. Frontend inventory status management is production ready."
   
   - task: "Tambahkan route /admin/inventory"
     implemented: true
