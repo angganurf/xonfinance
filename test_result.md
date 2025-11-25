@@ -105,51 +105,63 @@ user_problem_statement: |
 backend:
   - task: "Membuat model Inventory dengan fields lengkap"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added Inventory model with fields: item_name, category, quantity, unit, unit_price, total_value, project_id, transaction_id, status, created_at, updated_at"
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Inventory model working correctly. All fields present and properly typed. Model validation working as expected."
   
   - task: "Membuat CRUD endpoints untuk inventory"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created endpoints: GET /api/inventory, GET /api/inventory/{id}, POST /api/inventory, PUT /api/inventory/{id}, DELETE /api/inventory/{id}"
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: All inventory CRUD endpoints working perfectly. GET /api/inventory supports category filtering (bahan/alat). GET /api/inventory/{id} includes project_name enrichment. POST creates inventory items correctly. PUT updates quantity, status, and recalculates total_value. DELETE removes items successfully."
   
   - task: "Modifikasi endpoint POST /transactions untuk auto-create inventory"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Modified create_transaction endpoint to automatically create/update inventory items when category is 'bahan' or 'alat'. Handles both items array and single item cases."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Auto-create inventory logic working perfectly. ✅ Creates inventory from 'bahan' transactions with items array. ✅ Creates inventory from 'alat' transactions with single item. ✅ Updates existing inventory quantity when same item added again (30 sak total from 20+10). ✅ Only creates inventory for 'bahan' and 'alat' categories, ignores others like 'upah'."
   
   - task: "Modifikasi endpoint DELETE /transactions untuk hapus inventory terkait"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Modified delete_transaction endpoint to also delete related inventory items using transaction_id reference"
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Delete cascade working correctly. When transaction is deleted, related inventory items are automatically removed from inventory collection. Tested with alat transaction - Bor Listrik Makita was properly removed when transaction deleted."
 
 frontend:
   - task: "Redesign sidebar admin dengan collapsible menu groups"
