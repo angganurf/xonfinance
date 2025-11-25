@@ -860,6 +860,7 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
                         unit_price=item.unit_price,
                         total_value=item.total,
                         project_id=input.project_id,
+                        project_type=project_type,
                         transaction_id=transaction.id,
                         status="Tersedia"
                     )
