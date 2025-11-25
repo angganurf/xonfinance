@@ -223,14 +223,16 @@ const AccountingTransactions = () => {
           toast.error('Tambahkan minimal 1 item bahan');
           return;
         }
-        data.description = `Pembelian Bahan (${validItems.length} item)`;
+        data.description = `Pembelian Bahan (${validItems.length} item)${supplierName ? ' dari ' + supplierName : ''}`;
         data.amount = calculateTotalBahan();
         data.items = validItems.map(item => ({
           description: item.description,
           unit_price: parseFloat(item.unit_price),
           quantity: parseFloat(item.quantity),
           unit: item.unit,
-          total: item.total
+          total: item.total,
+          status: item.status || 'receiving',
+          supplier: supplierName || null
         }));
       } else {
         data.description = formData.description;
