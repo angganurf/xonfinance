@@ -784,8 +784,10 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
         category=input.category,
         description=input.description,
         amount=input.amount,
+        items=input.items,
         quantity=input.quantity,
         unit=input.unit,
+        status=input.status,
         receipt=input.receipt,
         transaction_date=datetime.fromisoformat(input.transaction_date) if input.transaction_date else datetime.now(timezone.utc),
         created_by=user.id
@@ -795,6 +797,89 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
     trans_dict["transaction_date"] = trans_dict["transaction_date"].isoformat()
     trans_dict["created_at"] = trans_dict["created_at"].isoformat()
     await db.transactions.insert_one(trans_dict)
+    
+    # Auto-create inventory for 'bahan' or 'alat' category
+    if input.category in ['bahan', 'alat']:
+        if input.items and len(input.items) > 0:
+            # Handle multiple items (for 'bahan' with items array)
+            for item in input.items:
+                # Check if item already exists in inventory
+                existing = await db.inventory.find_one({
+                    "item_name": item.description,
+                    "category": input.category,
+                    "project_id": input.project_id
+                })
+                
+                if existing:
+                    # Update existing inventory quantity
+                    new_quantity = existing["quantity"] + item.quantity
+                    new_total_value = new_quantity * item.unit_price
+                    await db.inventory.update_one(
+                        {"id": existing["id"]},
+                        {"$set": {
+                            "quantity": new_quantity,
+                            "total_value": new_total_value,
+                            "unit_price": item.unit_price,
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                else:
+                    # Create new inventory item
+                    inventory = Inventory(
+                        item_name=item.description,
+                        category=input.category,
+                        quantity=item.quantity,
+                        unit=item.unit,
+                        unit_price=item.unit_price,
+                        total_value=item.total,
+                        project_id=input.project_id,
+                        transaction_id=transaction.id,
+                        status="Tersedia"
+                    )
+                    inv_dict = inventory.model_dump()
+                    inv_dict["created_at"] = inv_dict["created_at"].isoformat()
+                    inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
+                    await db.inventory.insert_one(inv_dict)
+        elif input.quantity and input.unit:
+            # Handle single item (for 'alat' or simple 'bahan')
+            existing = await db.inventory.find_one({
+                "item_name": input.description,
+                "category": input.category,
+                "project_id": input.project_id
+            })
+            
+            unit_price = input.amount / input.quantity if input.quantity > 0 else input.amount
+            
+            if existing:
+                # Update existing inventory quantity
+                new_quantity = existing["quantity"] + input.quantity
+                new_total_value = new_quantity * unit_price
+                await db.inventory.update_one(
+                    {"id": existing["id"]},
+                    {"$set": {
+                        "quantity": new_quantity,
+                        "total_value": new_total_value,
+                        "unit_price": unit_price,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+            else:
+                # Create new inventory item
+                inventory = Inventory(
+                    item_name=input.description,
+                    category=input.category,
+                    quantity=input.quantity,
+                    unit=input.unit,
+                    unit_price=unit_price,
+                    total_value=input.amount,
+                    project_id=input.project_id,
+                    transaction_id=transaction.id,
+                    status="Tersedia"
+                )
+                inv_dict = inventory.model_dump()
+                inv_dict["created_at"] = inv_dict["created_at"].isoformat()
+                inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
+                await db.inventory.insert_one(inv_dict)
     
     # Notify accounting
     accountants = await db.users.find({"role": "accounting"}).to_list(100)
