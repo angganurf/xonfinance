@@ -16,6 +16,7 @@ import EmployeeDashboard from './pages/employee/Dashboard';
 import EmployeeTasks from './pages/employee/Tasks';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminMembers from './pages/admin/Members';
+import AdminInventory from './pages/admin/Inventory';
 import Settings from './pages/Settings';
 import './App.css';
 
