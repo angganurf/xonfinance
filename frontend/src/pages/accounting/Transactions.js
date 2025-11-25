@@ -62,6 +62,20 @@ const AccountingTransactions = () => {
     }
   };
   
+  const loadItemNames = async (category, projectId = null) => {
+    try {
+      let url = `/inventory/item-names?category=${category}`;
+      if (projectId) {
+        url += `&project_id=${projectId}`;
+      }
+      const res = await api.get(url);
+      setItemNames(res.data.item_names || []);
+    } catch (error) {
+      console.error('Error loading item names:', error);
+      setItemNames([]);
+    }
+  };
+  
   const sortTransactions = () => {
     const sorted = [...transactions].sort((a, b) => {
       let aValue = a[sortConfig.key];
