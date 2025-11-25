@@ -204,25 +204,97 @@ export const Layout = ({ children }) => {
           </div>
 
           <nav className="space-y-2" data-testid="sidebar-nav">
-            {getMenuItems().map((item) => (
-              item.label === '---' ? (
-                <div key={item.path} className="border-t border-slate-600 my-4"></div>
-              ) : (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  data-testid={`nav-link-${item.label.toLowerCase().replace(' ', '-')}`}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                    location.pathname === item.path
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                  }`}
-                >
-                  <span className="text-xl">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              )
-            ))}
+            {(() => {
+              const menuData = getMenuItems();
+              
+              if (menuData.type === 'simple') {
+                return menuData.items.map((item) => (
+                  item.label === '---' ? (
+                    <div key={item.path} className="border-t border-slate-600 my-4"></div>
+                  ) : (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      data-testid={`nav-link-${item.label.toLowerCase().replace(' ', '-')}`}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                        location.pathname === item.path
+                          ? 'bg-blue-600 text-white shadow-lg'
+                          : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  )
+                ));
+              }
+              
+              // Grouped menu (for admin)
+              return menuData.items.map((item, index) => {
+                if (item.children) {
+                  const isExpanded = expandedGroups[item.group];
+                  const hasActiveChild = item.children.some(child => location.pathname === child.path);
+                  
+                  return (
+                    <div key={item.group}>
+                      <button
+                        onClick={() => toggleGroup(item.group)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+                          hasActiveChild || isExpanded
+                            ? 'bg-slate-700 text-white'
+                            : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{item.icon}</span>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        {isExpanded ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                      {isExpanded && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.path}
+                              to={child.path}
+                              data-testid={`nav-link-${child.label.toLowerCase().replace(' ', '-')}`}
+                              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${
+                                location.pathname === child.path
+                                  ? 'bg-blue-600 text-white shadow-lg'
+                                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                              }`}
+                            >
+                              <span className="text-lg">{child.icon}</span>
+                              <span className="text-sm font-medium">{child.label}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                } else {
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      data-testid={`nav-link-${item.label.toLowerCase().replace(' ', '-')}`}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                        location.pathname === item.path
+                          ? 'bg-blue-600 text-white shadow-lg'
+                          : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-xl">{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  );
+                }
+              });
+            })()}
           </nav>
         </div>
       </aside>
