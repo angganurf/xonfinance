@@ -119,20 +119,17 @@ backend:
         agent: "main"
         comment: "Modified create_transaction logic to handle 'receiving' (add stock) and 'out_warehouse' (reduce stock). Added validation to prevent negative inventory. Auto-update status to 'Habis' when quantity reaches 0."
   
-  - task: "Membuat CRUD endpoints untuk inventory"
+  - task: "Validasi stok tidak boleh negatif saat Out Warehouse"
     implemented: true
-    working: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Created endpoints: GET /api/inventory, GET /api/inventory/{id}, POST /api/inventory, PUT /api/inventory/{id}, DELETE /api/inventory/{id}"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: All inventory CRUD endpoints working perfectly. GET /api/inventory supports category filtering (bahan/alat). GET /api/inventory/{id} includes project_name enrichment. POST creates inventory items correctly. PUT updates quantity, status, and recalculates total_value. DELETE removes items successfully."
+        comment: "Added validation: when status is 'out_warehouse', check if sufficient stock available. Return HTTP 400 error with detail message if stock insufficient or item not found in inventory."
   
   - task: "Modifikasi endpoint POST /transactions untuk auto-create inventory"
     implemented: true
