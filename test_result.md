@@ -171,20 +171,17 @@ frontend:
         agent: "main"
         comment: "Added status dropdown in transaction form when category is 'bahan' or 'alat'. Options: 'Receiving and Putaway' (barang masuk) and 'Out Warehouse' (barang keluar). Added helper text showing 'akan menambah/mengurangi stok inventory'."
   
-  - task: "Membuat halaman Inventory admin"
+  - task: "Update status options di halaman Inventory berdasarkan kategori"
     implemented: true
-    working: true
+    working: "NA"
     file: "pages/admin/Inventory.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Created full Inventory management page with table display, search functionality, category filter (all/bahan/alat), edit/delete actions. Shows item_name, category, quantity, unit, unit_price, total_value, status, project_name."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Inventory page working perfectly. ✅ Header with title 'Inventory' displayed. ✅ Search input with placeholder 'Cari nama item atau proyek...' working. ✅ 'Tambah Manual' button present. ✅ All 9 table headers found (Nama Item, Kategori, Stok, Satuan, Harga/Unit, Nilai Total, Status, Proyek, Aksi). ✅ Category filter dropdown working with options (Semua Kategori, Bahan, Alat). ✅ Search functionality tested successfully. ✅ Existing inventory data displayed correctly (Manual Test Item found). ✅ Filter functionality working - Bahan filter applied and reset successfully."
+        comment: "Updated status select in edit form. Bahan category shows: Tersedia, Order, Habis. Alat category shows: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. Added helper text and updated status color mapping."
   
   - task: "Tambahkan route /admin/inventory"
     implemented: true
