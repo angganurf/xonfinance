@@ -102,6 +102,7 @@ class TransactionItem(BaseModel):
     unit_price: float
     total: float
     status: Optional[str] = "receiving"  # receiving or out_warehouse
+    supplier: Optional[str] = None  # nama toko/supplier
 
 class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
