@@ -483,7 +483,7 @@ async def create_project(input: ProjectInput, user: User = Depends(get_current_u
     supervisors = await db.users.find({"role": "site_supervisor"}).to_list(100)
     for supervisor in supervisors:
         notif = Notification(
-            user_id=supervisor["_id"],
+            user_id=supervisor["id"],
             title="Proyek Baru",
             message=f"Proyek baru '{project.name}' telah dibuat",
             type="info"
