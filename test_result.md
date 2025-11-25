@@ -207,21 +207,16 @@ metadata:
   backend_inventory_status: "UPDATED_NEEDS_TESTING"
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Test status transaksi Receiving and Putaway (tambah stok)"
+    - "Test status transaksi Out Warehouse (kurangi stok)"
+    - "Test validasi stok tidak boleh negatif"
+    - "Test status inventory berdasarkan kategori"
+    - "E2E: Create transaksi receiving -> verify stok bertambah"
+    - "E2E: Create transaksi out warehouse -> verify stok berkurang"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
-  completed_backend_tests:
-    - "Test inventory CRUD endpoints" 
-    - "Test auto-create inventory dari transaksi bahan/alat"
-    - "E2E: Create transaksi bahan -> verify inventory created"
-  completed_frontend_tests:
-    - "Test admin login and navigation"
-    - "Test collapsible sidebar menu groups"
-    - "Test expand/collapse functionality"
-    - "Test navigation to inventory page"
-    - "Test inventory page UI elements"
-    - "Test search and filter functionality"
 
 agent_communication:
   - agent: "main"
