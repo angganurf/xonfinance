@@ -52,6 +52,8 @@ class XONArchitectAPITester:
                 response = requests.post(url, json=data, headers=headers, timeout=30)
             elif method == 'PATCH':
                 response = requests.patch(url, json=data, headers=headers, timeout=30)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers, timeout=30)
             elif method == 'DELETE':
                 response = requests.delete(url, headers=headers, timeout=30)
             else:
@@ -63,6 +65,16 @@ class XONArchitectAPITester:
                 response_data = response.json()
             except:
                 response_data = {"status_code": response.status_code, "text": response.text}
+            
+            # Add debug info for failed requests
+            if not success:
+                response_data["debug_info"] = {
+                    "url": url,
+                    "method": method,
+                    "status_code": response.status_code,
+                    "expected_status": expected_status,
+                    "request_data": data
+                }
             
             return success, response_data
 
