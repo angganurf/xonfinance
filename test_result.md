@@ -223,7 +223,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All status transaksi tests completed successfully"
+    - "Frontend status transaksi testing completed successfully"
   stuck_tasks: []
   test_all: true
   test_priority: "completed"
