@@ -208,7 +208,9 @@ const AdminInventory = () => {
                   <tr className="text-left text-sm text-slate-600">
                     <th className="pb-3 font-semibold">Nama Item</th>
                     <th className="pb-3 font-semibold">Kategori</th>
-                    <th className="pb-3 font-semibold text-right">Stok</th>
+                    <th className="pb-3 font-semibold text-right">Di Gudang</th>
+                    <th className="pb-3 font-semibold text-right">Belum Sampai</th>
+                    <th className="pb-3 font-semibold text-right">Total Stok</th>
                     <th className="pb-3 font-semibold">Satuan</th>
                     <th className="pb-3 font-semibold text-right">Harga/Unit</th>
                     <th className="pb-3 font-semibold text-right">Nilai Total</th>
