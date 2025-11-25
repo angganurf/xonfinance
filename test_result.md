@@ -98,9 +98,13 @@
 
 user_problem_statement: |
   User meminta:
-  1. Redesign sidebar admin dengan collapsible menu groups (Accounting, Estimator, Supervisor, Employee, Inventory, Pengaturan)
-  2. Menambahkan fitur Inventory baru untuk mengelola stok barang/alat yang dibeli dari transaksi
-  3. Auto-create inventory items dari transaksi kategori 'bahan' dan 'alat'
+  1. Tambah status transaksi untuk kategori Bahan dan Alat:
+     - Receiving and Putaway (barang masuk, tambah stok)
+     - Out Warehouse (barang keluar, kurangi stok)
+  2. Update status inventory yang lebih lengkap:
+     - Bahan: Tersedia, Order, Habis
+     - Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam
+  3. Auto-update inventory berdasarkan status transaksi (tambah/kurangi stok)
 
 backend:
   - task: "Membuat model Inventory dengan fields lengkap"
