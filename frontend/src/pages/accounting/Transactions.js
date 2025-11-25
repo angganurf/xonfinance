@@ -132,10 +132,14 @@ const AccountingTransactions = () => {
       if (transaction.items && transaction.items.length > 0) {
         setBahanItems(transaction.items.map(item => ({
           ...item,
-          status: item.status || 'receiving'
+          status: item.status || 'receiving',
+          supplier: item.supplier || ''
         })));
+        // Set supplier name from first item if available
+        setSupplierName(transaction.items[0]?.supplier || '');
       } else {
-        setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving' }]);
+        setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving', supplier: '' }]);
+        setSupplierName('');
       }
     } else {
       setEditingTransaction(null);
@@ -150,7 +154,8 @@ const AccountingTransactions = () => {
         receipt: '',
         transaction_date: new Date().toISOString().split('T')[0]
       });
-      setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving' }]);
+      setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving', supplier: '' }]);
+      setSupplierName('');
     }
     setOpen(true);
   };
