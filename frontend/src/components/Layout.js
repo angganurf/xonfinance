@@ -315,9 +315,27 @@ export const Layout = ({ children }) => {
               </Button>
               <div>
                 <h2 className="text-xl font-bold text-slate-800" data-testid="header-title">
-                  {getMenuItems().find(item => item.path === location.pathname)?.label || 'Dashboard'}
+                  {(() => {
+                    const menuData = getMenuItems();
+                    if (menuData.type === 'simple') {
+                      return menuData.items.find(item => item.path === location.pathname)?.label || 'Dashboard';
+                    } else {
+                      // For grouped menu (admin)
+                      let foundLabel = null;
+                      menuData.items.forEach(item => {
+                        if (item.path === location.pathname) {
+                          foundLabel = item.label;
+                        } else if (item.children) {
+                          const child = item.children.find(c => c.path === location.pathname);
+                          if (child) foundLabel = child.label;
+                        }
+                      });
+                      return foundLabel || 'Dashboard';
+                    }
+                  })()}
                 </h2>
                 <p className="text-sm text-slate-500" data-testid="user-role-text">
+                  {user?.role === 'admin' && 'Administrator'}
                   {user?.role === 'accounting' && 'Bagian Keuangan'}
                   {user?.role === 'estimator' && 'Estimator'}
                   {user?.role === 'site_supervisor' && 'Pengawas Lapangan'}
