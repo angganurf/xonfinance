@@ -23,6 +23,23 @@ export const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  
+  // State untuk collapsible groups di admin menu
+  const [expandedGroups, setExpandedGroups] = useState({
+    accounting: false,
+    estimator: false,
+    supervisor: false,
+    employee: false,
+    inventory: false,
+    settings: false
+  });
+
+  const toggleGroup = (groupName) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
 
   useEffect(() => {
     loadNotifications();
