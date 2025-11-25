@@ -361,7 +361,7 @@ const AccountingTransactions = () => {
                                   data-testid={`bahan-desc-${index}`}
                                 />
                               </div>
-                              <div className="grid grid-cols-4 gap-2">
+                              <div className="grid grid-cols-5 gap-2">
                                 <div>
                                   <Label className="text-xs">Harga Satuan</Label>
                                   <Input
@@ -400,6 +400,21 @@ const AccountingTransactions = () => {
                                     disabled
                                     className="bg-slate-100 font-bold"
                                   />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Status *</Label>
+                                  <Select 
+                                    value={item.status || 'receiving'} 
+                                    onValueChange={(v) => handleBahanItemChange(index, 'status', v)}
+                                  >
+                                    <SelectTrigger className="h-10">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="receiving">Di Gudang</SelectItem>
+                                      <SelectItem value="out_warehouse">Belum Sampai</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                 </div>
                               </div>
                             </div>
