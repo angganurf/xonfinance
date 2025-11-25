@@ -352,11 +352,29 @@ const AdminInventory = () => {
                 <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Tersedia">Tersedia</SelectItem>
-                    <SelectItem value="Habis">Habis</SelectItem>
-                    <SelectItem value="Dipinjam">Dipinjam</SelectItem>
+                    {formData.category === 'bahan' ? (
+                      <>
+                        <SelectItem value="Tersedia">Tersedia</SelectItem>
+                        <SelectItem value="Order">Order (Pengambilan)</SelectItem>
+                        <SelectItem value="Habis">Habis</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="Tersedia">Tersedia</SelectItem>
+                        <SelectItem value="Bagus">Bagus</SelectItem>
+                        <SelectItem value="Rusak">Rusak</SelectItem>
+                        <SelectItem value="Perlu di Retur">Perlu di Retur</SelectItem>
+                        <SelectItem value="Dipinjam">Dipinjam</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-slate-500 mt-1">
+                  {formData.category === 'bahan' 
+                    ? 'Status untuk manajemen bahan bangunan'
+                    : 'Status untuk kondisi dan ketersediaan alat'
+                  }
+                </p>
               </div>
 
               <DialogFooter>
