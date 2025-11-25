@@ -166,13 +166,15 @@ class Inventory(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     item_name: str
     category: str  # bahan, alat
-    quantity: float
+    quantity_in_warehouse: float = 0.0  # Stok di gudang (Receiving)
+    quantity_out_warehouse: float = 0.0  # Stok belum sampai gudang (Out Warehouse)
+    quantity: float = 0.0  # Total quantity (calculated field for compatibility)
     unit: str
     unit_price: float
     total_value: float
     project_id: str
     transaction_id: str
-    status: str = "Tersedia"  # Tersedia, Habis, Dipinjam
+    status: str = "Tersedia"  # Status kondisi: Tersedia, Order, Habis, Bagus, Rusak, dll
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
