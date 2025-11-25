@@ -166,22 +166,8 @@ export const Login = () => {
                       data-testid="login-password-input"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="loginRole">Login Sebagai</Label>
-                    <Select value={loginRole} onValueChange={setLoginRole}>
-                      <SelectTrigger data-testid="login-role-select">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="accounting">Accounting</SelectItem>
-                        <SelectItem value="estimator">Estimator</SelectItem>
-                        <SelectItem value="site_supervisor">Site Supervisor</SelectItem>
-                        <SelectItem value="employee">Employee</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                   <Button type="submit" className="w-full" disabled={loading} data-testid="login-submit-btn">
-                    {loading ? 'Memproses...' : 'Login'}
+                    {loading ? 'Memproses...' : 'Masuk'}
                   </Button>
                 </form>
 
