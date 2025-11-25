@@ -220,6 +220,7 @@ class TransactionInput(BaseModel):
     category: str
     description: str
     amount: float
+    items: Optional[List[TransactionItem]] = []
     quantity: Optional[float] = None
     unit: Optional[str] = None
     status: Optional[str] = None
