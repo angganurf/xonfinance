@@ -222,7 +222,7 @@ const AdminInventory = () => {
                 <tbody>
                   {filteredInventory.length === 0 ? (
                     <tr>
-                      <td colSpan="9" className="py-8 text-center text-slate-500">
+                      <td colSpan="11" className="py-8 text-center text-slate-500">
                         <Package className="mx-auto h-12 w-12 mb-2 text-slate-300" />
                         <p>Belum ada data inventory</p>
                         <p className="text-sm mt-1">Tambahkan transaksi bahan/alat untuk menambah inventory</p>
@@ -237,7 +237,15 @@ const AdminInventory = () => {
                             {getCategoryLabel(item.category)}
                           </span>
                         </td>
-                        <td className="py-3 text-right font-semibold">{item.quantity}</td>
+                        <td className="py-3 text-right font-semibold text-green-600">
+                          {item.quantity_in_warehouse || 0}
+                        </td>
+                        <td className="py-3 text-right font-semibold text-orange-600">
+                          {item.quantity_out_warehouse || 0}
+                        </td>
+                        <td className="py-3 text-right font-bold text-blue-600">
+                          {(item.quantity_in_warehouse || 0) + (item.quantity_out_warehouse || 0)}
+                        </td>
                         <td className="py-3">{item.unit}</td>
                         <td className="py-3 text-right">{formatCurrency(item.unit_price)}</td>
                         <td className="py-3 text-right font-semibold">{formatCurrency(item.total_value)}</td>
