@@ -1200,10 +1200,17 @@ class XONArchitectAPITester:
 def main():
     tester = XONArchitectAPITester()
     
-    # Check if we should run only inventory tests
-    if len(sys.argv) > 1 and sys.argv[1] == "inventory":
-        success = tester.run_inventory_only_tests()
-        test_type = "inventory"
+    # Check which tests to run
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "inventory":
+            success = tester.run_inventory_only_tests()
+            test_type = "inventory"
+        elif sys.argv[1] == "status_transaksi":
+            success = tester.run_status_transaksi_only_tests()
+            test_type = "status_transaksi"
+        else:
+            success = tester.run_all_tests()
+            test_type = "all"
     else:
         success = tester.run_all_tests()
         test_type = "all"
