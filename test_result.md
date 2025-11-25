@@ -218,9 +218,7 @@ metadata:
   backend_inventory_status: "COMPLETED_SUCCESS"
 
 test_plan:
-  current_focus:
-    - "Test collapsible sidebar menu di admin"
-    - "Test halaman Inventory admin"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -228,6 +226,13 @@ test_plan:
     - "Test inventory CRUD endpoints" 
     - "Test auto-create inventory dari transaksi bahan/alat"
     - "E2E: Create transaksi bahan -> verify inventory created"
+  completed_frontend_tests:
+    - "Test admin login and navigation"
+    - "Test collapsible sidebar menu groups"
+    - "Test expand/collapse functionality"
+    - "Test navigation to inventory page"
+    - "Test inventory page UI elements"
+    - "Test search and filter functionality"
 
 agent_communication:
   - agent: "main"
