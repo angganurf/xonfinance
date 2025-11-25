@@ -202,9 +202,11 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "2.0"
-  test_sequence: 2
+  version: "2.1"
+  test_sequence: 3
   run_ui: true
+  last_backend_test: "2025-11-25T15:15:00Z"
+  backend_inventory_status: "COMPLETED_SUCCESS"
 
 test_plan:
   current_focus:
