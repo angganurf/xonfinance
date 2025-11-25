@@ -65,6 +65,9 @@ const AdminInventory = () => {
   const filterInventory = () => {
     let filtered = [...inventory];
     
+    // Filter by tab (interior or arsitektur)
+    filtered = filtered.filter(item => item.project_type === activeTab);
+    
     if (searchQuery) {
       filtered = filtered.filter(item => 
         item.item_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -73,6 +76,22 @@ const AdminInventory = () => {
     }
     
     setFilteredInventory(filtered);
+  };
+  
+  // Group inventory by project for arsitektur tab
+  const getInventoryByProject = () => {
+    const grouped = {};
+    filteredInventory.forEach(item => {
+      if (!grouped[item.project_id]) {
+        grouped[item.project_id] = {
+          project_id: item.project_id,
+          project_name: item.project_name,
+          items: []
+        };
+      }
+      grouped[item.project_id].items.push(item);
+    });
+    return Object.values(grouped);
   };
 
   const handleOpenDialog = (item = null) => {
