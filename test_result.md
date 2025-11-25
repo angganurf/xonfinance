@@ -98,9 +98,9 @@
 
 user_problem_statement: |
   User meminta:
-  1. Menambahkan pilihan role pada halaman login (dropdown "Login Sebagai")
-  2. Membuat akun admin dengan username "admin" dan password "admin" yang bisa masuk ke semua role
-  3. Memperbaiki semua error login dan menu yang ada
+  1. Redesign sidebar admin dengan collapsible menu groups (Accounting, Estimator, Supervisor, Employee, Inventory, Pengaturan)
+  2. Menambahkan fitur Inventory baru untuk mengelola stok barang/alat yang dibeli dari transaksi
+  3. Auto-create inventory items dari transaksi kategori 'bahan' dan 'alat'
 
 backend:
   - task: "Memperbaiki login authentication dengan UUID (id field)"
