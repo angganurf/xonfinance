@@ -101,6 +101,7 @@ class TransactionItem(BaseModel):
     unit: str
     unit_price: float
     total: float
+    status: Optional[str] = "receiving"  # receiving or out_warehouse
 
 class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
