@@ -109,27 +109,33 @@ user_problem_statement: |
 backend:
   - task: "Update logic inventory untuk support status transaksi (receiving/out_warehouse)"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Modified create_transaction logic to handle 'receiving' (add stock) and 'out_warehouse' (reduce stock). Added validation to prevent negative inventory. Auto-update status to 'Habis' when quantity reaches 0."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Status transaksi logic working perfectly. ✅ Receiving transactions add stock to inventory (5 + 3 = 8 m³ Pasir Cor). ✅ Out warehouse transactions reduce stock (8 - 3 = 5, then 5 - 5 = 0). ✅ Auto-update status to 'Habis' when quantity reaches 0. ✅ Works for both bahan (items array) and alat (single item) categories."
   
   - task: "Validasi stok tidak boleh negatif saat Out Warehouse"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added validation: when status is 'out_warehouse', check if sufficient stock available. Return HTTP 400 error with detail message if stock insufficient or item not found in inventory."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Validation working correctly. ✅ Returns HTTP 400 with message 'Stok tidak cukup untuk Pasir Cor. Stok tersedia: 0.0, diminta: 10.0' when trying to out_warehouse more than available stock. ✅ Returns HTTP 400 with message 'Item Besi Beton tidak ditemukan di inventory. Tidak bisa melakukan Out Warehouse.' when trying to out_warehouse non-existent item."
   
   - task: "Modifikasi endpoint POST /transactions untuk auto-create inventory"
     implemented: true
