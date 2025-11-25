@@ -678,6 +678,27 @@ class XONArchitectAPITester:
         
         return self.tests_passed == self.tests_run
 
+    def run_inventory_only_tests(self):
+        """Run only inventory tests as requested"""
+        print("🏗️ Starting Inventory Feature Tests (Backend Only)")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run inventory tests
+        self.run_inventory_tests()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Inventory Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = XONArchitectAPITester()
     success = tester.run_all_tests()
