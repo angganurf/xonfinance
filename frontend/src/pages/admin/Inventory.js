@@ -438,6 +438,85 @@ const AdminInventory = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Breakdown by Supplier Dialog */}
+        <Dialog open={breakdownDialog} onOpenChange={setBreakdownDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Store className="h-5 w-5" />
+                Breakdown Stok: {breakdownData?.item_name}
+              </DialogTitle>
+            </DialogHeader>
+            
+            {breakdownData && (
+              <div className="space-y-4">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-3 gap-4">
+                  <Card className="bg-green-50 border-green-200">
+                    <CardContent className="pt-4">
+                      <p className="text-xs text-green-700 font-medium">Di Gudang</p>
+                      <p className="text-2xl font-bold text-green-900">{breakdownData.total_in_warehouse}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-orange-50 border-orange-200">
+                    <CardContent className="pt-4">
+                      <p className="text-xs text-orange-700 font-medium">Belum Sampai</p>
+                      <p className="text-2xl font-bold text-orange-900">{breakdownData.total_out_warehouse}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="pt-4">
+                      <p className="text-xs text-blue-700 font-medium">Total</p>
+                      <p className="text-2xl font-bold text-blue-900">{breakdownData.total_quantity}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Breakdown Table */}
+                <div>
+                  <h3 className="font-semibold text-slate-800 mb-3">Breakdown Per Toko:</h3>
+                  {breakdownData.breakdown && breakdownData.breakdown.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-slate-100">
+                          <tr className="text-left text-sm">
+                            <th className="px-4 py-3 font-semibold">Nama Toko</th>
+                            <th className="px-4 py-3 font-semibold text-right">Di Gudang</th>
+                            <th className="px-4 py-3 font-semibold text-right">Belum Sampai</th>
+                            <th className="px-4 py-3 font-semibold text-right">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {breakdownData.breakdown.map((item, index) => (
+                            <tr key={index} className="border-t hover:bg-slate-50">
+                              <td className="px-4 py-3 font-medium">{item.supplier}</td>
+                              <td className="px-4 py-3 text-right text-green-600 font-semibold">{item.in_warehouse}</td>
+                              <td className="px-4 py-3 text-right text-orange-600 font-semibold">{item.out_warehouse}</td>
+                              <td className="px-4 py-3 text-right text-blue-600 font-bold">{item.total}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-slate-500">
+                      <Package className="mx-auto h-12 w-12 mb-2 text-slate-300" />
+                      <p>Belum ada data breakdown per toko</p>
+                      <p className="text-sm mt-1">Pastikan mengisi "Nama Toko" saat input transaksi</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button onClick={() => setBreakdownDialog(false)}>
+                Tutup
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
