@@ -971,6 +971,20 @@ async def delete_transaction(transaction_id: str, user: User = Depends(get_curre
 
 # ============= INVENTORY ENDPOINTS =============
 
+@api_router.get("/inventory/item-names")
+async def get_inventory_item_names(category: Optional[str] = None, project_id: Optional[str] = None, user: User = Depends(get_current_user)):
+    """Get unique item names from inventory for autocomplete"""
+    query = {}
+    if category:
+        query["category"] = category
+    if project_id:
+        query["project_id"] = project_id
+    
+    # Get distinct item names
+    item_names = await db.inventory.distinct("item_name", query)
+    
+    return {"item_names": sorted(item_names)}
+
 @api_router.get("/inventory")
 async def get_inventory(category: Optional[str] = None, user: User = Depends(get_current_user)):
     query = {}
