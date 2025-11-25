@@ -922,10 +922,102 @@ async def update_transaction(transaction_id: str, updates: dict, user: User = De
 
 @api_router.delete("/transactions/{transaction_id}")
 async def delete_transaction(transaction_id: str, user: User = Depends(get_current_user)):
+    # Delete related inventory items
+    await db.inventory.delete_many({"transaction_id": transaction_id})
+    
     result = await db.transactions.delete_one({"id": transaction_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"message": "Transaction deleted"}
+
+# ============= INVENTORY ENDPOINTS =============
+
+@api_router.get("/inventory")
+async def get_inventory(category: Optional[str] = None, user: User = Depends(get_current_user)):
+    query = {}
+    if category and category != "all":
+        query["category"] = category
+    
+    inventory_items = await db.inventory.find(query, {"_id": 0}).to_list(1000)
+    
+    # Enrich with project name
+    for item in inventory_items:
+        project = await db.projects.find_one({"id": item.get("project_id")}, {"_id": 0, "name": 1})
+        item["project_name"] = project.get("name") if project else "Unknown Project"
+    
+    return inventory_items
+
+@api_router.get("/inventory/{inventory_id}")
+async def get_inventory_item(inventory_id: str, user: User = Depends(get_current_user)):
+    item = await db.inventory.find_one({"id": inventory_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    # Enrich with project name
+    project = await db.projects.find_one({"id": item.get("project_id")}, {"_id": 0, "name": 1})
+    item["project_name"] = project.get("name") if project else "Unknown Project"
+    
+    return item
+
+@api_router.post("/inventory")
+async def create_inventory(input: InventoryInput, user: User = Depends(get_current_user)):
+    total_value = input.quantity * input.unit_price
+    
+    inventory = Inventory(
+        item_name=input.item_name,
+        category=input.category,
+        quantity=input.quantity,
+        unit=input.unit,
+        unit_price=input.unit_price,
+        total_value=total_value,
+        project_id=input.project_id,
+        transaction_id=input.transaction_id or "",
+        status=input.status
+    )
+    
+    inv_dict = inventory.model_dump()
+    inv_dict["created_at"] = inv_dict["created_at"].isoformat()
+    inv_dict["updated_at"] = inv_dict["updated_at"].isoformat()
+    await db.inventory.insert_one(inv_dict)
+    
+    return {"message": "Inventory item created", "id": inventory.id}
+
+@api_router.put("/inventory/{inventory_id}")
+async def update_inventory(inventory_id: str, input: InventoryUpdateInput, user: User = Depends(get_current_user)):
+    existing = await db.inventory.find_one({"id": inventory_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    updates = {}
+    if input.item_name is not None:
+        updates["item_name"] = input.item_name
+    if input.quantity is not None:
+        updates["quantity"] = input.quantity
+    if input.unit is not None:
+        updates["unit"] = input.unit
+    if input.unit_price is not None:
+        updates["unit_price"] = input.unit_price
+    if input.status is not None:
+        updates["status"] = input.status
+    
+    # Recalculate total_value if quantity or unit_price changed
+    if "quantity" in updates or "unit_price" in updates:
+        quantity = updates.get("quantity", existing["quantity"])
+        unit_price = updates.get("unit_price", existing["unit_price"])
+        updates["total_value"] = quantity * unit_price
+    
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.inventory.update_one({"id": inventory_id}, {"$set": updates})
+    
+    return {"message": "Inventory item updated"}
+
+@api_router.delete("/inventory/{inventory_id}")
+async def delete_inventory(inventory_id: str, user: User = Depends(get_current_user)):
+    result = await db.inventory.delete_one({"id": inventory_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    return {"message": "Inventory item deleted"}
 
 # ============= FINANCIAL ENDPOINTS =============
 
