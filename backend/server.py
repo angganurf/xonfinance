@@ -809,9 +809,6 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
         project = await db.projects.find_one({"id": input.project_id}, {"_id": 0, "type": 1})
         project_type = project.get("type", "arsitektur") if project else "arsitektur"
         
-        print(f"DEBUG: Category={input.category}, Project Type={project_type}")
-        print(f"DEBUG: Items count={len(input.items) if input.items else 0}")
-        
         if input.items and len(input.items) > 0:
             # Handle multiple items (for 'bahan' with items array)
             for item in input.items:
