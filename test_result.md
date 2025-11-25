@@ -103,29 +103,53 @@ user_problem_statement: |
   3. Auto-create inventory items dari transaksi kategori 'bahan' dan 'alat'
 
 backend:
-  - task: "Memperbaiki login authentication dengan UUID (id field)"
+  - task: "Membuat model Inventory dengan fields lengkap"
     implemented: true
-    working: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: true
+      - working: "NA"
         agent: "main"
-        comment: "Fixed KeyError: 'id' by adding UUID id field to all users. Fixed login endpoint to use id instead of _id. Fixed get_current_user to use id field."
+        comment: "Added Inventory model with fields: item_name, category, quantity, unit, unit_price, total_value, project_id, transaction_id, status, created_at, updated_at"
   
-  - task: "Membuat akun admin dengan role 'admin'"
+  - task: "Membuat CRUD endpoints untuk inventory"
     implemented: true
-    working: true
-    file: "database"
+    working: "NA"
+    file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: true
+      - working: "NA"
         agent: "main"
-        comment: "Created admin user with email='admin', password='admin', role='admin'. Tested login via curl and confirmed successful."
+        comment: "Created endpoints: GET /api/inventory, GET /api/inventory/{id}, POST /api/inventory, PUT /api/inventory/{id}, DELETE /api/inventory/{id}"
+  
+  - task: "Modifikasi endpoint POST /transactions untuk auto-create inventory"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modified create_transaction endpoint to automatically create/update inventory items when category is 'bahan' or 'alat'. Handles both items array and single item cases."
+  
+  - task: "Modifikasi endpoint DELETE /transactions untuk hapus inventory terkait"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modified delete_transaction endpoint to also delete related inventory items using transaction_id reference"
 
 frontend:
   - task: "Menambahkan dropdown 'Login Sebagai' di halaman login"
