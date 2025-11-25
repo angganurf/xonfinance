@@ -190,15 +190,17 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.0"
-  test_sequence: 1
+  version: "2.0"
+  test_sequence: 2
   run_ui: true
 
 test_plan:
   current_focus:
-    - "Login dengan role selector"
-    - "Login dengan akun admin dan test akses ke berbagai role"
-    - "Verifikasi nama proyek tampil di dashboard"
+    - "Test inventory CRUD endpoints"
+    - "Test auto-create inventory dari transaksi bahan/alat"
+    - "Test collapsible sidebar menu di admin"
+    - "Test halaman Inventory admin"
+    - "E2E: Create transaksi bahan -> verify inventory created"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
