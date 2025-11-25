@@ -377,11 +377,20 @@ const AccountingTransactions = () => {
                               <div>
                                 <Label className="text-xs">Deskripsi Bahan</Label>
                                 <Input
+                                  list={`item-names-${index}`}
                                   value={item.description}
                                   onChange={(e) => handleBahanItemChange(index, 'description', e.target.value)}
-                                  placeholder="Nama bahan"
+                                  placeholder="Ketik atau pilih nama bahan yang sudah ada"
                                   data-testid={`bahan-desc-${index}`}
                                 />
+                                <datalist id={`item-names-${index}`}>
+                                  {itemNames.map((name, i) => (
+                                    <option key={i} value={name} />
+                                  ))}
+                                </datalist>
+                                {item.description && itemNames.includes(item.description) && (
+                                  <p className="text-xs text-green-600 mt-1">✓ Item sudah ada di inventory</p>
+                                )}
                               </div>
                               <div className="grid grid-cols-5 gap-2">
                                 <div>
