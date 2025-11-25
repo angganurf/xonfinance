@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, MoreVertical, Package, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, MoreVertical, Package, Search, Eye, Store } from 'lucide-react';
 import api from '../../utils/api';
 
 const AdminInventory = () => {
@@ -21,6 +21,8 @@ const AdminInventory = () => {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [breakdownDialog, setBreakdownDialog] = useState(false);
+  const [breakdownData, setBreakdownData] = useState(null);
   
   const [formData, setFormData] = useState({
     item_name: '',
