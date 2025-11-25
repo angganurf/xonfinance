@@ -74,8 +74,128 @@ export const Layout = ({ children }) => {
       { label: 'Settings', path: '/settings', icon: '⚙️' }
     ];
     
-    switch (user?.role) {
-      case 'admin':
+    // Get all roles (support multiple roles)
+    const userRoles = user?.roles && user.roles.length > 0 
+      ? user.roles 
+      : (user?.role ? [user.role] : []);
+    
+    // If user is admin, show admin interface
+    if (userRoles.includes('admin')) {
+      return {
+        type: 'grouped',
+        items: [
+          { label: 'Dashboard Admin', path: '/admin', icon: '🏠' },
+          {
+            label: 'Accounting',
+            icon: '📊',
+            group: 'accounting',
+            children: [
+              { label: 'Proyek', path: '/admin/projects', icon: '📁' },
+              { label: 'Transaksi', path: '/admin/transactions', icon: '💳' }
+            ]
+          },
+          {
+            label: 'Estimator',
+            icon: '📐',
+            group: 'estimator',
+            children: [
+              { label: 'RAB', path: '/admin/rab', icon: '📋' }
+            ]
+          },
+          {
+            label: 'Supervisor',
+            icon: '👷',
+            group: 'supervisor',
+            children: [
+              { label: 'Jadwal', path: '/admin/schedule', icon: '📅' }
+            ]
+          },
+          {
+            label: 'Employee',
+            icon: '👥',
+            group: 'employee',
+            children: [
+              { label: 'Absensi', path: '/admin/tasks', icon: '✓' }
+            ]
+          },
+          {
+            label: 'Inventory',
+            icon: '📦',
+            group: 'inventory',
+            children: [
+              { label: 'Stok Barang', path: '/admin/inventory', icon: '📦' }
+            ]
+          },
+          {
+            label: 'Pengaturan',
+            icon: '⚙️',
+            group: 'settings',
+            children: [
+              { label: 'Member Management', path: '/admin/members', icon: '👤' }
+            ]
+          }
+        ]
+      };
+    }
+    
+    // For non-admin users with multiple roles, combine menus
+    let combinedItems = [];
+    
+    // Add menu items based on each role user has
+    if (userRoles.includes('accounting')) {
+      combinedItems.push(
+        { label: 'Dashboard Accounting', path: '/accounting', icon: '📊' },
+        { label: 'Proyek', path: '/accounting/projects', icon: '📁' },
+        { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
+        { label: 'Laporan', path: '/accounting/reports', icon: '📈' }
+      );
+    }
+    
+    if (userRoles.includes('estimator')) {
+      combinedItems.push(
+        { label: 'Dashboard Estimator', path: '/estimator', icon: '📊' },
+        { label: 'RAB', path: '/estimator/rab', icon: '📋' },
+        { label: 'Proyek Estimator', path: '/estimator/projects', icon: '📁' }
+      );
+    }
+    
+    if (userRoles.includes('site_supervisor')) {
+      combinedItems.push(
+        { label: 'Dashboard Supervisor', path: '/supervisor', icon: '📊' },
+        { label: 'Time Schedule', path: '/supervisor/schedule', icon: '📅' },
+        { label: 'Proyek Supervisor', path: '/supervisor/projects', icon: '📁' }
+      );
+    }
+    
+    if (userRoles.includes('employee')) {
+      combinedItems.push(
+        { label: 'Dashboard Employee', path: '/employee', icon: '📊' },
+        { label: 'Tugas', path: '/employee/tasks', icon: '✓' },
+        { label: 'Laporan Employee', path: '/employee/reports', icon: '📝' }
+      );
+    }
+    
+    // Add separator before common items if there are combined items
+    if (combinedItems.length > 0) {
+      combinedItems.push({ label: '---', path: '#', icon: '' });
+    }
+    
+    // Add common items
+    combinedItems.push(...commonItems);
+    
+    // If no roles matched, return default with common items only
+    if (combinedItems.length === 1) {
+      return {
+        type: 'simple',
+        items: commonItems
+      };
+    }
+    
+    return {
+      type: 'simple',
+      items: combinedItems
+    };
+  };
         return {
           type: 'grouped',
           items: [
