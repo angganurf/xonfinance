@@ -37,11 +37,12 @@ const AdminInventory = () => {
 
   useEffect(() => {
     loadInventory();
-  }, [categoryFilter]);
+    loadProjects();
+  }, [categoryFilter, activeTab]);
   
   useEffect(() => {
     filterInventory();
-  }, [inventory, searchQuery, categoryFilter]);
+  }, [inventory, searchQuery, categoryFilter, activeTab]);
 
   const loadInventory = async () => {
     try {
@@ -49,6 +50,15 @@ const AdminInventory = () => {
       setInventory(res.data);
     } catch (error) {
       toast.error('Gagal memuat data inventory');
+    }
+  };
+  
+  const loadProjects = async () => {
+    try {
+      const res = await api.get('/projects');
+      setProjects(res.data);
+    } catch (error) {
+      console.error('Error loading projects:', error);
     }
   };
   
