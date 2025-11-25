@@ -356,6 +356,104 @@ const AdminInventory = () => {
                 </tbody>
               </table>
             </div>
+            ) : (
+              /* Arsitektur Tab - Grouped by Project */
+              <div className="space-y-6">
+                {getInventoryByProject().length === 0 ? (
+                  <div className="py-12 text-center text-slate-500">
+                    <Package className="mx-auto h-16 w-16 mb-4 text-slate-300" />
+                    <p className="text-lg font-medium">Belum ada inventory arsitektur</p>
+                    <p className="text-sm mt-2">Tambahkan transaksi bahan/alat pada proyek arsitektur</p>
+                  </div>
+                ) : (
+                  getInventoryByProject().map((projectGroup) => (
+                    <Card key={projectGroup.project_id} className="border-2">
+                      <CardHeader className="bg-slate-50">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          🏗️ {projectGroup.project_name}
+                          <span className="text-sm font-normal text-slate-600">
+                            ({projectGroup.items.length} item)
+                          </span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead className="border-b bg-slate-50">
+                              <tr className="text-left text-xs text-slate-600">
+                                <th className="py-2 px-3 font-semibold">Nama Item</th>
+                                <th className="py-2 px-3 font-semibold">Kategori</th>
+                                <th className="py-2 px-3 font-semibold text-right">Di Gudang</th>
+                                <th className="py-2 px-3 font-semibold text-right">Belum Sampai</th>
+                                <th className="py-2 px-3 font-semibold text-right">Total</th>
+                                <th className="py-2 px-3 font-semibold">Unit</th>
+                                <th className="py-2 px-3 font-semibold text-right">Harga/Unit</th>
+                                <th className="py-2 px-3 font-semibold">Status</th>
+                                <th className="py-2 px-3 font-semibold text-right">Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {projectGroup.items.map((item) => (
+                                <tr key={item.id} className="border-b hover:bg-slate-50">
+                                  <td className="py-2 px-3 font-medium text-sm">{item.item_name}</td>
+                                  <td className="py-2 px-3">
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(item.category)}`}>
+                                      {getCategoryLabel(item.category)}
+                                    </span>
+                                  </td>
+                                  <td className="py-2 px-3 text-right font-semibold text-green-600 text-sm">
+                                    {item.quantity_in_warehouse || 0}
+                                  </td>
+                                  <td className="py-2 px-3 text-right font-semibold text-orange-600 text-sm">
+                                    {item.quantity_out_warehouse || 0}
+                                  </td>
+                                  <td className="py-2 px-3 text-right font-bold text-blue-600 text-sm">
+                                    {(item.quantity_in_warehouse || 0) + (item.quantity_out_warehouse || 0)}
+                                  </td>
+                                  <td className="py-2 px-3 text-sm">{item.unit}</td>
+                                  <td className="py-2 px-3 text-right text-sm">{formatCurrency(item.unit_price)}</td>
+                                  <td className="py-2 px-3">
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                                      {item.status}
+                                    </span>
+                                  </td>
+                                  <td className="py-2 px-3 text-right">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm">
+                                          <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleViewBreakdown(item)}>
+                                          <Store className="mr-2 h-4 w-4" /> Lihat Per Toko
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
+                                          <Edit className="mr-2 h-4 w-4" /> Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onClick={() => {
+                                            setItemToDelete(item);
+                                            setDeleteDialog(true);
+                                          }}
+                                          className="text-red-600"
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" /> Hapus
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
