@@ -81,13 +81,18 @@ class Project(BaseModel):
 class RAB(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    project_id: str
+    project_id: Optional[str] = None  # Will be set when approved
     project_name: str
-    status: str = "draft"  # draft, approved
+    project_type: Optional[str] = "interior"  # interior, arsitektur
+    client_name: Optional[str] = None
+    location: Optional[str] = None
+    status: str = "draft"  # draft, bidding_process, approved, rejected
     discount: float = 0.0
     tax: float = 11.0  # percentage
+    created_by: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: now_wib())
     approved_at: Optional[datetime] = None
+    rejected_reason: Optional[str] = None
 
 class RABItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
