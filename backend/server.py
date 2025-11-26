@@ -590,7 +590,9 @@ async def get_projects(phase: Optional[str] = None, user: User = Depends(get_cur
     user_roles = user.roles if isinstance(user.roles, list) else [user.roles] if user.roles else []
     
     # Filter by phase based on role
-    if 'admin' not in user_roles:
+    # Check both primary role and roles array for admin access
+    is_admin = user.role == 'admin' or 'admin' in user_roles
+    if not is_admin:
         if 'project_planning_team' in user_roles:
             # Planning team only sees perencanaan projects
             query["phase"] = "perencanaan"
