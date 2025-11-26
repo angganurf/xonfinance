@@ -140,15 +140,13 @@ export const Layout = ({ children }) => {
       combinedItems.push(
         { label: 'Home', path: '/accounting', icon: '🏠' },
         { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
-        { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
-        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
+        { label: 'Inventory', path: '/admin/inventory', icon: '📦' }
       );
     }
     
     if (userRoles.includes('site_supervisor')) {
       combinedItems.push(
-        { label: 'Home', path: '/supervisor', icon: '🏠' },
-        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
+        { label: 'Home', path: '/supervisor', icon: '🏠' }
       );
     }
     
@@ -164,16 +162,14 @@ export const Layout = ({ children }) => {
       combinedItems.push(
         { label: 'Home', path: '/planning', icon: '🏠' },
         { label: 'RAB', path: '/planning/rab', icon: '📋' },
-        { label: 'Time Schedule', path: '/planning/schedule', icon: '📅' },
-        { label: 'Pengaturan', path: '/planning/settings', icon: '⚙️' }
+        { label: 'Time Schedule', path: '/planning/schedule', icon: '📅' }
       );
     }
     
     if (userRoles.includes('inventory')) {
       combinedItems.push(
         { label: 'Home', path: '/inventory', icon: '🏠' },
-        { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
-        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
+        { label: 'Inventory', path: '/admin/inventory', icon: '📦' }
       );
     }
     
@@ -181,9 +177,7 @@ export const Layout = ({ children }) => {
     if (combinedItems.length === 0) {
       return {
         type: 'simple',
-        items: [
-          { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
-        ]
+        items: []
       };
     }
     
