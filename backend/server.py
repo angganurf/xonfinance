@@ -579,6 +579,57 @@ async def delete_project(project_id: str, user: User = Depends(get_current_user)
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project deleted"}
 
+@api_router.patch("/projects/{project_id}/design-progress")
+async def update_design_progress(project_id: str, data: dict, user: User = Depends(get_current_user)):
+    """Update project design progress (0-100%)"""
+    progress = data.get("progress", 0)
+    if progress < 0 or progress > 100:
+        raise HTTPException(status_code=400, detail="Progress must be between 0 and 100")
+    
+    result = await db.projects.update_one(
+        {"id": project_id},
+        {"$set": {"design_progress": progress}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    return {"message": "Design progress updated", "progress": progress}
+
+@api_router.get("/planning/overview")
+async def get_planning_overview(user: User = Depends(get_current_user)):
+    """Get planning team overview: projects, RAB, schedules"""
+    # Get all projects
+    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    
+    # Get RAB info for each project
+    rabs = await db.rabs.find({}, {"_id": 0}).to_list(1000)
+    rab_by_project = {}
+    for rab in rabs:
+        if rab.get("project_id"):
+            rab_by_project[rab["project_id"]] = rab
+    
+    # Get schedule info
+    schedules = await db.schedules.find({}, {"_id": 0}).to_list(1000)
+    schedule_by_project = {}
+    for schedule in schedules:
+        schedule_by_project[schedule["project_id"]] = schedule
+    
+    # Combine data
+    result = []
+    for project in projects:
+        rab_info = rab_by_project.get(project["id"])
+        schedule_info = schedule_by_project.get(project["id"])
+        
+        result.append({
+            "project": project,
+            "rab": rab_info,
+            "schedule": schedule_info,
+            "design_progress": project.get("design_progress", 0)
+        })
+    
+    return result
+
 # ============= RAB ENDPOINTS =============
 
 @api_router.post("/rabs")
