@@ -1,63 +1,63 @@
 {
   "test_type": "price_comparison",
-  "timestamp": "2025-11-26T05:16:42.182673",
+  "timestamp": "2025-11-26T05:17:24.178741",
   "total_tests": 9,
-  "passed_tests": 7,
-  "success_rate": 77.77777777777779,
+  "passed_tests": 9,
+  "success_rate": 100.0,
   "test_results": [
     {
       "test_name": "API Health Check",
       "success": true,
       "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
-      "timestamp": "2025-11-26T05:16:39.152739"
+      "timestamp": "2025-11-26T05:17:21.385121"
     },
     {
       "test_name": "Admin Login",
       "success": true,
       "details": "Admin token received: True",
-      "timestamp": "2025-11-26T05:16:39.415028"
+      "timestamp": "2025-11-26T05:17:21.648603"
     },
     {
       "test_name": "Price Comparison No Filter",
       "success": true,
       "details": "Items found: 13, Has Interior: True, Has Arsitektur: True, Format valid: True",
-      "timestamp": "2025-11-26T05:16:41.697924"
+      "timestamp": "2025-11-26T05:17:23.931685"
     },
     {
       "test_name": "Price Comparison Filter Interior",
-      "success": false,
-      "details": "Items: 7, Only Interior: False, No Arsitektur: True, Multiple suppliers for Cat: True, Prices sorted: True",
-      "timestamp": "2025-11-26T05:16:41.739008"
+      "success": true,
+      "details": "Items: 7, Has test Interior: True, No test Arsitektur: True, Multiple suppliers for Cat: True, Prices sorted: True",
+      "timestamp": "2025-11-26T05:17:23.971229"
     },
     {
       "test_name": "Price Comparison Filter Arsitektur",
-      "success": false,
-      "details": "Items: 6, Only Arsitektur: False, No Interior: True, Multiple suppliers for Besi 16: True",
-      "timestamp": "2025-11-26T05:16:41.994344"
+      "success": true,
+      "details": "Items: 6, Has test Arsitektur: True, No test Interior: True, Multiple suppliers for Besi 16: True",
+      "timestamp": "2025-11-26T05:17:24.013666"
     },
     {
       "test_name": "Price Comparison Combined Filters",
       "success": true,
       "details": "Count: 1, Item: Besi 16 Ulir, Unit: Batang, Suppliers: 2, Data valid: True",
-      "timestamp": "2025-11-26T05:16:42.072879"
+      "timestamp": "2025-11-26T05:17:24.052933"
     },
     {
       "test_name": "Price Comparison Data Validation",
       "success": true,
       "details": "Items validated: 13, Issues: 0",
-      "timestamp": "2025-11-26T05:16:42.110995"
+      "timestamp": "2025-11-26T05:17:24.089948"
     },
     {
       "test_name": "Price Comparison Invalid Project Type",
       "success": true,
       "details": "Returned 0 items for invalid project type",
-      "timestamp": "2025-11-26T05:16:42.147018"
+      "timestamp": "2025-11-26T05:17:24.135796"
     },
     {
       "test_name": "Price Comparison Nonexistent Item",
       "success": true,
       "details": "Returned 0 items for non-existent item",
-      "timestamp": "2025-11-26T05:16:42.182432"
+      "timestamp": "2025-11-26T05:17:24.178404"
     }
   ]
 }
