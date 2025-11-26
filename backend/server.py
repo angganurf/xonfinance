@@ -504,6 +504,17 @@ async def logout(request: Request, response: Response):
 
 @api_router.post("/projects")
 async def create_project(input: ProjectInput, user: User = Depends(get_current_user)):
+    """
+    Create new project
+    - Planning team creates 'perencanaan' phase projects
+    - Other roles create 'pelaksanaan' phase projects
+    """
+    # Get user roles
+    user_roles = user.roles if isinstance(user.roles, list) else [user.roles] if user.roles else []
+    
+    # Determine phase based on role
+    phase = "perencanaan" if 'project_planning_team' in user_roles else "pelaksanaan"
+    
     project = Project(
         name=input.name,
         type=input.type,
@@ -511,6 +522,8 @@ async def create_project(input: ProjectInput, user: User = Depends(get_current_u
         contract_date=datetime.fromisoformat(input.contract_date) if input.contract_date else None,
         duration=input.duration,
         location=input.location,
+        project_value=input.project_value,
+        phase=phase,
         created_by=user.id
     )
     
