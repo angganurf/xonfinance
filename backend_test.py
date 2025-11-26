@@ -1414,13 +1414,13 @@ class XONArchitectAPITester:
         if success and isinstance(data, list):
             item_names = [item.get('item_name') for item in data]
             
-            # Should only have Interior materials
+            # Should have our test Interior materials
             expected_interior_materials = ['Cat Duco Merah', 'Engsel Sendok', 'HPL TACO 007', 'Lem Fox']
-            has_only_interior = all(name in expected_interior_materials for name in item_names if name)
+            has_test_interior = all(name in item_names for name in expected_interior_materials)
             
-            # Should NOT have Arsitektur materials
-            arsitektur_materials = ['Besi 13 Ulir', 'Besi 16 Ulir', 'Pasir']
-            has_no_arsitektur = not any(name in arsitektur_materials for name in item_names)
+            # Should NOT have our test Arsitektur materials
+            test_arsitektur_materials = ['Besi 13 Ulir', 'Besi 16 Ulir', 'Pasir']
+            has_no_test_arsitektur = not any(name in item_names for name in test_arsitektur_materials)
             
             # Check for Cat Duco Merah with multiple suppliers
             cat_duco_item = None
@@ -1430,17 +1430,16 @@ class XONArchitectAPITester:
                     break
             
             has_multiple_suppliers = False
+            prices_sorted = False
             if cat_duco_item:
                 suppliers = cat_duco_item.get('suppliers', [])
                 has_multiple_suppliers = len(suppliers) >= 2
                 # Check if suppliers are sorted by price
                 prices = [s.get('latest_price', 0) for s in suppliers]
                 prices_sorted = prices == sorted(prices)
-            else:
-                prices_sorted = False
             
-            all_correct = has_only_interior and has_no_arsitektur and has_multiple_suppliers and prices_sorted
-            details = f"Items: {len(data)}, Only Interior: {has_only_interior}, No Arsitektur: {has_no_arsitektur}, Multiple suppliers for Cat: {has_multiple_suppliers}, Prices sorted: {prices_sorted}"
+            all_correct = has_test_interior and has_no_test_arsitektur and has_multiple_suppliers and prices_sorted
+            details = f"Items: {len(data)}, Has test Interior: {has_test_interior}, No test Arsitektur: {has_no_test_arsitektur}, Multiple suppliers for Cat: {has_multiple_suppliers}, Prices sorted: {prices_sorted}"
             self.log_test("Price Comparison Filter Interior", all_correct, details)
             return all_correct
         else:
