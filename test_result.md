@@ -183,17 +183,41 @@ backend:
         comment: "Created endpoint to clear all data from database except users and backups. Returns deleted counts for each collection."
 
 frontend:
-  - task: "Halaman AdminSettings dengan UI Backup & Restore"
+  - task: "Button dan Dialog 'Buat Project Baru' di Planning Dashboard"
     implemented: true
     working: "NA"
-    file: "pages/admin/Settings.js"
+    file: "pages/planning/Dashboard.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Created AdminSettings page with sections: Backup & Restore (purple card), Export Data (blue card), Import Data (green card), and Clear All Data (red card). Each section has appropriate warnings and info boxes."
+        comment: "Added 'Buat Project Baru' button with Plus icon. Created dialog with form fields: Nama Proyek, Tipe Proyek (select interior/arsitektur), Lokasi, Nilai Proyek (number input), Deskripsi (textarea). Form submission connected to POST /api/projects endpoint with proper state management and toast notifications."
+  
+  - task: "Route /planning/dashboard di App.js"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added route /planning/dashboard pointing to PlanningTeamDashboard component with role protection (project_planning_team, admin). Fixed the issue where navigating to /planning/dashboard resulted in blank page."
+  
+  - task: "Import Plus icon di Planning Dashboard"
+    implemented: true
+    working: "NA"
+    file: "pages/planning/Dashboard.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Plus icon import from lucide-react. Also added Label component import for form labels in create project dialog."
   
   - task: "Fitur Create Backup dengan timestamp"
     implemented: true
