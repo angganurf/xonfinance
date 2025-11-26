@@ -179,30 +179,30 @@ const AccountingDashboard = () => {
                           
                           {/* Breakdown expenses */}
                           <div className="flex items-center gap-4 mt-2">
-                            {project.expenses.material > 0 && (
+                            {project.expenses.bahan > 0 && (
                               <div className="flex items-center gap-1 text-xs">
                                 <ShoppingCart className="h-3 w-3 text-blue-600" />
                                 <span className="text-slate-600">Bahan:</span>
                                 <span className="font-semibold text-blue-600">
-                                  Rp {project.expenses.material.toLocaleString('id-ID')}
+                                  Rp {project.expenses.bahan.toLocaleString('id-ID')}
                                 </span>
                               </div>
                             )}
-                            {project.expenses.labor > 0 && (
+                            {project.expenses.upah > 0 && (
                               <div className="flex items-center gap-1 text-xs">
                                 <Users className="h-3 w-3 text-green-600" />
                                 <span className="text-slate-600">Upah:</span>
                                 <span className="font-semibold text-green-600">
-                                  Rp {project.expenses.labor.toLocaleString('id-ID')}
+                                  Rp {project.expenses.upah.toLocaleString('id-ID')}
                                 </span>
                               </div>
                             )}
-                            {project.expenses.equipment > 0 && (
+                            {project.expenses.alat > 0 && (
                               <div className="flex items-center gap-1 text-xs">
                                 <Hammer className="h-3 w-3 text-orange-600" />
                                 <span className="text-slate-600">Alat:</span>
                                 <span className="font-semibold text-orange-600">
-                                  Rp {project.expenses.equipment.toLocaleString('id-ID')}
+                                  Rp {project.expenses.alat.toLocaleString('id-ID')}
                                 </span>
                               </div>
                             )}
