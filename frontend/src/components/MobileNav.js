@@ -59,6 +59,7 @@ const MobileNav = () => {
         { label: 'Home', path: '/admin', icon: Home },
         { label: 'Perencanaan', path: '/admin/planning-projects', icon: ClipboardList },
         { label: 'Pelaksanaan', path: '/admin/projects', icon: FolderOpen },
+        { label: 'Accounting', path: '/admin/accounting-admin', icon: DollarSign },
         { label: 'Transaksi', path: '/admin/transactions', icon: CreditCard },
         { label: 'Inventory', path: '/admin/inventory', icon: Package },
       ];
