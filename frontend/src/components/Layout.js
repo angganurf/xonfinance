@@ -166,6 +166,18 @@ export const Layout = ({ children }) => {
       );
     }
     
+    if (userRoles.includes('project_planning_team')) {
+      combinedItems.push({
+        label: 'Project Planning Team',
+        icon: '📐',
+        group: 'planning',
+        children: [
+          { label: 'Estimator', path: '/estimator', icon: '💼' },
+          { label: 'Drafter', path: '/drafter', icon: '📝' }
+        ]
+      });
+    }
+    
     // Add separator before common items if there are combined items
     if (combinedItems.length > 0) {
       combinedItems.push({ label: '---', path: '#', icon: '' });
