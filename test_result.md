@@ -329,55 +329,43 @@ agent_communication:
       
       BACKEND (server.py):
       1. ✅ Verified endpoint POST /api/projects exists and supports Planning Team:
-         - Saves snapshot of all collections to backups collection
-         - Includes timestamp (WIB), created_by (user email), and collection counts
-         - Returns backup ID and metadata
-      2. ✅ Created endpoint GET /api/admin/backups:
-         - Lists all backups sorted by timestamp (newest first)
-         - Excludes actual data to keep response small
-         - Returns metadata: id, timestamp, created_by, collections_count
-      3. ✅ Created endpoint POST /api/admin/restore/{backup_id}:
-         - Clears existing data (except users and backups)
-         - Restores data from selected backup
-         - Preserves users collection for security
-         - Returns restored counts
-      4. ✅ Created endpoint DELETE /api/admin/backups/{backup_id}:
-         - Deletes specific backup by ID
-         - Returns 404 if not found
-      5. ✅ Created endpoint POST /api/admin/clear-all-data:
-         - Clears all collections except users and backups
-         - Returns deleted counts for each collection
+         - Endpoint automatically detects user role (project_planning_team)
+         - Creates project with phase="perencanaan" for Planning Team
+         - Creates project with phase="pelaksanaan" for other roles
+         - Accepts ProjectInput: name, type, description, location, project_value
       
-      FRONTEND (pages/admin/Settings.js):
-      1. ✅ Created AdminSettings page with 4 main sections:
-         - Backup & Restore Database (purple card)
-         - Export Data (blue card)
-         - Import Data (green card)
-         - Hapus Semua Data (red card)
-      2. ✅ Backup section features:
-         - "Buat Backup Baru" button with loading state
-         - Daftar backup showing: timestamp, creator, ID, collection counts
-         - Each backup has Restore (🔄) and Delete (🗑️) buttons
-         - Empty state when no backups exist
-      3. ✅ Restore dialog:
-         - Shows backup details (time, creator, ID)
-         - Warning about data replacement
-         - Note about users preservation
-         - Confirmation before restore
-      4. ✅ Export & Import:
-         - Export downloads all data as JSON with timestamp filename
-         - Import accepts JSON file with validation
-         - Warning about potential duplicates
-      5. ✅ Clear all data:
-         - AlertDialog with strong warnings
-         - Note about users & backups preservation
-         - Confirmation required
-      6. ✅ Added route /admin/settings in App.js
-      7. ✅ Added menu "Backup & Data" (💾) in Layout.js
+      2. ✅ Fixed TaskInput model to support Drafter Dashboard:
+         - Added fields: duration_days, role, priority, status
+         - Made project_id and assigned_to optional (not all tasks need assignment)
+         - Updated defaults: priority="medium", status="pending"
+      
+      3. ✅ Simplified create_task function:
+         - Removed hasattr() checks since TaskInput is now complete
+         - Proper calculation of due_date from duration_days
+         - Correct handling of optional fields
+      
+      FRONTEND (pages/planning/Dashboard.js):
+      1. ✅ Added "Buat Project Baru" button with Plus icon
+      2. ✅ Created dialog with complete form:
+         - Nama Proyek (text input, required)
+         - Tipe Proyek (select: Interior/Arsitektur, required)
+         - Lokasi (text input, required)
+         - Nilai Proyek (number input, required)
+         - Deskripsi (textarea, optional)
+      3. ✅ Form submission connected to POST /api/projects
+      4. ✅ State management for dialog open/close
+      5. ✅ Form reset after successful submission
+      6. ✅ Toast notifications for success/error
+      7. ✅ Reload overview after project creation
+      
+      FRONTEND (App.js):
+      1. ✅ Added route /planning/dashboard
+      2. ✅ Role protection for project_planning_team and admin
+      3. ✅ Fixed blank page issue when navigating to /planning/dashboard
       
       Testing diperlukan:
-      1. Backend: Test backup creation and data structure
-      2. Backend: Test list backups endpoint
+      1. Backend: Test POST /api/projects with Planning Team user
+      2. Backend: Test POST /api/tasks with Drafter data (no project_id, no assigned_to)
       3. Backend: Test restore from backup
       4. Backend: Test delete backup
       5. Backend: Test clear all data
