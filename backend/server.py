@@ -672,6 +672,14 @@ async def approve_planning_project(
         "execution_project_id": execution_project.id
     }
 
+@api_router.patch("/planning-projects/{project_id}")
+async def update_planning_project(project_id: str, updates: dict, user: User = Depends(get_current_user)):
+    """Update planning project"""
+    result = await db.planning_projects.update_one({"id": project_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Planning project not found")
+    return {"message": "Planning project updated"}
+
 @api_router.delete("/planning-projects/{project_id}")
 async def delete_planning_project(project_id: str, user: User = Depends(get_current_user)):
     """Delete planning project"""
@@ -680,6 +688,82 @@ async def delete_planning_project(project_id: str, user: User = Depends(get_curr
         raise HTTPException(status_code=404, detail="Planning project not found")
     
     return {"message": "Planning project deleted"}
+
+class BulkOperationRequest(BaseModel):
+    """Request model for bulk operations"""
+    project_ids: List[str]
+    updates: Optional[Dict[str, Any]] = None
+
+@api_router.post("/planning-projects/bulk/delete")
+async def bulk_delete_planning_projects(request: BulkOperationRequest, user: User = Depends(get_current_user)):
+    """Delete multiple planning projects at once"""
+    if not request.project_ids:
+        raise HTTPException(status_code=400, detail="No project IDs provided")
+    
+    result = await db.planning_projects.delete_many({"id": {"$in": request.project_ids}})
+    
+    return {
+        "message": f"Deleted {result.deleted_count} planning projects",
+        "deleted_count": result.deleted_count
+    }
+
+@api_router.post("/planning-projects/bulk/update")
+async def bulk_update_planning_projects(request: BulkOperationRequest, user: User = Depends(get_current_user)):
+    """Update multiple planning projects at once"""
+    if not request.project_ids:
+        raise HTTPException(status_code=400, detail="No project IDs provided")
+    
+    if not request.updates:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    
+    result = await db.planning_projects.update_many(
+        {"id": {"$in": request.project_ids}},
+        {"$set": request.updates}
+    )
+    
+    return {
+        "message": f"Updated {result.modified_count} planning projects",
+        "modified_count": result.modified_count
+    }
+
+@api_router.post("/projects/bulk/delete")
+async def bulk_delete_projects(request: BulkOperationRequest, user: User = Depends(get_current_user)):
+    """Delete multiple execution projects at once"""
+    if not request.project_ids:
+        raise HTTPException(status_code=400, detail="No project IDs provided")
+    
+    # Delete related data for all projects
+    await db.rab_items.delete_many({"project_id": {"$in": request.project_ids}})
+    await db.rabs.delete_many({"project_id": {"$in": request.project_ids}})
+    await db.transactions.delete_many({"project_id": {"$in": request.project_ids}})
+    await db.schedule_items.delete_many({"project_id": {"$in": request.project_ids}})
+    await db.tasks.delete_many({"project_id": {"$in": request.project_ids}})
+    
+    result = await db.projects.delete_many({"id": {"$in": request.project_ids}})
+    
+    return {
+        "message": f"Deleted {result.deleted_count} projects",
+        "deleted_count": result.deleted_count
+    }
+
+@api_router.post("/projects/bulk/update")
+async def bulk_update_projects(request: BulkOperationRequest, user: User = Depends(get_current_user)):
+    """Update multiple execution projects at once"""
+    if not request.project_ids:
+        raise HTTPException(status_code=400, detail="No project IDs provided")
+    
+    if not request.updates:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    
+    result = await db.projects.update_many(
+        {"id": {"$in": request.project_ids}},
+        {"$set": request.updates}
+    )
+    
+    return {
+        "message": f"Updated {result.modified_count} projects",
+        "modified_count": result.modified_count
+    }
 
 @api_router.post("/admin/migrate-planning-projects")
 async def migrate_planning_projects(user: User = Depends(get_current_user)):
