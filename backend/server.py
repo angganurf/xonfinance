@@ -54,7 +54,7 @@ class User(BaseModel):
     role: str  # Primary role or single role (for backward compatibility)
     roles: Optional[List[str]] = []  # Multiple roles support
     password_hash: Optional[str] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class UserSession(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -62,7 +62,7 @@ class UserSession(BaseModel):
     user_id: str
     session_token: str
     expires_at: datetime
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class Project(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -76,7 +76,7 @@ class Project(BaseModel):
     project_value: Optional[float] = 0.0  # nilai pekerjaan
     status: str = "active"  # active, waiting, completed
     created_by: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class RAB(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -86,7 +86,7 @@ class RAB(BaseModel):
     status: str = "draft"  # draft, approved
     discount: float = 0.0
     tax: float = 11.0  # percentage
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
     approved_at: Optional[datetime] = None
 
 class RABItem(BaseModel):
@@ -100,7 +100,7 @@ class RABItem(BaseModel):
     quantity: float
     unit: str  # m³, m, m²
     total: float
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class TransactionItem(BaseModel):
     description: str
@@ -124,8 +124,8 @@ class Transaction(BaseModel):
     status: Optional[str] = None  # for aset: custom status like "Aktif", "Maintenance", etc
     receipt: Optional[str] = None  # base64 image
     created_by: str
-    transaction_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    transaction_date: datetime = Field(default_factory=lambda: now_wib())
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class TimeScheduleItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -135,7 +135,7 @@ class TimeScheduleItem(BaseModel):
     value: float
     duration_days: int
     start_week: int
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class Task(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -147,7 +147,7 @@ class Task(BaseModel):
     status: str = "pending"  # pending, in_progress, completed
     due_date: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class WorkReport(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -157,7 +157,7 @@ class WorkReport(BaseModel):
     report: str
     progress: int  # 0-100
     photos: Optional[List[str]] = []  # base64 images
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class Notification(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -167,7 +167,7 @@ class Notification(BaseModel):
     message: str
     type: str  # info, warning, success, error
     read: bool = False
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class Inventory(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -184,8 +184,8 @@ class Inventory(BaseModel):
     project_type: str = "arsitektur"  # interior, arsitektur (dari project type)
     transaction_id: str
     status: str = "Tersedia"  # Status kondisi: Tersedia, Order, Habis, Bagus, Rusak, dll
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
+    updated_at: datetime = Field(default_factory=lambda: now_wib())
 
 class WarehouseTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -199,7 +199,7 @@ class WarehouseTransaction(BaseModel):
     usage_type: str  # production, return, adjustment
     notes: Optional[str] = None
     created_by: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: now_wib())
 
 # ============= INPUT MODELS =============
 
@@ -313,7 +313,7 @@ async def get_current_user(request: Request, authorization: Optional[str] = Head
     
     # Find session
     session = await db.user_sessions.find_one({"session_token": session_token})
-    if not session or datetime.fromisoformat(session["expires_at"]) < datetime.now(timezone.utc):
+    if not session or datetime.fromisoformat(session["expires_at"]) < now_wib():
         raise HTTPException(status_code=401, detail="Invalid or expired session")
     
     # Find user
@@ -356,7 +356,7 @@ async def login(input: LoginInput, response: Response):
     
     # Create session
     session_token = str(uuid.uuid4())
-    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    expires_at = now_wib() + timedelta(days=7)
     
     session = UserSession(
         user_id=user_doc["id"],
@@ -433,7 +433,7 @@ async def google_auth(request: Request, response: Response):
     
     # Create session
     session_token = user_data["session_token"]
-    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    expires_at = now_wib() + timedelta(days=7)
     
     session = UserSession(
         user_id=user_id,
@@ -620,7 +620,7 @@ async def approve_rab(rab_id: str, user: User = Depends(get_current_user)):
     # Update RAB status
     await db.rabs.update_one(
         {"id": rab_id},
-        {"$set": {"status": "approved", "approved_at": datetime.now(timezone.utc).isoformat()}}
+        {"$set": {"status": "approved", "approved_at": now_wib().isoformat()}}
     )
     
     # Update project status to active
@@ -822,7 +822,7 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
         unit=input.unit,
         status=input.status,
         receipt=input.receipt,
-        transaction_date=datetime.fromisoformat(input.transaction_date) if input.transaction_date else datetime.now(timezone.utc),
+        transaction_date=datetime.fromisoformat(input.transaction_date) if input.transaction_date else now_wib(),
         created_by=user.id
     )
     
@@ -870,7 +870,7 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
                             "quantity": new_total_quantity,
                             "total_value": new_total_value,
                             "unit_price": item.unit_price,
-                            "updated_at": datetime.now(timezone.utc).isoformat()
+                            "updated_at": now_wib().isoformat()
                         }}
                     )
                 else:
@@ -929,7 +929,7 @@ async def create_transaction(input: TransactionInput, user: User = Depends(get_c
                         "quantity": new_total_quantity,
                         "total_value": new_total_value,
                         "unit_price": unit_price,
-                        "updated_at": datetime.now(timezone.utc).isoformat()
+                        "updated_at": now_wib().isoformat()
                     }}
                 )
             else:
@@ -1054,7 +1054,7 @@ async def update_transaction_item_status(
                 "quantity_in_warehouse": final_in_warehouse,
                 "quantity_out_warehouse": final_out_warehouse,
                 "quantity": final_total,
-                "updated_at": datetime.now(timezone.utc).isoformat()
+                "updated_at": now_wib().isoformat()
             }}
         )
     
@@ -1219,7 +1219,7 @@ async def update_inventory(inventory_id: str, input: InventoryUpdateInput, user:
         unit_price = updates.get("unit_price", existing["unit_price"])
         updates["total_value"] = quantity * unit_price
     
-    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    updates["updated_at"] = now_wib().isoformat()
     
     await db.inventory.update_one({"id": inventory_id}, {"$set": updates})
     
@@ -1279,7 +1279,7 @@ async def create_warehouse_transaction(input: WarehouseTransactionInput, user: U
         {"$set": {
             "quantity_in_warehouse": new_qty_in_warehouse,
             "quantity": new_total_qty,
-            "updated_at": datetime.now(timezone.utc).isoformat()
+            "updated_at": now_wib().isoformat()
         }}
     )
     
@@ -1405,7 +1405,7 @@ async def get_financial_summary(user: User = Depends(get_current_user)):
 @api_router.get("/financial/monthly")
 async def get_monthly_financial(user: User = Depends(get_current_user)):
     # Get transactions for last 6 months
-    six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
+    six_months_ago = now_wib() - timedelta(days=180)
     transactions = await db.transactions.find({
         "transaction_date": {"$gte": six_months_ago.isoformat()}
     }, {"_id": 0}).to_list(10000)
@@ -1597,7 +1597,7 @@ async def get_tasks(assigned_to: Optional[str] = None, user: User = Depends(get_
 @api_router.patch("/tasks/{task_id}")
 async def update_task(task_id: str, updates: dict, user: User = Depends(get_current_user)):
     if updates.get('status') == 'completed' and 'completed_at' not in updates:
-        updates['completed_at'] = datetime.now(timezone.utc).isoformat()
+        updates['completed_at'] = now_wib().isoformat()
     
     result = await db.tasks.update_one({"id": task_id}, {"$set": updates})
     if result.matched_count == 0:
