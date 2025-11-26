@@ -271,19 +271,24 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "4.1"
-  test_sequence: 7
+  version: "5.0"
+  test_sequence: 8
   run_ui: true
-  last_backend_test: "2025-11-26T05:20:00Z"
-  backend_inventory_status: "TESTED_WORKING"
-  price_comparison_status: "TESTED_WORKING"
+  last_backend_test: "2025-11-26T05:31:00Z"
+  backend_backup_status: "NEEDS_TESTING"
+  admin_settings_status: "NEEDS_TESTING"
 
 test_plan:
   current_focus:
-    - "Implementasi sub-tabs (Stok / Daftar Bahan) di dalam tab Interior dan Arsitektur"
-    - "Tampilan tabel Daftar Bahan dengan perbandingan harga"
-    - "Dialog detail perbandingan harga per supplier"
-    - "Filter data perbandingan harga berdasarkan project_type"
+    - "Endpoint POST /api/admin/backup untuk create backup database"
+    - "Endpoint GET /api/admin/backups untuk list semua backup"
+    - "Endpoint POST /api/admin/restore/{backup_id} untuk restore database"
+    - "Endpoint DELETE /api/admin/backups/{backup_id} untuk hapus backup"
+    - "Endpoint POST /api/admin/clear-all-data untuk hapus semua data"
+    - "Halaman AdminSettings dengan UI Backup & Restore"
+    - "Fitur Create Backup dengan timestamp"
+    - "Daftar backup dengan detail dan aksi"
+    - "Dialog konfirmasi Restore dengan detail backup"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
