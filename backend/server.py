@@ -718,7 +718,7 @@ async def update_rab_status(rab_id: str, data: dict, user: User = Depends(get_cu
         tax_amount = after_discount * (tax_percent / 100)
         grand_total = after_discount + tax_amount
         
-        # Create project
+        # Create project with phase = pelaksanaan (approved RAB = execution phase)
         project = Project(
             name=rab["project_name"],
             type=rab.get("project_type", "interior"),
@@ -726,6 +726,7 @@ async def update_rab_status(rab_id: str, data: dict, user: User = Depends(get_cu
             location=rab.get("location"),
             project_value=grand_total,
             status="active",
+            phase="pelaksanaan",  # Project pelaksanaan after RAB approved
             created_by=user.email
         )
         
