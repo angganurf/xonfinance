@@ -36,10 +36,12 @@ const PlanningTeamDashboard = () => {
 
   const loadOverview = async () => {
     try {
+      console.log('[Planning Dashboard] Loading overview...');
       const res = await api.get('/planning/overview');
+      console.log('[Planning Dashboard] Overview loaded:', res.data.length, 'projects');
       setOverview(res.data);
     } catch (error) {
-      console.error('Error loading overview:', error);
+      console.error('[Planning Dashboard] Error loading overview:', error);
       toast.error('Gagal memuat data overview');
     } finally {
       setLoading(false);
