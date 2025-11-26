@@ -454,6 +454,27 @@ const PlanningTeamDashboard = () => {
             <DialogTitle>Buat Project Perencanaan Baru</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateProject} className="space-y-4">
+            {/* RAB Selection */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <Label htmlFor="rab_selection" className="text-blue-800">Pilih dari RAB (Opsional)</Label>
+              <select
+                id="rab_selection"
+                value={selectedRAB?.id || ''}
+                onChange={(e) => handleRABSelection(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring mt-2"
+              >
+                <option value="">-- Tidak pilih dari RAB --</option>
+                {rabs.map((rab) => (
+                  <option key={rab.id} value={rab.id}>
+                    {rab.project_name} - {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(rab.total_price || 0)}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-blue-600 mt-1">
+                💡 Jika pilih dari RAB, nama proyek dan nilai proyek akan otomatis terisi
+              </p>
+            </div>
+
             <div>
               <Label htmlFor="name">Nama Proyek *</Label>
               <Input
@@ -491,15 +512,20 @@ const PlanningTeamDashboard = () => {
             </div>
 
             <div>
-              <Label htmlFor="project_value">Nilai Proyek (Rp) *</Label>
+              <Label htmlFor="project_value">Nilai Proyek (Rp)</Label>
               <Input
                 id="project_value"
                 type="number"
                 value={formData.project_value}
                 onChange={(e) => setFormData({ ...formData, project_value: parseFloat(e.target.value) || 0 })}
-                placeholder="Contoh: 100000000"
-                required
+                placeholder="0 (bisa dikosongkan jika belum ada RAB)"
+                disabled={selectedRAB !== null}
               />
+              <p className="text-xs text-slate-500 mt-1">
+                {selectedRAB 
+                  ? "✓ Nilai proyek diambil dari RAB yang dipilih" 
+                  : "Bisa dikosongkan dulu, nanti bisa di-update ketika RAB sudah dibuat"}
+              </p>
             </div>
 
             <div>
