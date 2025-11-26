@@ -1906,6 +1906,141 @@ async def bulk_update_members(data: dict, user: User = Depends(get_current_user)
     
     return {"message": f"{result.modified_count} users updated successfully", "modified_count": result.modified_count}
 
+# ============= BACKUP & RESTORE ENDPOINTS =============
+
+@api_router.post("/admin/backup")
+async def create_backup(user: User = Depends(get_current_user)):
+    """Create a backup of all database collections"""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    try:
+        # Get all data from collections
+        collections_to_backup = ['projects', 'transactions', 'users', 'inventory', 'rabs', 'rab_items', 'schedules', 'tasks']
+        backup_data = {}
+        
+        for collection_name in collections_to_backup:
+            collection = db[collection_name]
+            data = await collection.find({}, {"_id": 0}).to_list(10000)
+            backup_data[collection_name] = data
+        
+        # Create backup document
+        backup_doc = {
+            "id": str(uuid.uuid4()),
+            "timestamp": now_wib().isoformat(),
+            "created_by": user.email,
+            "data": backup_data,
+            "collections_count": {name: len(backup_data[name]) for name in collections_to_backup}
+        }
+        
+        # Store backup in database
+        await db.backups.insert_one(backup_doc)
+        
+        return {
+            "id": backup_doc["id"],
+            "timestamp": backup_doc["timestamp"],
+            "created_by": backup_doc["created_by"],
+            "collections_count": backup_doc["collections_count"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Backup failed: {str(e)}")
+
+@api_router.get("/admin/backups")
+async def list_backups(user: User = Depends(get_current_user)):
+    """List all available backups"""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    try:
+        backups = await db.backups.find({}, {"_id": 0, "data": 0}).to_list(1000)
+        # Sort by timestamp descending (newest first)
+        backups.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+        return backups
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list backups: {str(e)}")
+
+@api_router.post("/admin/restore/{backup_id}")
+async def restore_backup(backup_id: str, user: User = Depends(get_current_user)):
+    """Restore database from a specific backup"""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    try:
+        # Get backup document
+        backup = await db.backups.find_one({"id": backup_id}, {"_id": 0})
+        if not backup:
+            raise HTTPException(status_code=404, detail="Backup not found")
+        
+        backup_data = backup.get("data", {})
+        
+        # Clear existing data (except backups and user sessions)
+        collections_to_restore = ['projects', 'transactions', 'inventory', 'rabs', 'rab_items', 'schedules', 'tasks']
+        
+        for collection_name in collections_to_restore:
+            await db[collection_name].delete_many({})
+        
+        # Restore data
+        restored_count = {}
+        for collection_name, data in backup_data.items():
+            if collection_name in collections_to_restore and data:
+                collection = db[collection_name]
+                if len(data) > 0:
+                    await collection.insert_many(data)
+                restored_count[collection_name] = len(data)
+        
+        # Don't restore users to prevent locking out current admin
+        # But track the count
+        restored_count['users'] = f"Skipped (current users preserved)"
+        
+        return {
+            "message": "Restore completed successfully",
+            "backup_id": backup_id,
+            "backup_timestamp": backup.get("timestamp"),
+            "restored_count": restored_count
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Restore failed: {str(e)}")
+
+@api_router.delete("/admin/backups/{backup_id}")
+async def delete_backup(backup_id: str, user: User = Depends(get_current_user)):
+    """Delete a specific backup"""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    try:
+        result = await db.backups.delete_one({"id": backup_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Backup not found")
+        
+        return {"message": "Backup deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete backup: {str(e)}")
+
+@api_router.post("/admin/clear-all-data")
+async def clear_all_data(user: User = Depends(get_current_user)):
+    """Clear all data from database (except users and backups)"""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    
+    try:
+        collections_to_clear = ['projects', 'transactions', 'inventory', 'rabs', 'rab_items', 'schedules', 'tasks']
+        
+        deleted_count = {}
+        for collection_name in collections_to_clear:
+            result = await db[collection_name].delete_many({})
+            deleted_count[collection_name] = result.deleted_count
+        
+        return {
+            "message": "All data cleared successfully",
+            "deleted_count": deleted_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to clear data: {str(e)}")
+
 # Include router
 app.include_router(api_router)
 
