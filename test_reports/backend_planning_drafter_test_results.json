@@ -1,63 +1,63 @@
 {
   "test_type": "planning_drafter",
-  "timestamp": "2025-11-26T07:28:12.564695",
+  "timestamp": "2025-11-26T07:28:57.399442",
   "total_tests": 9,
-  "passed_tests": 7,
-  "success_rate": 77.77777777777779,
+  "passed_tests": 9,
+  "success_rate": 100.0,
   "test_results": [
     {
       "test_name": "API Health Check",
       "success": true,
       "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
-      "timestamp": "2025-11-26T07:28:11.992308"
+      "timestamp": "2025-11-26T07:28:56.861924"
     },
     {
       "test_name": "Admin Login with Planning Role",
       "success": true,
       "details": "Admin token received: True, Role: admin",
-      "timestamp": "2025-11-26T07:28:12.255933"
+      "timestamp": "2025-11-26T07:28:57.131067"
     },
     {
       "test_name": "Create Project Planning Team",
       "success": true,
-      "details": "Project ID: f48ac0dd-2edf-4563-80fa-a344bdf9a590",
-      "timestamp": "2025-11-26T07:28:12.311171"
+      "details": "Project ID: 513b2573-25ac-465d-af76-462aee37975c",
+      "timestamp": "2025-11-26T07:28:57.169206"
     },
     {
       "test_name": "Verify Project Phase Perencanaan",
-      "success": false,
-      "details": "Phase: pelaksanaan, Name: Test Project Planning Team, Value: 150000000.0",
-      "timestamp": "2025-11-26T07:28:12.352963"
+      "success": true,
+      "details": "Phase: perencanaan, Name: Test Project Planning Team, Value: 150000000.0",
+      "timestamp": "2025-11-26T07:28:57.204815"
     },
     {
       "test_name": "Query Projects by Phase Perencanaan",
-      "success": false,
-      "details": "Projects found: 0, Test project found: False, Correct phase: False",
-      "timestamp": "2025-11-26T07:28:12.394512"
+      "success": true,
+      "details": "Projects found: 1, Test project found: True, Correct phase: True",
+      "timestamp": "2025-11-26T07:28:57.242526"
     },
     {
       "test_name": "Create Task Drafter (Full)",
       "success": true,
-      "details": "Task ID: 77b61f98-5949-46da-a921-944fb48072cf",
-      "timestamp": "2025-11-26T07:28:12.442783"
+      "details": "Task ID: 46f1fa6e-b516-4d75-bf73-d9379e582736",
+      "timestamp": "2025-11-26T07:28:57.281593"
     },
     {
       "test_name": "Verify Task Created Correctly",
       "success": true,
       "details": "Title: True, Desc: True, Priority: True, Role: True, Status: True, Duration: True, Due date calc: True",
-      "timestamp": "2025-11-26T07:28:12.483759"
+      "timestamp": "2025-11-26T07:28:57.323313"
     },
     {
       "test_name": "Create Task Drafter (Minimal)",
       "success": true,
-      "details": "Task ID: 225534b1-f054-4df0-846e-377108d81fea",
-      "timestamp": "2025-11-26T07:28:12.523188"
+      "details": "Task ID: 5cb0c58e-b7cc-4719-95a4-52c8d09da10a",
+      "timestamp": "2025-11-26T07:28:57.361957"
     },
     {
       "test_name": "Verify Task Defaults",
       "success": true,
       "details": "Title: True, Desc null: True, Priority: True, Role: True, Status default: True, Duration: True",
-      "timestamp": "2025-11-26T07:28:12.562505"
+      "timestamp": "2025-11-26T07:28:57.399117"
     }
   ]
 }
