@@ -13,6 +13,13 @@ from datetime import datetime, timezone, timedelta
 import bcrypt
 import httpx
 import base64
+
+# WIB Timezone (UTC+7)
+WIB = timezone(timedelta(hours=7))
+
+def now_wib():
+    """Get current datetime in WIB timezone"""
+    return datetime.now(WIB)
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
