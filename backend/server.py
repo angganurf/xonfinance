@@ -147,12 +147,16 @@ class TimeScheduleItem(BaseModel):
 class Task(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    project_id: str
+    project_id: Optional[str] = None
     title: str
     description: Optional[str] = None
-    assigned_to: str
+    assigned_to: Optional[str] = None
+    role: Optional[str] = None  # drafter, employee, etc
     status: str = "pending"  # pending, in_progress, completed
-    due_date: Optional[datetime] = None
+    priority: str = "medium"  # low, medium, high
+    start_date: datetime = Field(default_factory=lambda: now_wib())
+    duration_days: Optional[int] = None  # durasi pengerjaan dalam hari
+    due_date: Optional[datetime] = None  # deadline (auto calculated)
     completed_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: now_wib())
 
