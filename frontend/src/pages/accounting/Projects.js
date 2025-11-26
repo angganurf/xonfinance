@@ -282,11 +282,18 @@ const AccountingProjects = () => {
                       >
                         <Eye className="mr-2 h-4 w-4" /> Lihat Detail
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleOpenDialog(project)} data-testid={`edit-project-${project.id}`}>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDialog(project);
+                        }} 
+                        data-testid={`edit-project-${project.id}`}
+                      >
                         <Edit className="mr-2 h-4 w-4" /> Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setProjectToDelete(project);
                           setDeleteDialog(true);
                         }}
