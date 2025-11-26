@@ -758,6 +758,51 @@ const PlanningTeamDashboard = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Edit Progress Dialog */}
+      <Dialog open={bulkEditDialog} onOpenChange={setBulkEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Progress {selectedProjects.length} Pekerjaan</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800 font-medium">
+                {selectedProjects.length} pekerjaan dipilih
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Progress yang sama akan diterapkan ke semua pekerjaan yang dipilih
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-slate-700 block mb-2">
+                Progress Desain (0-100%)
+              </label>
+              <div className="flex items-center gap-4">
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={bulkProgress}
+                  onChange={(e) => setBulkProgress(e.target.value)}
+                  className="flex-1"
+                />
+                <span className="text-lg font-bold text-blue-600">{bulkProgress}%</span>
+              </div>
+              <Progress value={bulkProgress} className="h-3 mt-3" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkEditDialog(false)}>
+              Batal
+            </Button>
+            <Button onClick={handleBulkUpdateProgress} className="bg-blue-600 hover:bg-blue-700">
+              Update {selectedProjects.length} Pekerjaan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
