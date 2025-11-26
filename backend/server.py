@@ -2437,6 +2437,21 @@ async def delete_project_comment(
     await db.project_comments.delete_one({"id": comment_id})
     return {"message": "Comment deleted"}
 
+@api_router.get("/users/search")
+async def search_users(q: str = "", user: User = Depends(get_current_user)):
+    """Search users for mention autocomplete"""
+    query = {}
+    if q:
+        query = {
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"email": {"$regex": q, "$options": "i"}}
+            ]
+        }
+    
+    users = await db.users.find(query, {"_id": 0, "id": 1, "name": 1, "email": 1}).limit(10).to_list(10)
+    return users
+
 # Include router
 app.include_router(api_router)
 
