@@ -414,6 +414,84 @@ const PlanningTeamDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Project Dialog */}
+      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Buat Project Perencanaan Baru</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateProject} className="space-y-4">
+            <div>
+              <Label htmlFor="name">Nama Proyek *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Contoh: Renovasi Rumah Pak Budi"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="type">Tipe Proyek *</Label>
+              <select
+                id="type"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                required
+              >
+                <option value="interior">Interior</option>
+                <option value="arsitektur">Arsitektur</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="location">Lokasi *</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="Contoh: Jakarta Selatan"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="project_value">Nilai Proyek (Rp) *</Label>
+              <Input
+                id="project_value"
+                type="number"
+                value={formData.project_value}
+                onChange={(e) => setFormData({ ...formData, project_value: parseFloat(e.target.value) || 0 })}
+                placeholder="Contoh: 100000000"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Deskripsi</Label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Deskripsi singkat tentang proyek..."
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreateDialog(false)}>
+                Batal
+              </Button>
+              <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                Simpan
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
