@@ -263,11 +263,21 @@ function App() {
             }
           />
 
+          {/* Inventory Routes */}
+          <Route
+            path="/inventory"
+            element={
+              <ProtectedRoute allowedRoles={['inventory', 'admin']}>
+                <InventoryDashboard />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Drafter Routes */}
           <Route
             path="/drafter"
             element={
-              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+              <ProtectedRoute allowedRoles={['drafter', 'admin']}>
                 <DrafterDashboard />
               </ProtectedRoute>
             }
