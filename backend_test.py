@@ -3114,6 +3114,9 @@ def main():
         elif sys.argv[1] == "inventory_item_names_filter":
             success = tester.run_inventory_item_names_filter_only_tests()
             test_type = "inventory_item_names_filter"
+        elif sys.argv[1] == "debug":
+            success = tester.run_planning_debug_tests()
+            test_type = "debug"
         else:
             success = tester.run_all_tests()
             test_type = "all"
