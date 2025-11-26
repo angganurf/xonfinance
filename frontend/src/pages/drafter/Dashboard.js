@@ -410,12 +410,26 @@ const DrafterDashboard = () => {
             </div>
 
             <div>
-              <Label>Due Date</Label>
+              <Label>Durasi Pengerjaan (Hari)</Label>
               <Input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({...formData, due_date: e.target.value})}
+                type="number"
+                min="1"
+                value={formData.duration_days}
+                onChange={(e) => setFormData({...formData, duration_days: parseInt(e.target.value)})}
+                placeholder="Contoh: 30"
               />
+              <p className="text-xs text-slate-500 mt-1">
+                💡 Deadline akan otomatis dihitung dari hari ini + durasi pengerjaan
+                {formData.duration_days && (
+                  <span className="text-blue-600 font-medium ml-1">
+                    → Deadline: {new Date(Date.now() + formData.duration_days * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </span>
+                )}
+              </p>
             </div>
 
             <DialogFooter>
