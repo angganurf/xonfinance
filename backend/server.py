@@ -1121,6 +1121,9 @@ async def get_price_comparison(
     if project_type:
         projects = await db.projects.find({"type": project_type}, {"_id": 0, "id": 1}).to_list(1000)
         project_ids_filter = {p["id"] for p in projects}
+        # If project_type is provided but no projects found, return empty results
+        if not project_ids_filter:
+            return []
     
     # Build price comparison data
     comparison = {}
