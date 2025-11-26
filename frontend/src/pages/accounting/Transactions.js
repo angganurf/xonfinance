@@ -214,10 +214,13 @@ const AccountingTransactions = () => {
     }
     
     try {
+      // Combine date and time into ISO format
+      const transactionDateTime = `${formData.transaction_date}T${formData.transaction_time || '00:00'}:00`;
+      
       const data = {
         project_id: formData.project_id,
         category: formData.category,
-        transaction_date: formData.transaction_date
+        transaction_date: transactionDateTime
       };
       
       if (formData.category === 'bahan') {
