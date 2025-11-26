@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { Progress } from '../../components/ui/progress';
+import { Checkbox } from '../../components/ui/checkbox';
 import { toast } from 'sonner';
-import { ArrowLeft, Building2, MapPin, Calendar, DollarSign, FileText, TrendingUp, Users, Package, MessageCircle, Send, Trash2, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Calendar, DollarSign, TrendingUp, Package, MessageCircle, Send, Trash2, Image as ImageIcon, X, Clock, CheckCircle2, Circle, Plus } from 'lucide-react';
 import { Textarea } from '../../components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
+import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
 
@@ -16,12 +18,9 @@ const ProjectDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [project, setProject] = useState(null);
-  const [statistics, setStatistics] = useState({
-    transactions: { count: 0, total: 0 },
-    inventory: { count: 0 },
-    tasks: { count: 0, completed: 0 },
-    rab: null
-  });
+  const [transactions, setTransactions] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -32,12 +31,15 @@ const ProjectDetail = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     loadProjectDetail();
-    loadStatistics();
+    loadTransactions();
+    loadInventory();
+    loadTasks();
     loadComments();
     loadUsers();
   }, [id]);
@@ -62,27 +64,30 @@ const ProjectDetail = () => {
     }
   };
 
-  const loadStatistics = async () => {
+  const loadTransactions = async () => {
     try {
-      const transRes = await api.get(`/transactions?project_id=${id}`);
-      const transactions = transRes.data;
-      const totalExpense = transactions.reduce((sum, t) => sum + (t.total_amount || 0), 0);
-
-      const invRes = await api.get(`/inventory?project_id=${id}`);
-      const tasksRes = await api.get(`/tasks?project_id=${id}`);
-      const tasks = tasksRes.data;
-      const completedTasks = tasks.filter(t => t.status === 'completed');
-      const rabRes = await api.get(`/rabs?project_id=${id}`);
-      const rab = rabRes.data.length > 0 ? rabRes.data[0] : null;
-
-      setStatistics({
-        transactions: { count: transactions.length, total: totalExpense },
-        inventory: { count: invRes.data.length },
-        tasks: { count: tasks.length, completed: completedTasks.length },
-        rab: rab
-      });
+      const res = await api.get(`/transactions?project_id=${id}`);
+      setTransactions(res.data);
     } catch (error) {
-      console.error('Error loading statistics:', error);
+      console.error('Error loading transactions:', error);
+    }
+  };
+
+  const loadInventory = async () => {
+    try {
+      const res = await api.get(`/inventory?project_id=${id}`);
+      setInventory(res.data);
+    } catch (error) {
+      console.error('Error loading inventory:', error);
+    }
+  };
+
+  const loadTasks = async () => {
+    try {
+      const res = await api.get(`/projects/${id}/tasks`);
+      setTasks(res.data);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
     }
   };
 
@@ -123,11 +128,11 @@ const ProjectDetail = () => {
     }
   };
 
-  const insertMention = (user) => {
+  const insertMention = (mentionUser) => {
     const lastAtIndex = newComment.lastIndexOf('@', cursorPosition);
     const beforeMention = newComment.substring(0, lastAtIndex);
     const afterMention = newComment.substring(cursorPosition);
-    const newText = `${beforeMention}@${user.email} ${afterMention}`;
+    const newText = `${beforeMention}@${mentionUser.email} ${afterMention}`;
     setNewComment(newText);
     setShowMentionList(false);
   };
@@ -135,7 +140,6 @@ const ProjectDetail = () => {
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     
-    // Validate file size (max 5MB per file)
     const validFiles = files.filter(file => {
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`File ${file.name} terlalu besar (max 5MB)`);
@@ -147,7 +151,6 @@ const ProjectDetail = () => {
     if (validFiles.length > 0) {
       setSelectedImages(prev => [...prev, ...validFiles]);
       
-      // Create previews
       validFiles.forEach(file => {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -224,6 +227,46 @@ const ProjectDetail = () => {
     }
   };
 
+  const handleAddTask = async () => {
+    if (!newTaskTitle.trim()) {
+      toast.error('Nama tugas tidak boleh kosong');
+      return;
+    }
+
+    try {
+      await api.post(`/projects/${id}/tasks?title=${encodeURIComponent(newTaskTitle)}`);
+      toast.success('Tugas berhasil ditambahkan');
+      setNewTaskTitle('');
+      loadTasks();
+    } catch (error) {
+      console.error('Error adding task:', error);
+      toast.error('Gagal menambahkan tugas');
+    }
+  };
+
+  const handleToggleTask = async (taskId, completed) => {
+    try {
+      await api.patch(`/projects/${id}/tasks/${taskId}?completed=${!completed}`);
+      loadTasks();
+    } catch (error) {
+      console.error('Error toggling task:', error);
+      toast.error('Gagal mengupdate tugas');
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Hapus tugas ini?')) return;
+
+    try {
+      await api.delete(`/projects/${id}/tasks/${taskId}`);
+      toast.success('Tugas berhasil dihapus');
+      loadTasks();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast.error('Gagal menghapus tugas');
+    }
+  };
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -254,6 +297,24 @@ const ProjectDetail = () => {
     } else {
       return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) + ' ' + date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     }
+  };
+
+  const calculateDeadline = () => {
+    if (!project?.contract_date || !project?.duration) return null;
+    
+    const startDate = new Date(project.contract_date);
+    const deadlineDate = new Date(startDate);
+    deadlineDate.setDate(deadlineDate.getDate() + project.duration);
+    
+    const today = new Date();
+    const diffTime = deadlineDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return {
+      date: deadlineDate,
+      daysLeft: diffDays,
+      isOverdue: diffDays < 0
+    };
   };
 
   const getStatusColor = (status) => {
@@ -299,13 +360,12 @@ const ProjectDetail = () => {
     );
   }
 
-  const taskProgress = statistics.tasks.count > 0 
-    ? (statistics.tasks.completed / statistics.tasks.count) * 100 
-    : 0;
-
-  const budgetUsage = project.project_value > 0
-    ? (statistics.transactions.total / project.project_value) * 100
-    : 0;
+  const totalExpense = transactions.reduce((sum, t) => sum + (t.total_amount || 0), 0);
+  const budgetRemaining = (project.project_value || 0) - totalExpense;
+  const budgetUsage = project.project_value > 0 ? (totalExpense / project.project_value) * 100 : 0;
+  const pnl = budgetRemaining;
+  const deadline = calculateDeadline();
+  const taskProgress = tasks.length > 0 ? (tasks.filter(t => t.completed).length / tasks.length) * 100 : 0;
 
   return (
     <Layout>
@@ -318,7 +378,7 @@ const ProjectDetail = () => {
             </Button>
             <div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800">{project.name}</h1>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1">Detail Proyek & Statistik</p>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">Detail Proyek</p>
             </div>
           </div>
           <span className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(project.status)}`}>
@@ -359,7 +419,7 @@ const ProjectDetail = () => {
             <CardContent>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                <span className="text-xs sm:text-sm md:text-base font-semibold">{formatDate(project.created_at)}</span>
+                <span className="text-xs sm:text-sm md:text-base font-semibold">{formatDate(project.contract_date || project.created_at)}</span>
               </div>
             </CardContent>
           </Card>
@@ -377,29 +437,24 @@ const ProjectDetail = () => {
           </Card>
         </div>
 
-        {/* Financial Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <Card>
+        {/* Financial & Deadline Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {/* Total Pengeluaran */}
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                Overview Keuangan
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                Total Pengeluaran Proyek
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
-              <div className="flex justify-between items-center border-b pb-2 sm:pb-3">
-                <span className="text-xs sm:text-sm text-slate-600">Nilai Proyek</span>
-                <span className="text-sm sm:text-lg md:text-xl font-bold text-green-600">{formatCurrency(project.project_value)}</span>
-              </div>
-              <div className="flex justify-between items-center border-b pb-2 sm:pb-3">
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
                 <span className="text-xs sm:text-sm text-slate-600">Total Pengeluaran</span>
-                <span className="text-sm sm:text-lg md:text-xl font-bold text-red-600">{formatCurrency(statistics.transactions.total)}</span>
+                <span className="text-lg sm:text-2xl font-bold text-red-600">{formatCurrency(totalExpense)}</span>
               </div>
-              <div className="flex justify-between items-center border-b pb-2 sm:pb-3">
-                <span className="text-xs sm:text-sm text-slate-600">Sisa Budget</span>
-                <span className="text-sm sm:text-lg md:text-xl font-bold text-blue-600">
-                  {formatCurrency(project.project_value - statistics.transactions.total)}
-                </span>
+              <div className="flex justify-between items-center">
+                <span className="text-xs sm:text-sm text-slate-600">Budget Proyek</span>
+                <span className="text-sm sm:text-lg font-semibold text-slate-700">{formatCurrency(project.project_value)}</span>
               </div>
               <div>
                 <div className="flex justify-between mb-2">
@@ -408,110 +463,161 @@ const ProjectDetail = () => {
                 </div>
                 <Progress value={budgetUsage} className="h-2 sm:h-3" />
               </div>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 pt-2 border-t">
+                <span>{transactions.length} transaksi tercatat</span>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-                RAB & Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
-              <div className="flex justify-between items-center border-b pb-2 sm:pb-3">
-                <span className="text-xs sm:text-sm text-slate-600">Status RAB</span>
-                {statistics.rab ? (
-                  <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
-                    statistics.rab.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    statistics.rab.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-                    'bg-yellow-100 text-yellow-800'
+          {/* Deadline Countdown */}
+          {deadline && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+                  Deadline
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-center">
+                  <p className={`text-3xl sm:text-4xl font-bold ${
+                    deadline.isOverdue ? 'text-red-600' : 
+                    deadline.daysLeft <= 7 ? 'text-orange-600' : 
+                    'text-green-600'
                   }`}>
-                    {statistics.rab.status === 'approved' ? 'Approved' : 
-                     statistics.rab.status === 'draft' ? 'Draft' : 
-                     statistics.rab.status}
-                  </span>
-                ) : (
-                  <span className="text-red-600 text-xs sm:text-sm">Belum ada RAB</span>
-                )}
-              </div>
-              <div className="flex justify-between items-center border-b pb-2 sm:pb-3">
-                <span className="text-xs sm:text-sm text-slate-600">Total RAB</span>
-                <span className="text-sm sm:text-lg md:text-xl font-bold">
-                  {statistics.rab ? formatCurrency(statistics.rab.total_price) : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center border-b pb-2 sm:pb-3">
-                <span className="text-xs sm:text-sm text-slate-600">Design Progress</span>
-                <span className="text-sm sm:text-lg md:text-xl font-bold text-blue-600">{project.design_progress || 0}%</span>
-              </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-xs sm:text-sm text-slate-600">Progress Desain</span>
-                  <span className="text-xs sm:text-sm font-bold">{project.design_progress || 0}%</span>
+                    {Math.abs(deadline.daysLeft)}
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    {deadline.isOverdue ? 'Hari Terlambat' : 'Hari Tersisa'}
+                  </p>
                 </div>
-                <Progress value={project.design_progress || 0} className="h-2 sm:h-3" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                <div className="text-center pt-2 border-t">
+                  <p className="text-xs text-slate-500">Deadline:</p>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-700">{formatDate(deadline.date)}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          {/* PnL Proyek */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                Transaksi
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                PnL Proyek
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-1 sm:space-y-2">
-                <p className="text-2xl sm:text-3xl font-bold text-blue-600">{statistics.transactions.count}</p>
-                <p className="text-xs sm:text-sm text-slate-600">Total Transaksi</p>
-                <p className="text-sm sm:text-base md:text-lg font-semibold text-slate-800">
-                  {formatCurrency(statistics.transactions.total)}
+            <CardContent className="space-y-2">
+              <div className="text-center">
+                <p className={`text-2xl sm:text-3xl font-bold ${
+                  pnl >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {formatCurrency(pnl)}
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                  {pnl >= 0 ? 'Profit' : 'Loss'}
+                </p>
+              </div>
+              <div className="text-center pt-2 border-t">
+                <p className="text-xs text-slate-500">Budget - Pengeluaran</p>
+                <p className="text-xs font-medium text-slate-600 mt-1">
+                  {formatCurrency(project.project_value)} - {formatCurrency(totalExpense)}
                 </p>
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1 sm:space-y-2">
-                <p className="text-2xl sm:text-3xl font-bold text-green-600">{statistics.tasks.count}</p>
-                <p className="text-xs sm:text-sm text-slate-600">Total Tasks</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-slate-600">Completed</span>
-                  <span className="text-sm sm:text-base md:text-lg font-semibold">{statistics.tasks.completed}</span>
-                </div>
-                <Progress value={taskProgress} className="h-1.5 sm:h-2" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                Inventory
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1 sm:space-y-2">
-                <p className="text-2xl sm:text-3xl font-bold text-purple-600">{statistics.inventory.count}</p>
-                <p className="text-xs sm:text-sm text-slate-600">Total Items</p>
-                <p className="text-xs sm:text-sm text-slate-500">Material & Peralatan</p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Inventory Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+              Inventory
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1 sm:space-y-2">
+              <p className="text-2xl sm:text-3xl font-bold text-purple-600">{inventory.length}</p>
+              <p className="text-xs sm:text-sm text-slate-600">Total Items</p>
+              <p className="text-xs sm:text-sm text-slate-500">Material & Peralatan</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Task Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              Task & Tugas Proyek
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Task Progress */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs sm:text-sm text-slate-600">Progress Tugas</span>
+                <span className="text-xs sm:text-sm font-bold">{tasks.filter(t => t.completed).length} / {tasks.length} selesai</span>
+              </div>
+              <Progress value={taskProgress} className="h-2" />
+            </div>
+
+            {/* Add New Task */}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Tambah tugas baru..."
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
+                className="text-xs sm:text-sm"
+              />
+              <Button onClick={handleAddTask} size="sm" className="flex-shrink-0">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Task List */}
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {tasks.length === 0 ? (
+                <div className="text-center py-8 text-slate-400">
+                  <CheckCircle2 className="mx-auto h-12 w-12 mb-2" />
+                  <p className="text-xs sm:text-sm">Belum ada tugas</p>
+                </div>
+              ) : (
+                tasks.map((task) => (
+                  <div key={task.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border hover:bg-slate-100 transition">
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => handleToggleTask(task.id, task.completed)}
+                      className="flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs sm:text-sm ${
+                        task.completed ? 'line-through text-slate-400' : 'text-slate-800 font-medium'
+                      }`}>
+                        {task.title}
+                      </p>
+                      {task.completed && task.completed_at && (
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Selesai: {formatDate(task.completed_at)}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteTask(task.id)}
+                      className="flex-shrink-0 h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Description */}
         {project.description && (
@@ -552,7 +658,6 @@ const ProjectDetail = () => {
                     return (
                       <div key={comment.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                         <div className={`flex gap-1.5 sm:gap-2 max-w-[85%] sm:max-w-[75%] ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}>
-                          {/* Avatar */}
                           {!isOwnMessage && (
                             <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0 mt-1">
                               <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
@@ -561,7 +666,6 @@ const ProjectDetail = () => {
                             </Avatar>
                           )}
                           
-                          {/* Message Bubble */}
                           <div className="flex flex-col">
                             <div
                               className={`rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 shadow-sm ${
@@ -570,21 +674,18 @@ const ProjectDetail = () => {
                                   : 'bg-white text-slate-800 rounded-bl-none border'
                               }`}
                             >
-                              {/* Sender Name (only for others' messages) */}
                               {!isOwnMessage && (
                                 <p className="font-semibold text-xs sm:text-sm text-blue-600 mb-1">
                                   {comment.user_name}
                                 </p>
                               )}
                               
-                              {/* Message Text */}
                               {comment.message && (
                                 <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
                                   {comment.message}
                                 </p>
                               )}
                               
-                              {/* Images */}
                               {comment.images && comment.images.length > 0 && (
                                 <div className={`grid gap-1.5 sm:gap-2 mt-2 ${comment.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                                   {comment.images.map((img, idx) => (
@@ -599,7 +700,6 @@ const ProjectDetail = () => {
                                 </div>
                               )}
                               
-                              {/* Time & Delete */}
                               <div className="flex items-center justify-between gap-2 mt-1">
                                 <span className={`text-[10px] sm:text-xs ${
                                   isOwnMessage ? 'text-blue-100' : 'text-slate-500'
@@ -628,7 +728,6 @@ const ProjectDetail = () => {
 
             {/* Input Area */}
             <div className="bg-white border-t p-2 sm:p-3">
-              {/* Image Previews */}
               {imagePreviews.length > 0 && (
                 <div className="mb-2 flex gap-2 overflow-x-auto pb-2">
                   {imagePreviews.map((preview, idx) => (
@@ -646,7 +745,6 @@ const ProjectDetail = () => {
               )}
 
               <div className="relative">
-                {/* Mention Autocomplete */}
                 {showMentionList && (
                   <div className="absolute bottom-full mb-2 w-full bg-white border rounded-lg shadow-lg max-h-40 sm:max-h-48 overflow-y-auto z-10">
                     {users
@@ -670,7 +768,6 @@ const ProjectDetail = () => {
                 )}
 
                 <div className="flex items-end gap-1.5 sm:gap-2">
-                  {/* Image Upload Button */}
                   <Button
                     type="button"
                     variant="ghost"
@@ -689,7 +786,6 @@ const ProjectDetail = () => {
                     className="hidden"
                   />
                   
-                  {/* Message Input */}
                   <Textarea
                     value={newComment}
                     onChange={handleCommentChange}
@@ -703,7 +799,6 @@ const ProjectDetail = () => {
                     }}
                   />
                   
-                  {/* Send Button */}
                   <Button
                     onClick={handleSendComment}
                     disabled={uploading || (!newComment.trim() && selectedImages.length === 0)}
