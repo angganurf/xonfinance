@@ -154,7 +154,8 @@ const AccountingTransactions = () => {
         unit: '',
         status: '',
         receipt: '',
-        transaction_date: new Date().toISOString().split('T')[0]
+        transaction_date: new Date().toISOString().split('T')[0],
+        transaction_time: new Date().toTimeString().slice(0, 5)
       });
       setBahanItems([{ description: '', unit_price: '', quantity: '', unit: '', total: 0, status: 'receiving', supplier: '' }]);
       setSupplierName('');
