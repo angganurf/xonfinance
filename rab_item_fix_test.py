@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 class RABItemFixTester:
-    def __init__(self, base_url="https://rab-manager.preview.emergentagent.com"):
+    def __init__(self, base_url="https://taskflow-xon.preview.emergentagent.com"):
         self.base_url = base_url
         self.session_token = None
         self.user_id = None
