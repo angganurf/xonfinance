@@ -176,6 +176,14 @@ export const Layout = ({ children }) => {
       );
     }
     
+    if (userRoles.includes('inventory')) {
+      combinedItems.push(
+        { label: 'Home', path: '/inventory', icon: '🏠' },
+        { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
+        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
+      );
+    }
+    
     // If no roles matched, return default
     if (combinedItems.length === 0) {
       return {
