@@ -159,7 +159,7 @@ function App() {
             path="/estimator"
             element={
               <ProtectedRoute allowedRoles={['estimator', 'admin']}>
-                <RABList />
+                <EstimatorDashboard />
               </ProtectedRoute>
             }
           />
@@ -167,7 +167,7 @@ function App() {
             path="/estimator/rab"
             element={
               <ProtectedRoute allowedRoles={['estimator', 'admin']}>
-                <RABList />
+                <EstimatorDashboard />
               </ProtectedRoute>
             }
           />
@@ -175,7 +175,7 @@ function App() {
             path="/estimator/rab/:rabId"
             element={
               <ProtectedRoute allowedRoles={['estimator', 'admin']}>
-                <EstimatorRAB />
+                <RABEditor />
               </ProtectedRoute>
             }
           />
