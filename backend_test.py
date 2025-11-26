@@ -2798,6 +2798,9 @@ def main():
         elif sys.argv[1] == "admin_backup":
             success = tester.run_admin_backup_only_tests()
             test_type = "admin_backup"
+        elif sys.argv[1] == "planning_test_projects":
+            success = tester.run_planning_test_projects_creation()
+            test_type = "planning_test_projects"
         else:
             success = tester.run_all_tests()
             test_type = "all"
