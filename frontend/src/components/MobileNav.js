@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, FolderOpen, CreditCard, FileText, Calendar, Settings, Package, ClipboardList } from 'lucide-react';
+import { Home, FolderOpen, CreditCard, FileText, Calendar, Package, ClipboardList, ArrowLeft } from 'lucide-react';
 
 const MobileNav = () => {
   const { user } = useAuth();
@@ -20,12 +20,13 @@ const MobileNav = () => {
     const isSupervisorContext = currentPath.startsWith('/supervisor');
     const isInventoryContext = currentPath.startsWith('/inventory');
 
-    // If admin in specific context
+    // If admin in specific context - show all menu items from sidebar
     if (userRoles.includes('admin') && isAccountingContext) {
       return [
         { label: 'Home', path: '/accounting', icon: Home },
         { label: 'Transaksi', path: '/accounting/transactions', icon: CreditCard },
         { label: 'Inventory', path: '/admin/inventory', icon: Package },
+        { label: 'Kembali', path: '/admin', icon: ArrowLeft },
       ];
     }
 
@@ -34,14 +35,14 @@ const MobileNav = () => {
         { label: 'Home', path: '/planning', icon: Home },
         { label: 'RAB', path: '/planning/rab', icon: FileText },
         { label: 'Schedule', path: '/planning/schedule', icon: Calendar },
-        { label: 'Settings', path: '/planning/settings', icon: Settings },
+        { label: 'Kembali', path: '/admin', icon: ArrowLeft },
       ];
     }
 
     if (userRoles.includes('admin') && isSupervisorContext) {
       return [
         { label: 'Home', path: '/supervisor', icon: Home },
-        { label: 'Admin', path: '/admin', icon: Home },
+        { label: 'Kembali', path: '/admin', icon: ArrowLeft },
       ];
     }
 
@@ -52,56 +53,52 @@ const MobileNav = () => {
       ];
     }
 
-    // Default admin menu
+    // Default admin menu - all items from sidebar
     if (userRoles.includes('admin')) {
       return [
         { label: 'Home', path: '/admin', icon: Home },
-        { label: 'Planning', path: '/admin/planning-projects', icon: ClipboardList },
-        { label: 'Proyek', path: '/admin/projects', icon: FolderOpen },
+        { label: 'Perencanaan', path: '/admin/planning-projects', icon: ClipboardList },
+        { label: 'Pelaksanaan', path: '/admin/projects', icon: FolderOpen },
+        { label: 'Transaksi', path: '/admin/transactions', icon: CreditCard },
         { label: 'Inventory', path: '/admin/inventory', icon: Package },
       ];
     }
 
-    // Accounting role
+    // Accounting role - all items from sidebar
     if (userRoles.includes('accounting')) {
       return [
         { label: 'Home', path: '/accounting', icon: Home },
         { label: 'Transaksi', path: '/accounting/transactions', icon: CreditCard },
         { label: 'Inventory', path: '/admin/inventory', icon: Package },
-        { label: 'Settings', path: '/settings', icon: Settings },
       ];
     }
 
-    // Planning Team role
+    // Planning Team role - all items from sidebar
     if (userRoles.includes('project_planning_team')) {
       return [
         { label: 'Home', path: '/planning', icon: Home },
         { label: 'RAB', path: '/planning/rab', icon: FileText },
         { label: 'Schedule', path: '/planning/schedule', icon: Calendar },
-        { label: 'Settings', path: '/planning/settings', icon: Settings },
       ];
     }
 
-    // Supervisor role
+    // Supervisor role - all items from sidebar
     if (userRoles.includes('site_supervisor')) {
       return [
         { label: 'Home', path: '/supervisor', icon: Home },
-        { label: 'Settings', path: '/settings', icon: Settings },
       ];
     }
 
-    // Inventory role
+    // Inventory role - all items from sidebar
     if (userRoles.includes('inventory')) {
       return [
         { label: 'Home', path: '/inventory', icon: Home },
         { label: 'Inventory', path: '/admin/inventory', icon: Package },
-        { label: 'Settings', path: '/settings', icon: Settings },
       ];
     }
 
     return [
       { label: 'Home', path: '/', icon: Home },
-      { label: 'Settings', path: '/settings', icon: Settings },
     ];
   };
 
@@ -116,12 +113,17 @@ const MobileNav = () => {
       data-testid="mobile-nav"
     >
       <div 
-        className="bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl"
+        className="bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
         style={{ boxShadow: '0 20px 60px -12px rgba(0, 0, 0, 0.25)' }}
       >
+        {/* Horizontal Scrollable Menu */}
         <div 
-          className="grid gap-1 p-2" 
-          style={{ gridTemplateColumns: `repeat(${Math.min(menuItems.length, 4)}, 1fr)` }}
+          className="flex gap-1 p-2 overflow-x-auto scrollbar-hide"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+          }}
         >
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -133,7 +135,7 @@ const MobileNav = () => {
                 key={item.path}
                 to={item.path}
                 data-testid={`mobile-nav-${item.label.toLowerCase()}`}
-                className={`flex flex-col items-center justify-center py-3 px-2 rounded-xl transition-all duration-200 ${
+                className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl transition-all duration-200 min-w-[80px] flex-shrink-0 ${
                   isActive
                     ? 'text-white bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg scale-105'
                     : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50 active:scale-95'
@@ -142,12 +144,22 @@ const MobileNav = () => {
                 <Icon className={`h-5 w-5 mb-1 ${
                   isActive ? 'animate-none' : ''
                 }`} />
-                <span className="text-xs font-medium leading-tight text-center">{item.label}</span>
+                <span className="text-xs font-medium leading-tight text-center whitespace-nowrap">{item.label}</span>
               </Link>
             );
           })}
         </div>
+        
+        {/* Scroll indicator gradient */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent pointer-events-none"></div>
       </div>
+      
+      {/* CSS to hide scrollbar */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
