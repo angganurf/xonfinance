@@ -34,7 +34,8 @@ const AccountingTransactions = () => {
     unit: '',
     status: '',
     receipt: '',
-    transaction_date: new Date().toISOString().split('T')[0]
+    transaction_date: new Date().toISOString().split('T')[0],
+    transaction_time: new Date().toTimeString().slice(0, 5) // HH:MM format
   });
   
   const [bahanItems, setBahanItems] = useState([
