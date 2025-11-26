@@ -1,0 +1,51 @@
+{
+  "test_type": "inventory_item_names_filter",
+  "timestamp": "2025-11-26T14:41:32.615361",
+  "total_tests": 7,
+  "passed_tests": 7,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T14:41:31.895604"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T14:41:32.191001"
+    },
+    {
+      "test_name": "Inventory Item Names No Filter",
+      "success": true,
+      "details": "Items found: 5, Has Keramik: True, Has Cat: True, Has Besi: True",
+      "timestamp": "2025-11-26T14:41:32.460410"
+    },
+    {
+      "test_name": "Inventory Item Names Filter Interior",
+      "success": true,
+      "details": "Items found: 4, Has Keramik: True, Has Cat: True, Has Besi (should be false): False, Items: ['Besi 13 Ulir', 'Besi Ulir 13', 'Cat Tembok Avitex', 'Keramik Granit 60x60']",
+      "timestamp": "2025-11-26T14:41:32.498680"
+    },
+    {
+      "test_name": "Inventory Item Names Filter Arsitektur",
+      "success": true,
+      "details": "Items found: 2, Has Besi: True, Has Keramik (should be false): False, Has Cat (should be false): False, Items: ['Besi 13 Ulir', 'Besi Beton 12mm']",
+      "timestamp": "2025-11-26T14:41:32.533683"
+    },
+    {
+      "test_name": "Inventory Item Names Backward Compatibility",
+      "success": true,
+      "details": "Items found: 4, Has Keramik: True, Has Cat: True, Has Besi (should be false): False, Items: ['Besi 13 Ulir', 'Besi Ulir 13', 'Cat Tembok Avitex', 'Keramik Granit 60x60']",
+      "timestamp": "2025-11-26T14:41:32.570751"
+    },
+    {
+      "test_name": "Items Shared Across Projects Same Type",
+      "success": true,
+      "details": "Interior items: ['Besi 13 Ulir', 'Besi Ulir 13', 'Cat Tembok Avitex', 'Keramik Granit 60x60'], Has Project A item: True, Has Project B item: True",
+      "timestamp": "2025-11-26T14:41:32.615003"
+    }
+  ]
+}
