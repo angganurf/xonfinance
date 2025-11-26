@@ -22,6 +22,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminMembers from './pages/admin/Members';
 import AdminInventory from './pages/admin/Inventory';
 import AdminSettings from './pages/admin/Settings';
+import PlanningProjects from './pages/admin/PlanningProjects';
 import ProjectDetail from './pages/admin/ProjectDetail';
 import Settings from './pages/Settings';
 import './App.css';
