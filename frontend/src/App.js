@@ -101,6 +101,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSettings />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Accounting Routes */}
           <Route
