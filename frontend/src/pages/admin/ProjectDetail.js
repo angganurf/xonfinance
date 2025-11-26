@@ -76,6 +76,87 @@ const ProjectDetail = () => {
     }
   };
 
+  const loadComments = async () => {
+    try {
+      const res = await api.get(`/projects/${id}/comments`);
+      setComments(res.data);
+    } catch (error) {
+      console.error('Error loading comments:', error);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const res = await api.get('/users/search');
+      setUsers(res.data);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  const handleCommentChange = (e) => {
+    const value = e.target.value;
+    setNewComment(value);
+    setCursorPosition(e.target.selectionStart);
+
+    // Check for @ mention
+    const lastAtIndex = value.lastIndexOf('@', e.target.selectionStart);
+    if (lastAtIndex !== -1) {
+      const textAfterAt = value.substring(lastAtIndex + 1, e.target.selectionStart);
+      if (!textAfterAt.includes(' ')) {
+        setMentionSearch(textAfterAt);
+        setShowMentionList(true);
+      } else {
+        setShowMentionList(false);
+      }
+    } else {
+      setShowMentionList(false);
+    }
+  };
+
+  const insertMention = (user) => {
+    const lastAtIndex = newComment.lastIndexOf('@', cursorPosition);
+    const beforeMention = newComment.substring(0, lastAtIndex);
+    const afterMention = newComment.substring(cursorPosition);
+    const newText = `${beforeMention}@${user.email} ${afterMention}`;
+    setNewComment(newText);
+    setShowMentionList(false);
+  };
+
+  const handleSendComment = async () => {
+    if (!newComment.trim()) {
+      toast.error('Komentar tidak boleh kosong');
+      return;
+    }
+
+    try {
+      await api.post(`/projects/${id}/comments`, null, {
+        params: {
+          message: newComment
+        }
+      });
+      toast.success('Komentar berhasil dikirim!');
+      setNewComment('');
+      loadComments();
+    } catch (error) {
+      console.error('Error sending comment:', error);
+      toast.error('Gagal mengirim komentar');
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Hapus komentar ini?')) return;
+
+    try {
+      await api.delete(`/projects/${id}/comments/${commentId}`);
+      toast.success('Komentar berhasil dihapus');
+      loadComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error('Gagal menghapus komentar');
+    }
+  };
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
