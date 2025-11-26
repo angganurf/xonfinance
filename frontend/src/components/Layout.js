@@ -82,51 +82,13 @@ export const Layout = ({ children }) => {
     // If user is admin, show admin interface
     if (userRoles.includes('admin')) {
       return {
-        type: 'grouped',
+        type: 'flat',
         items: [
-          { label: 'Dashboard Admin', path: '/admin', icon: '🏠' },
-          {
-            label: 'Accounting',
-            icon: '📊',
-            group: 'accounting',
-            children: [
-              { label: 'Proyek', path: '/admin/projects', icon: '📁' },
-              { label: 'Transaksi', path: '/admin/transactions', icon: '💳' }
-            ]
-          },
-          {
-            label: 'Supervisor',
-            icon: '👷',
-            group: 'supervisor',
-            children: [
-              { label: 'Jadwal', path: '/admin/schedule', icon: '📅' }
-            ]
-          },
-          {
-            label: 'Employee',
-            icon: '👥',
-            group: 'employee',
-            children: [
-              { label: 'Absensi', path: '/admin/tasks', icon: '✓' }
-            ]
-          },
-          {
-            label: 'Inventory',
-            icon: '📦',
-            group: 'inventory',
-            children: [
-              { label: 'Stok Barang', path: '/admin/inventory', icon: '📦' }
-            ]
-          },
-          {
-            label: 'Pengaturan',
-            icon: '⚙️',
-            group: 'settings',
-            children: [
-              { label: 'Member Management', path: '/admin/members', icon: '👤' },
-              { label: 'Backup & Data', path: '/admin/settings', icon: '💾' }
-            ]
-          }
+          { label: 'Home', path: '/admin', icon: '🏠' },
+          { label: 'Daftar Proyek', path: '/admin/projects', icon: '📁' },
+          { label: 'Transaksi', path: '/admin/transactions', icon: '💳' },
+          { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
+          { label: 'Pengaturan', path: '/admin/settings', icon: '⚙️' }
         ]
       };
     }
