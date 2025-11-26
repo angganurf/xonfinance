@@ -55,6 +55,25 @@ const PlanningTeamDashboard = () => {
     }
   };
 
+  const handleRABSelection = (rabId) => {
+    if (!rabId) {
+      setSelectedRAB(null);
+      setFormData({ ...formData, project_value: 0 });
+      return;
+    }
+
+    const rab = rabs.find(r => r.id === rabId);
+    if (rab) {
+      setSelectedRAB(rab);
+      // Auto-fill nilai proyek dari total RAB
+      setFormData({ 
+        ...formData, 
+        project_value: rab.total_price || 0,
+        name: rab.project_name || formData.name
+      });
+    }
+  };
+
   const handleCreateProject = async (e) => {
     e.preventDefault();
     
@@ -69,6 +88,7 @@ const PlanningTeamDashboard = () => {
         location: '',
         project_value: 0
       });
+      setSelectedRAB(null);
       loadOverview();
     } catch (error) {
       console.error('Error creating project:', error);
