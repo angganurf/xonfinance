@@ -107,11 +107,9 @@ const PlanningSettings = () => {
       setLoading(true);
       
       // Get all planning-related data
-      const [rabsRes, itemsRes, modeling3dRes, shopDrawingRes, schedulesRes] = await Promise.all([
+      const [rabsRes, itemsRes, schedulesRes] = await Promise.all([
         api.get('/rabs'),
         api.get('/rab-items'),
-        api.get('/planning/modeling-3d'),
-        api.get('/planning/shop-drawing'),
         api.get('/schedule-items')
       ]);
       
@@ -121,8 +119,6 @@ const PlanningSettings = () => {
         data: {
           rabs: rabsRes.data,
           rab_items: itemsRes.data,
-          modeling_3d: modeling3dRes.data,
-          shop_drawing: shopDrawingRes.data,
           schedules: schedulesRes.data
         }
       };
