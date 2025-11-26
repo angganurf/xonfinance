@@ -325,8 +325,8 @@ const PlanningProjects = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="projects-grid">
           {projects.map((project) => {
-            const progress = projectsProgress.find(p => p.project_id === project.id);
             const isSelected = selectedProjects.includes(project.id);
+            const overallProgress = project.overall_progress || 0;
             
             return (
             <Card 
@@ -345,13 +345,13 @@ const PlanningProjects = () => {
                     />
                     <div 
                       className="p-3 bg-blue-100 rounded-lg cursor-pointer" 
-                      onClick={() => navigate(`/admin/projects/${project.id}`)}
+                      onClick={() => navigate(`/admin/planning-projects/${project.id}`)}
                     >
                       <Building2 className="h-6 w-6 text-blue-600" />
                     </div>
                     <div 
                       className="flex-1 cursor-pointer" 
-                      onClick={() => navigate(`/admin/projects/${project.id}`)}
+                      onClick={() => navigate(`/admin/planning-projects/${project.id}`)}
                     >
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-lg">{project.name}</CardTitle>
@@ -377,7 +377,7 @@ const PlanningProjects = () => {
                       <DropdownMenuItem 
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/admin/projects/${project.id}`);
+                          navigate(`/admin/planning-projects/${project.id}`);
                         }} 
                         data-testid={`view-project-${project.id}`}
                       >
@@ -408,13 +408,13 @@ const PlanningProjects = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-3 text-sm">
                   {project.project_value > 0 && (
                     <p><span className="font-medium">Nilai:</span> Rp {project.project_value?.toLocaleString('id-ID')}</p>
                   )}
                   <p><span className="font-medium">Lokasi:</span> {project.location || '-'}</p>
                   <p><span className="font-medium">Durasi:</span> {project.duration || '-'} hari</p>
-                  <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center justify-between">
                     <span className="font-medium">Status:</span>
                     <Select 
                       value={project.status} 
@@ -431,52 +431,36 @@ const PlanningProjects = () => {
                     </Select>
                   </div>
                   
-                  {/* Progress Bars */}
-                  {progress && progress.project_value > 0 && (
-                    <div className="mt-4 pt-3 border-t space-y-3">
-                      {/* Income Progress */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-slate-600">Diterima</span>
-                          <span className="text-xs font-medium text-green-600">
-                            {progress.income_percentage}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-200 rounded-full h-1.5">
-                          <div 
-                            className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(progress.income_percentage, 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      
-                      {/* Expenses Progress */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-slate-600">Dibelanjakan</span>
-                          <span className="text-xs font-medium text-red-600">
-                            {progress.expenses_percentage}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-200 rounded-full h-1.5">
-                          <div 
-                            className="bg-red-500 h-1.5 rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(progress.expenses_percentage, 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      
-                      {/* Balance */}
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-slate-700">Saldo:</span>
-                        <span className={`font-bold ${
-                          progress.balance >= 0 ? 'text-blue-600' : 'text-red-600'
-                        }`}>
-                          Rp {progress.balance?.toLocaleString('id-ID')}
-                        </span>
-                      </div>
+                  {/* Overall Progress */}
+                  <div className="mt-4 pt-3 border-t">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-slate-700">Progress Pekerjaan:</span>
+                      <span className="text-sm font-bold text-blue-600">{overallProgress}%</span>
                     </div>
-                  )}
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${overallProgress}%` }}
+                      ></div>
+                    </div>
+                    
+                    {/* Task Summary */}
+                    {project.tasks && project.tasks.length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        {project.tasks.map((task) => (
+                          <div key={task.id} className="flex items-center justify-between text-xs">
+                            <span className="text-slate-600">{task.name}</span>
+                            <span className={`font-medium ${
+                              task.status === 'completed' ? 'text-green-600' : 
+                              task.status === 'in_progress' ? 'text-orange-600' : 'text-slate-400'
+                            }`}>
+                              {task.progress}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
