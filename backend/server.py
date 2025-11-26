@@ -184,6 +184,20 @@ class ShopDrawing(BaseModel):
     created_at: datetime = Field(default_factory=lambda: now_wib())
     updated_at: datetime = Field(default_factory=lambda: now_wib())
 
+class Modeling3D(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    project_name: str
+    title: str
+    description: Optional[str] = None
+    files: Optional[List[str]] = []  # File URLs or base64 for 3D models
+    status: str = "draft"  # draft, review, approved, rejected
+    version: int = 1
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: now_wib())
+    updated_at: datetime = Field(default_factory=lambda: now_wib())
+
 class Notification(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
