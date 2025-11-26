@@ -1778,6 +1778,26 @@ async def update_task(task_id: str, updates: dict, user: User = Depends(get_curr
         raise HTTPException(status_code=404, detail="Task not found")
     return {"message": "Task updated"}
 
+@api_router.patch("/tasks/{task_id}/status")
+async def update_task_status(task_id: str, data: dict, user: User = Depends(get_current_user)):
+    """Update task status"""
+    updates = {"status": data.get("status")}
+    if data.get("status") == "completed":
+        updates["completed_at"] = now_wib().isoformat()
+    
+    result = await db.tasks.update_one({"id": task_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Task status updated"}
+
+@api_router.delete("/tasks/{task_id}")
+async def delete_task(task_id: str, user: User = Depends(get_current_user)):
+    """Delete task"""
+    result = await db.tasks.delete_one({"id": task_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Task deleted"}
+
 @api_router.post("/tasks/{task_id}/report")
 async def create_work_report(task_id: str, input: WorkReportInput, user: User = Depends(get_current_user)):
     report = WorkReport(
