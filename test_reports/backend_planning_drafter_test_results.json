@@ -1,0 +1,63 @@
+{
+  "test_type": "planning_drafter",
+  "timestamp": "2025-11-26T07:28:12.564695",
+  "total_tests": 9,
+  "passed_tests": 7,
+  "success_rate": 77.77777777777779,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T07:28:11.992308"
+    },
+    {
+      "test_name": "Admin Login with Planning Role",
+      "success": true,
+      "details": "Admin token received: True, Role: admin",
+      "timestamp": "2025-11-26T07:28:12.255933"
+    },
+    {
+      "test_name": "Create Project Planning Team",
+      "success": true,
+      "details": "Project ID: f48ac0dd-2edf-4563-80fa-a344bdf9a590",
+      "timestamp": "2025-11-26T07:28:12.311171"
+    },
+    {
+      "test_name": "Verify Project Phase Perencanaan",
+      "success": false,
+      "details": "Phase: pelaksanaan, Name: Test Project Planning Team, Value: 150000000.0",
+      "timestamp": "2025-11-26T07:28:12.352963"
+    },
+    {
+      "test_name": "Query Projects by Phase Perencanaan",
+      "success": false,
+      "details": "Projects found: 0, Test project found: False, Correct phase: False",
+      "timestamp": "2025-11-26T07:28:12.394512"
+    },
+    {
+      "test_name": "Create Task Drafter (Full)",
+      "success": true,
+      "details": "Task ID: 77b61f98-5949-46da-a921-944fb48072cf",
+      "timestamp": "2025-11-26T07:28:12.442783"
+    },
+    {
+      "test_name": "Verify Task Created Correctly",
+      "success": true,
+      "details": "Title: True, Desc: True, Priority: True, Role: True, Status: True, Duration: True, Due date calc: True",
+      "timestamp": "2025-11-26T07:28:12.483759"
+    },
+    {
+      "test_name": "Create Task Drafter (Minimal)",
+      "success": true,
+      "details": "Task ID: 225534b1-f054-4df0-846e-377108d81fea",
+      "timestamp": "2025-11-26T07:28:12.523188"
+    },
+    {
+      "test_name": "Verify Task Defaults",
+      "success": true,
+      "details": "Title: True, Desc null: True, Priority: True, Role: True, Status default: True, Duration: True",
+      "timestamp": "2025-11-26T07:28:12.562505"
+    }
+  ]
+}
