@@ -131,7 +131,8 @@ export const Layout = ({ children }) => {
             icon: '⚙️',
             group: 'settings',
             children: [
-              { label: 'Member Management', path: '/admin/members', icon: '👤' }
+              { label: 'Member Management', path: '/admin/members', icon: '👤' },
+              { label: 'Backup & Data', path: '/admin/settings', icon: '💾' }
             ]
           }
         ]
