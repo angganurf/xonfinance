@@ -18,6 +18,9 @@ const PlanningProjects = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [projectsProgress, setProjectsProgress] = useState([]);
+  const [selectedProjects, setSelectedProjects] = useState([]);
+  const [bulkStatusDialog, setBulkStatusDialog] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState('planning');
   const [open, setOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
