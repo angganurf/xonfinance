@@ -356,6 +356,11 @@ export const Layout = ({ children }) => {
             </div>
 
             <div className="flex items-center gap-4">
+              {/* Settings */}
+              <Button variant="ghost" size="icon" data-testid="settings-btn">
+                <Settings className="h-5 w-5" />
+              </Button>
+              
               {/* Notifications */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
