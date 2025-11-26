@@ -275,6 +275,28 @@ const AccountingTransactions = () => {
       toast.error('Gagal menghapus transaksi');
     }
   };
+  
+  const handleUpdateItemStatus = async (transactionId, itemIndex, newStatus) => {
+    try {
+      await api.put(`/transactions/${transactionId}/item-status?item_index=${itemIndex}&new_status=${newStatus}`);
+      toast.success('Status item berhasil diupdate dan inventory sudah disinkronkan');
+      loadData(); // Reload to show updated data
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Gagal update status item');
+    }
+  };
+  
+  const toggleRow = (transId) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(transId)) {
+        newSet.delete(transId);
+      } else {
+        newSet.add(transId);
+      }
+      return newSet;
+    });
+  };
 
   const handleClearAll = async () => {
     try {
