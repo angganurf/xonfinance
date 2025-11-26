@@ -21,7 +21,7 @@ const DrafterDashboard = () => {
     title: '',
     description: '',
     priority: 'medium',
-    due_date: ''
+    duration_days: 30
   });
 
   useEffect(() => {
