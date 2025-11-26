@@ -154,7 +154,7 @@ const PlanningProjects = () => {
     <Layout>
       <div className="space-y-6" data-testid="projects-page">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800">Daftar Proyek</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Daftar Proyek Perencanaan</h2>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => handleOpenDialog()} data-testid="add-project-btn">
