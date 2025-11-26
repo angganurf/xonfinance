@@ -1675,6 +1675,276 @@ class XONArchitectAPITester:
         
         return self.tests_passed == self.tests_run
 
+    # ============= PLANNING TEAM & DRAFTER TESTS =============
+    
+    def test_admin_login_with_planning_role(self):
+        """Test admin login for planning team tests"""
+        login_data = {
+            "email": "admin",
+            "password": "admin"
+        }
+        
+        success, data = self.make_request('POST', '/auth/login', login_data, 200)
+        if success and 'session_token' in data:
+            self.session_token = data['session_token']
+            self.user_id = data['user']['id']
+            # Verify admin has project_planning_team role
+            user_role = data['user'].get('role', '')
+            has_admin_role = user_role == 'admin'
+        
+        self.log_test("Admin Login with Planning Role", success and has_admin_role, f"Admin token received: {bool(self.session_token)}, Role: {user_role}")
+        return success and has_admin_role
+
+    def test_create_project_planning_team(self):
+        """TEST 1: Create Project untuk Planning Team"""
+        project_data = {
+            "name": "Test Project Planning Team",
+            "type": "interior",
+            "location": "Jakarta Selatan",
+            "project_value": 150000000,
+            "description": "Project test untuk planning team"
+        }
+        
+        success, data = self.make_request('POST', '/projects', project_data, 200)
+        if success and 'id' in data:
+            self.planning_project_id = data['id']
+        
+        self.log_test("Create Project Planning Team", success, f"Project ID: {getattr(self, 'planning_project_id', 'N/A')}")
+        return success
+
+    def test_verify_project_phase_perencanaan(self):
+        """Verify project created with phase='perencanaan'"""
+        if not hasattr(self, 'planning_project_id'):
+            self.log_test("Verify Project Phase Perencanaan", False, "No planning project ID available")
+            return False
+        
+        success, data = self.make_request('GET', f'/projects/{self.planning_project_id}')
+        
+        if success:
+            phase = data.get('phase')
+            name = data.get('name')
+            project_value = data.get('project_value')
+            
+            correct_phase = phase == 'perencanaan'
+            correct_name = name == 'Test Project Planning Team'
+            correct_value = project_value == 150000000
+            
+            all_correct = correct_phase and correct_name and correct_value
+            details = f"Phase: {phase}, Name: {name}, Value: {project_value}"
+            self.log_test("Verify Project Phase Perencanaan", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Verify Project Phase Perencanaan", False, f"Failed to get project: {data}")
+            return False
+
+    def test_query_projects_by_phase_perencanaan(self):
+        """Verify project can be queried with GET /api/projects?phase=perencanaan"""
+        success, data = self.make_request('GET', '/projects?phase=perencanaan')
+        
+        if success and isinstance(data, list):
+            # Find our test project
+            test_project = None
+            for project in data:
+                if project.get('name') == 'Test Project Planning Team':
+                    test_project = project
+                    break
+            
+            project_found = test_project is not None
+            correct_phase = test_project.get('phase') == 'perencanaan' if test_project else False
+            
+            all_correct = project_found and correct_phase
+            details = f"Projects found: {len(data)}, Test project found: {project_found}, Correct phase: {correct_phase}"
+            self.log_test("Query Projects by Phase Perencanaan", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Query Projects by Phase Perencanaan", False, f"Failed to get projects: {data}")
+            return False
+
+    def test_create_task_drafter_full(self):
+        """TEST 2: Create Task untuk Drafter (full parameters)"""
+        task_data = {
+            "title": "Desain Layout Ruang Tamu",
+            "description": "Membuat layout ruang tamu dengan tema modern minimalis",
+            "priority": "high",
+            "duration_days": 7,
+            "role": "drafter",
+            "status": "pending"
+        }
+        
+        success, data = self.make_request('POST', '/tasks', task_data, 200)
+        if success and 'id' in data:
+            self.drafter_task_id = data['id']
+        
+        self.log_test("Create Task Drafter (Full)", success, f"Task ID: {getattr(self, 'drafter_task_id', 'N/A')}")
+        return success
+
+    def test_verify_task_created_correctly(self):
+        """Verify task created with correct details and due_date calculation"""
+        if not hasattr(self, 'drafter_task_id'):
+            self.log_test("Verify Task Created Correctly", False, "No drafter task ID available")
+            return False
+        
+        success, data = self.make_request('GET', '/tasks')
+        
+        if success and isinstance(data, list):
+            # Find our test task
+            test_task = None
+            for task in data:
+                if task.get('id') == self.drafter_task_id:
+                    test_task = task
+                    break
+            
+            if test_task:
+                title = test_task.get('title')
+                description = test_task.get('description')
+                priority = test_task.get('priority')
+                role = test_task.get('role')
+                status = test_task.get('status')
+                duration_days = test_task.get('duration_days')
+                due_date = test_task.get('due_date')
+                start_date = test_task.get('start_date')
+                
+                correct_title = title == "Desain Layout Ruang Tamu"
+                correct_description = description == "Membuat layout ruang tamu dengan tema modern minimalis"
+                correct_priority = priority == "high"
+                correct_role = role == "drafter"
+                correct_status = status == "pending"
+                correct_duration = duration_days == 7
+                has_due_date = due_date is not None
+                has_start_date = start_date is not None
+                
+                # Check if due_date is calculated correctly (start_date + 7 days)
+                due_date_correct = True
+                if start_date and due_date:
+                    try:
+                        from datetime import datetime, timedelta
+                        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                        due_dt = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+                        expected_due = start_dt + timedelta(days=7)
+                        due_date_correct = abs((due_dt - expected_due).total_seconds()) < 86400  # Within 1 day tolerance
+                    except:
+                        due_date_correct = False
+                
+                all_correct = (correct_title and correct_description and correct_priority and 
+                             correct_role and correct_status and correct_duration and 
+                             has_due_date and has_start_date and due_date_correct)
+                
+                details = f"Title: {correct_title}, Desc: {correct_description}, Priority: {correct_priority}, Role: {correct_role}, Status: {correct_status}, Duration: {correct_duration}, Due date calc: {due_date_correct}"
+                self.log_test("Verify Task Created Correctly", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Task Created Correctly", False, "Test task not found in task list")
+                return False
+        else:
+            self.log_test("Verify Task Created Correctly", False, f"Failed to get tasks: {data}")
+            return False
+
+    def test_create_task_drafter_minimal(self):
+        """TEST 3: Create Task dengan different parameters (minimal)"""
+        task_data = {
+            "title": "Review Gambar Kerja",
+            "priority": "medium",
+            "duration_days": 3,
+            "role": "drafter"
+        }
+        
+        success, data = self.make_request('POST', '/tasks', task_data, 200)
+        if success and 'id' in data:
+            self.drafter_task_minimal_id = data['id']
+        
+        self.log_test("Create Task Drafter (Minimal)", success, f"Task ID: {getattr(self, 'drafter_task_minimal_id', 'N/A')}")
+        return success
+
+    def test_verify_task_defaults(self):
+        """Verify task created with defaults (status='pending', description=null)"""
+        if not hasattr(self, 'drafter_task_minimal_id'):
+            self.log_test("Verify Task Defaults", False, "No minimal drafter task ID available")
+            return False
+        
+        success, data = self.make_request('GET', '/tasks')
+        
+        if success and isinstance(data, list):
+            # Find our test task
+            test_task = None
+            for task in data:
+                if task.get('id') == self.drafter_task_minimal_id:
+                    test_task = task
+                    break
+            
+            if test_task:
+                title = test_task.get('title')
+                description = test_task.get('description')
+                priority = test_task.get('priority')
+                role = test_task.get('role')
+                status = test_task.get('status')
+                duration_days = test_task.get('duration_days')
+                
+                correct_title = title == "Review Gambar Kerja"
+                correct_description = description is None or description == ""
+                correct_priority = priority == "medium"
+                correct_role = role == "drafter"
+                correct_status = status == "pending"  # Default
+                correct_duration = duration_days == 3
+                
+                all_correct = (correct_title and correct_description and correct_priority and 
+                             correct_role and correct_status and correct_duration)
+                
+                details = f"Title: {correct_title}, Desc null: {correct_description}, Priority: {correct_priority}, Role: {correct_role}, Status default: {correct_status}, Duration: {correct_duration}"
+                self.log_test("Verify Task Defaults", all_correct, details)
+                return all_correct
+            else:
+                self.log_test("Verify Task Defaults", False, "Minimal test task not found in task list")
+                return False
+        else:
+            self.log_test("Verify Task Defaults", False, f"Failed to get tasks: {data}")
+            return False
+
+    def run_planning_drafter_tests(self):
+        """Run Planning Team and Drafter Dashboard tests"""
+        print("\n🏗️ Starting Planning Team & Drafter Dashboard Tests")
+        print("=" * 60)
+        
+        # Admin login with planning team role
+        if not self.test_admin_login_with_planning_role():
+            print("❌ Admin login failed. Stopping tests.")
+            return False
+        
+        print("\n📋 TEST 1: Create Project untuk Planning Team")
+        self.test_create_project_planning_team()
+        self.test_verify_project_phase_perencanaan()
+        self.test_query_projects_by_phase_perencanaan()
+        
+        print("\n📝 TEST 2: Create Task untuk Drafter (Full Parameters)")
+        self.test_create_task_drafter_full()
+        self.test_verify_task_created_correctly()
+        
+        print("\n📝 TEST 3: Create Task dengan Different Parameters (Minimal)")
+        self.test_create_task_drafter_minimal()
+        self.test_verify_task_defaults()
+        
+        return True
+
+    def run_planning_drafter_only_tests(self):
+        """Run only Planning Team and Drafter tests as requested"""
+        print("🏗️ Starting Planning Team & Drafter Dashboard Tests")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run planning and drafter tests
+        self.run_planning_drafter_tests()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Planning & Drafter Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = XONArchitectAPITester()
     
