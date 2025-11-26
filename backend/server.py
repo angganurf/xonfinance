@@ -2862,8 +2862,26 @@ async def delete_project_comment(
     if comment["user_id"] != user.id and user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
     
+    # Delete associated images from filesystem
+    if comment.get("images"):
+        upload_dir = Path("/app/backend/uploads/comments")
+        for image_url in comment["images"]:
+            # Extract filename from URL
+            filename = image_url.split("/")[-1]
+            file_path = upload_dir / filename
+            if file_path.exists():
+                file_path.unlink()
+    
     await db.project_comments.delete_one({"id": comment_id})
     return {"message": "Comment deleted"}
+
+@api_router.get("/uploads/comments/{filename}")
+async def get_comment_image(filename: str):
+    """Serve uploaded comment images"""
+    file_path = Path("/app/backend/uploads/comments") / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(file_path)
 
 @api_router.get("/users/search")
 async def search_users(q: str = "", user: User = Depends(get_current_user)):
