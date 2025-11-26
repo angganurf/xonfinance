@@ -2777,12 +2777,15 @@ async def create_project_comment(
         user_name=user.name,
         user_email=user.email,
         message=message,
-        mentions=mentions
+        mentions=mentions or []
     )
     
     comment_dict = comment.model_dump()
     comment_dict["created_at"] = comment_dict["created_at"].isoformat()
-    await db.project_comments.insert_one(comment_dict)
+    
+    # Insert to database
+    insert_dict = comment_dict.copy()
+    await db.project_comments.insert_one(insert_dict)
     
     # Create notifications for mentioned users
     if mentions:
@@ -2798,9 +2801,12 @@ async def create_project_comment(
             )
             notif_dict = notif.model_dump()
             notif_dict["created_at"] = notif_dict["created_at"].isoformat()
-            await db.notifications.insert_one(notif_dict)
+            
+            # Insert notification
+            insert_notif = notif_dict.copy()
+            await db.notifications.insert_one(insert_notif)
     
-    return {"message": "Comment created", "id": comment.id, "comment": comment_dict}
+    return {"message": "Comment created", "id": comment.id}
 
 @api_router.delete("/projects/{project_id}/comments/{comment_id}")
 async def delete_project_comment(
