@@ -407,7 +407,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Planning Project Detail Page dan Progress Tracking"
+    - "Route-aware sidebar menu untuk Accounting role"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
