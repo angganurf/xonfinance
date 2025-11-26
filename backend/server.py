@@ -1130,7 +1130,7 @@ async def get_price_comparison(
     
     for trans in transactions:
         # Filter by project_type if provided
-        if project_ids_filter and trans.get("project_id") not in project_ids_filter:
+        if project_ids_filter is not None and trans.get("project_id") not in project_ids_filter:
             continue
             
         for item in trans.get("items", []):
