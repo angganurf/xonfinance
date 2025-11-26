@@ -327,8 +327,8 @@ const PlanningTeamDashboard = () => {
                           />
                         </div>
 
-                        {/* RAB, Shop Drawing & Schedule Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t">
+                        {/* RAB, Modeling 3D, Shop Drawing & Schedule Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-3 border-t">
                           {/* RAB Info */}
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
