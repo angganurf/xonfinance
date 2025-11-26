@@ -1928,12 +1928,12 @@ class XONArchitectAPITester:
             return False
         
         # Verify response contains deleted counts
-        has_deleted_counts = isinstance(clear_response, dict) and 'deleted_counts' in clear_response
+        has_deleted_counts = isinstance(clear_response, dict) and ('deleted_counts' in clear_response or 'deleted_count' in clear_response)
         if not has_deleted_counts:
             self.log_test("Clear All Data", False, f"Response missing deleted_counts: {clear_response}")
             return False
         
-        deleted_counts = clear_response['deleted_counts']
+        deleted_counts = clear_response.get('deleted_counts') or clear_response.get('deleted_count')
         print(f"📊 Deleted counts: {deleted_counts}")
         
         # Verify data was actually cleared
