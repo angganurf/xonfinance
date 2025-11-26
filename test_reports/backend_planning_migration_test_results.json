@@ -1,0 +1,75 @@
+{
+  "test_type": "planning_migration",
+  "timestamp": "2025-11-26T16:27:24.773212",
+  "total_tests": 11,
+  "passed_tests": 10,
+  "success_rate": 90.9090909090909,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T16:27:24.133522"
+    },
+    {
+      "test_name": "Migration Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T16:27:24.394509"
+    },
+    {
+      "test_name": "Check Initial Projects State",
+      "success": true,
+      "details": "Found 8 projects with phase=perencanaan",
+      "timestamp": "2025-11-26T16:27:24.432438"
+    },
+    {
+      "test_name": "Check Initial Planning Projects State",
+      "success": true,
+      "details": "Found 1 projects in planning_projects collection",
+      "timestamp": "2025-11-26T16:27:24.466495"
+    },
+    {
+      "test_name": "Create Test Perencanaan Projects",
+      "success": true,
+      "details": "Created 2 test projects for migration",
+      "timestamp": "2025-11-26T16:27:24.538889"
+    },
+    {
+      "test_name": "Verify Test Projects in Perencanaan",
+      "success": false,
+      "details": "Expected count: 10, Actual count: 8, Test projects found: False",
+      "timestamp": "2025-11-26T16:27:24.578180"
+    },
+    {
+      "test_name": "Run Migration",
+      "success": true,
+      "details": "Migrated count: 8, IDs: ['56cac78a-3d8e-4d9a-aef2-61389d6bdbd8', 'b404d87b-d30e-4b55-b009-a167d06a83ee', '430a55d8-db82-489e-b4df-535c5f7ead5a', '3dd62f2c-4ac8-4e9a-aba2-32b6e0be7006', 'af946637-1245-4383-90d6-e253341c86d5', '20bc6b2c-3814-4c03-b5f5-77e0c042e745', 'a00bc47a-c633-48e0-ac23-1110c54f93c8', 'e0b1106b-160b-41b8-93d9-8f29530a0378'], Message: Successfully migrated 8 projects from projects to planning_projects",
+      "timestamp": "2025-11-26T16:27:24.622749"
+    },
+    {
+      "test_name": "Verify Projects Removed from Projects Collection",
+      "success": true,
+      "details": "Remaining projects with phase=perencanaan: 0, Test projects removed: True",
+      "timestamp": "2025-11-26T16:27:24.658876"
+    },
+    {
+      "test_name": "Verify Projects Added to Planning Projects Collection",
+      "success": true,
+      "details": "Expected count: 9, Actual count: 9, Migrated projects found: True, Data integrity: True",
+      "timestamp": "2025-11-26T16:27:24.698672"
+    },
+    {
+      "test_name": "Verify Planning Overview Shows Migrated Projects",
+      "success": true,
+      "details": "Migrated projects in overview: 8/8, Structure OK: True",
+      "timestamp": "2025-11-26T16:27:24.740659"
+    },
+    {
+      "test_name": "Verify No Data Loss",
+      "success": true,
+      "details": "Data matches: True",
+      "timestamp": "2025-11-26T16:27:24.772876"
+    }
+  ]
+}
