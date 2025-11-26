@@ -601,12 +601,24 @@ const AccountingTransactions = () => {
                           </div>
                         </td>
                         <td className="p-3">
-                          <div>
-                            <p className="font-medium">{trans.description}</p>
-                            {trans.status && <p className="text-xs text-slate-500">Status: {trans.status}</p>}
-                            {trans.items && trans.items.length > 0 && (
-                              <p className="text-xs text-blue-600">{trans.items.length} item bahan</p>
+                          <div className="flex items-center gap-2">
+                            {hasItems && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => toggleRow(trans.id)}
+                                className="p-1 h-6 w-6"
+                              >
+                                {isExpanded ? '▼' : '▶'}
+                              </Button>
                             )}
+                            <div>
+                              <p className="font-medium">{trans.description}</p>
+                              {trans.status && <p className="text-xs text-slate-500">Status: {trans.status}</p>}
+                              {hasItems && (
+                                <p className="text-xs text-blue-600">{trans.items.length} item bahan</p>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="p-3">
