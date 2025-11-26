@@ -8,7 +8,7 @@ import { Label } from '../../components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import { Progress } from '../../components/ui/progress';
 import { toast } from 'sonner';
-import { Briefcase, FileText, Calendar, TrendingUp, Edit, CheckCircle, Clock, AlertCircle, Plus, Pencil, Cube } from 'lucide-react';
+import { Briefcase, FileText, Calendar, TrendingUp, Edit, CheckCircle, Clock, AlertCircle, Plus, Pencil, Box } from 'lucide-react';
 import api from '../../utils/api';
 
 const PlanningTeamDashboard = () => {
