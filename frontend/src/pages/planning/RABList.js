@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -9,19 +9,24 @@ import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Textarea } from '../../components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
 import api from '../../utils/api';
-import { FileText, Eye, ChevronDown, ChevronRight, DollarSign, Package, Plus } from 'lucide-react';
+import { FileText, Edit, Trash2, MoreVertical, Plus, Search, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const RABList = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [rabs, setRabs] = useState([]);
-  const [rabsWithItems, setRabsWithItems] = useState([]);
-  const [expandedRabs, setExpandedRabs] = useState(new Set());
-  const [loading, setLoading] = useState(true);
+  const [filteredRabs, setFilteredRabs] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [addDialog, setAddDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [selectedRab, setSelectedRab] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     project_id: '',
     name: '',
@@ -31,54 +36,78 @@ const RABList = () => {
 
   useEffect(() => {
     loadData();
+    
+    // Check if we need to auto-open create RAB dialog from Planning Dashboard
+    const createRAB = searchParams.get('createRAB');
+    const projectName = searchParams.get('projectName');
+    const projectType = searchParams.get('projectType');
+    const projectId = searchParams.get('projectId');
+    const location = searchParams.get('location');
+    
+    if (createRAB === 'true' && projectId) {
+      setFormData({
+        project_id: projectId,
+        name: projectName ? decodeURIComponent(projectName) : '',
+        description: '',
+        notes: location ? `Lokasi: ${decodeURIComponent(location)}` : ''
+      });
+      setAddDialog(true);
+      
+      // Clean up URL params
+      searchParams.delete('createRAB');
+      searchParams.delete('projectName');
+      searchParams.delete('projectType');
+      searchParams.delete('projectId');
+      searchParams.delete('location');
+      setSearchParams(searchParams, { replace: true });
+    }
   }, []);
+
+  useEffect(() => {
+    filterRABs();
+  }, [rabs, statusFilter, searchQuery]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [rabsRes, itemsRes, projectsRes] = await Promise.all([
+      const [rabsRes, projectsRes] = await Promise.all([
         api.get('/rabs'),
-        api.get('/rab-items'),
         api.get('/planning-projects')
       ]);
       
-      const rabsData = rabsRes.data;
-      const itemsData = itemsRes.data;
+      setRabs(rabsRes.data);
       setProjects(projectsRes.data);
-      
-      // Group items by RAB ID and calculate totals
-      const rabsWithDetails = rabsData.map(rab => {
-        const rabItems = itemsData.filter(item => item.rab_id === rab.id);
-        
-        // Calculate subtotal from items
-        const subtotal = rabItems.reduce((sum, item) => {
-          return sum + (item.quantity * item.unit_price);
-        }, 0);
-        
-        // Calculate tax (10% default)
-        const tax = subtotal * 0.10;
-        
-        // Calculate total
-        const total = subtotal + tax;
-        
-        return {
-          ...rab,
-          items: rabItems,
-          itemCount: rabItems.length,
-          subtotal,
-          tax,
-          total
-        };
-      });
-      
-      setRabs(rabsData);
-      setRabsWithItems(rabsWithDetails);
     } catch (error) {
-      console.error('Error loading RABs:', error);
-      toast.error('Gagal memuat daftar RAB');
+      console.error('Error loading data:', error);
+      toast.error('Gagal memuat data');
     } finally {
       setLoading(false);
     }
+  };
+
+  const filterRABs = () => {
+    let filtered = [...rabs];
+    
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(rab => rab.status === statusFilter);
+    }
+    
+    if (searchQuery) {
+      filtered = filtered.filter(rab => 
+        rab.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (rab.client_name && rab.client_name.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+    
+    // Sort by status priority and creation date
+    const statusOrder = { 'draft': 1, 'review': 2, 'approved': 3, 'rejected': 4 };
+    filtered.sort((a, b) => {
+      const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+      if (statusDiff !== 0) return statusDiff;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+    
+    setFilteredRabs(filtered);
   };
 
   const handleSubmit = async (e) => {
@@ -90,7 +119,6 @@ const RABList = () => {
     }
     
     try {
-      // Get project details
       const project = projects.find(p => p.id === formData.project_id);
       if (!project) {
         toast.error('Proyek tidak ditemukan');
@@ -112,14 +140,8 @@ const RABList = () => {
       const response = await api.post('/rabs', rabData);
       toast.success('RAB berhasil dibuat');
       setAddDialog(false);
-      setFormData({
-        project_id: '',
-        name: '',
-        description: '',
-        notes: ''
-      });
+      setFormData({ project_id: '', name: '', description: '', notes: '' });
       
-      // Navigate to RAB editor
       if (response.data && response.data.id) {
         navigate(`/estimator/rab/${response.data.id}`);
       } else {
@@ -131,269 +153,313 @@ const RABList = () => {
     }
   };
 
-  const toggleExpand = (rabId) => {
-    setExpandedRabs(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(rabId)) {
-        newSet.delete(rabId);
-      } else {
-        newSet.add(rabId);
-      }
-      return newSet;
-    });
+  const handleDelete = async () => {
+    if (!selectedRab) return;
+    
+    try {
+      await api.delete(`/rabs/${selectedRab.id}`);
+      await api.delete(`/rab-items/rab/${selectedRab.id}`);
+      toast.success('RAB berhasil dihapus');
+      setDeleteDialog(false);
+      setSelectedRab(null);
+      loadData();
+    } catch (error) {
+      console.error('Error deleting RAB:', error);
+      toast.error('Gagal menghapus RAB');
+    }
   };
 
   const getStatusBadge = (status) => {
     const variants = {
-      draft: { label: 'Draft', className: 'bg-slate-100 text-slate-700' },
-      review: { label: 'Review', className: 'bg-yellow-100 text-yellow-700' },
-      approved: { label: 'Approved', className: 'bg-green-100 text-green-700' },
-      rejected: { label: 'Rejected', className: 'bg-red-100 text-red-700' }
+      draft: { label: 'Draft', icon: Clock, className: 'bg-slate-100 text-slate-700' },
+      review: { label: 'Review', icon: Clock, className: 'bg-yellow-100 text-yellow-700' },
+      approved: { label: 'Approved', icon: CheckCircle, className: 'bg-green-100 text-green-700' },
+      rejected: { label: 'Rejected', icon: XCircle, className: 'bg-red-100 text-red-700' }
     };
     const variant = variants[status] || variants.draft;
-    return <Badge className={variant.className}>{variant.label}</Badge>;
+    const Icon = variant.icon;
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${variant.className}`}>
+        <Icon className="h-3 w-3" />
+        {variant.label}
+      </span>
+    );
   };
+
+  const formatDate = (isoString) => {
+    if (!isoString) return '-';
+    const date = new Date(isoString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const getStatusCounts = () => {
+    return {
+      total: rabs.length,
+      draft: rabs.filter(r => r.status === 'draft').length,
+      review: rabs.filter(r => r.status === 'review').length,
+      approved: rabs.filter(r => r.status === 'approved').length,
+      rejected: rabs.filter(r => r.status === 'rejected').length
+    };
+  };
+
+  const stats = getStatusCounts();
 
   return (
     <Layout>
       <div className="space-y-6" data-testid="rab-list">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">Daftar RAB</h2>
-            <p className="text-slate-600">Rencana Anggaran Biaya proyek perencanaan</p>
+            <h2 className="text-2xl font-bold text-slate-800">Daftar RAB</h2>
+            <p className="text-sm text-slate-600 mt-1">Kelola Rencana Anggaran Biaya (RAB) proyek</p>
           </div>
-          <Dialog open={addDialog} onOpenChange={setAddDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Tambah RAB
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Tambah RAB Baru</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label>Proyek *</Label>
-                  <Select value={formData.project_id} onValueChange={(v) => setFormData({...formData, project_id: v})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih proyek perencanaan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map(project => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name} ({project.type})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label>Nama RAB (Opsional)</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="Kosongkan untuk auto-generate dari nama proyek"
-                  />
-                </div>
-                
-                <div>
-                  <Label>Deskripsi (Opsional)</Label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    placeholder="Deskripsi RAB"
-                    rows={3}
-                  />
-                </div>
-                
-                <div>
-                  <Label>Catatan (Opsional)</Label>
-                  <Textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    placeholder="Catatan tambahan"
-                    rows={2}
-                  />
-                </div>
-                
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setAddDialog(false)}>
-                    Batal
-                  </Button>
-                  <Button type="submit">
-                    Buat RAB
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setAddDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" /> Buat RAB Baru
+          </Button>
         </div>
 
-        {loading ? (
-          <Card className="shadow-lg">
-            <CardContent className="py-12">
-              <div className="animate-pulse space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-20 bg-slate-200 rounded"></div>
-                ))}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-slate-600">Total RAB</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-slate-600">Draft</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-slate-600">{stats.draft}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-yellow-600">Review</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-yellow-600">{stats.review}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-green-600">Approved</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-red-600">Rejected</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* RAB List Table */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Cari nama proyek atau klien..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ) : rabsWithItems.length === 0 ? (
-          <Card className="shadow-lg">
-            <CardContent className="py-12 text-center">
-              <FileText className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-800 mb-2">Belum Ada RAB</h3>
-              <p className="text-slate-600 mb-4">
-                Belum ada RAB yang dibuat. Klik tombol "Tambah RAB" untuk membuat RAB baru.
-              </p>
-              <Button onClick={() => setAddDialog(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Tambah RAB Pertama
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {rabsWithItems.map(rab => {
-              const isExpanded = expandedRabs.has(rab.id);
-              
-              return (
-                <Card key={rab.id} className="shadow-md hover:shadow-lg transition-all">
-                  <CardHeader className="cursor-pointer" onClick={() => toggleExpand(rab.id)}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          {isExpanded ? (
-                            <ChevronDown className="h-5 w-5" />
-                          ) : (
-                            <ChevronRight className="h-5 w-5" />
-                          )}
-                        </Button>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <CardTitle className="text-lg">
-                              {rab.name || `RAB - ${rab.project_name}`}
-                            </CardTitle>
-                            {getStatusBadge(rab.status)}
-                          </div>
-                          <div className="flex items-center gap-4 mt-1 text-sm text-slate-600">
-                            <span>Proyek: {rab.project_name}</span>
-                            <span>•</span>
-                            <span>{rab.project_type}</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Package className="h-3 w-3" />
-                              {rab.itemCount} item
+              <div className="w-full sm:w-48">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Status</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="review">Review</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="py-8 text-center">
+                <p className="text-slate-500">Memuat data...</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b">
+                    <tr className="text-left text-sm text-slate-600">
+                      <th className="pb-3 font-semibold">Nama Proyek</th>
+                      <th className="pb-3 font-semibold">Tipe</th>
+                      <th className="pb-3 font-semibold">Klien</th>
+                      <th className="pb-3 font-semibold">Lokasi</th>
+                      <th className="pb-3 font-semibold">Status</th>
+                      <th className="pb-3 font-semibold">Dibuat</th>
+                      <th className="pb-3 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRabs.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="py-8 text-center text-slate-500">
+                          <FileText className="mx-auto h-12 w-12 mb-2 text-slate-300" />
+                          <p>Belum ada RAB</p>
+                          <p className="text-sm mt-1">Klik "Buat RAB Baru" untuk membuat RAB pertama</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRabs.map((rab) => (
+                        <tr key={rab.id} className="border-b hover:bg-slate-50">
+                          <td className="py-3 font-medium">{rab.project_name}</td>
+                          <td className="py-3">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              rab.project_type === 'interior' 
+                                ? 'bg-blue-100 text-blue-800' 
+                                : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {rab.project_type === 'interior' ? 'Interior' : 'Arsitektur'}
                             </span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-xs text-slate-500">Total RAB</p>
-                          <p className="text-xl font-bold text-blue-600">
-                            Rp {rab.total.toLocaleString('id-ID')}
-                          </p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/estimator/rab/${rab.id}`);
-                          }}
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          Detail
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  {isExpanded && (
-                    <CardContent className="pt-0">
-                      <div className="border-t pt-4">
-                        {/* Items Table */}
-                        {rab.items.length > 0 ? (
-                          <>
-                            <h4 className="font-semibold mb-3 text-slate-700">Daftar Item Pekerjaan:</h4>
-                            <div className="overflow-x-auto">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="w-12">No</TableHead>
-                                    <TableHead>Uraian Pekerjaan</TableHead>
-                                    <TableHead className="text-center">Satuan</TableHead>
-                                    <TableHead className="text-right">Volume</TableHead>
-                                    <TableHead className="text-right">Harga Satuan</TableHead>
-                                    <TableHead className="text-right">Jumlah</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {rab.items.map((item, index) => (
-                                    <TableRow key={item.id}>
-                                      <TableCell className="font-medium">{index + 1}</TableCell>
-                                      <TableCell>{item.description}</TableCell>
-                                      <TableCell className="text-center">{item.unit}</TableCell>
-                                      <TableCell className="text-right">{item.quantity}</TableCell>
-                                      <TableCell className="text-right">
-                                        Rp {item.unit_price.toLocaleString('id-ID')}
-                                      </TableCell>
-                                      <TableCell className="text-right font-semibold">
-                                        Rp {(item.quantity * item.unit_price).toLocaleString('id-ID')}
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </div>
-                            
-                            {/* Summary */}
-                            <div className="mt-6 border-t pt-4">
-                              <div className="flex justify-end">
-                                <div className="w-full max-w-md space-y-2">
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-slate-600">Subtotal:</span>
-                                    <span className="font-semibold">Rp {rab.subtotal.toLocaleString('id-ID')}</span>
-                                  </div>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-slate-600">Pajak (10%):</span>
-                                    <span className="font-semibold">Rp {rab.tax.toLocaleString('id-ID')}</span>
-                                  </div>
-                                  <div className="flex justify-between text-lg font-bold border-t pt-2">
-                                    <span className="text-slate-800">Total:</span>
-                                    <span className="text-blue-600">Rp {rab.total.toLocaleString('id-ID')}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-center py-8">
-                            <p className="text-slate-500 mb-3">Belum ada item pekerjaan</p>
-                            <Button 
-                              size="sm"
-                              onClick={() => navigate(`/estimator/rab/${rab.id}`)}
-                            >
-                              <Plus className="mr-2 h-4 w-4" />
-                              Tambah Item
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
-        )}
+                          </td>
+                          <td className="py-3 text-sm text-slate-600">{rab.client_name || '-'}</td>
+                          <td className="py-3 text-sm text-slate-600">{rab.location || '-'}</td>
+                          <td className="py-3">{getStatusBadge(rab.status)}</td>
+                          <td className="py-3 text-sm text-slate-600">{formatDate(rab.created_at)}</td>
+                          <td className="py-3 text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => navigate(`/estimator/rab/${rab.id}`)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit RAB
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => {
+                                    setSelectedRab(rab);
+                                    setDeleteDialog(true);
+                                  }}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Hapus
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Add RAB Dialog */}
+      <Dialog open={addDialog} onOpenChange={setAddDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah RAB Baru</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label>Proyek *</Label>
+              <Select value={formData.project_id} onValueChange={(v) => setFormData({...formData, project_id: v})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih proyek perencanaan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map(project => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name} ({project.type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label>Nama RAB (Opsional)</Label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Kosongkan untuk auto-generate dari nama proyek"
+              />
+            </div>
+            
+            <div>
+              <Label>Deskripsi (Opsional)</Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Deskripsi RAB"
+                rows={3}
+              />
+            </div>
+            
+            <div>
+              <Label>Catatan (Opsional)</Label>
+              <Textarea
+                value={formData.notes}
+                onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                placeholder="Catatan tambahan"
+                rows={2}
+              />
+            </div>
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAddDialog(false)}>
+                Batal
+              </Button>
+              <Button type="submit">
+                Buat RAB
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus RAB?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus RAB "{selectedRab?.project_name}"? 
+              Semua item pekerjaan dalam RAB ini juga akan dihapus. Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };
