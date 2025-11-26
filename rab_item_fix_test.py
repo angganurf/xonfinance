@@ -153,7 +153,12 @@ class RABItemFixTester:
         if success and 'id' in data:
             self.rab_item_without_project_id = data['id']
         
-        details = f"RAB Item ID: {getattr(self, 'rab_item_without_project_id', 'N/A')}, Expected: Success without project_id"
+        # Include error details if failed
+        error_info = ""
+        if not success:
+            error_info = f", Error: {data}"
+        
+        details = f"RAB Item ID: {getattr(self, 'rab_item_without_project_id', 'N/A')}, Expected: Success without project_id{error_info}"
         self.log_test("RAB Item Fix - Create Without Project ID", success, details)
         return success
 
