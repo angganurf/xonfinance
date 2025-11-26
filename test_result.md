@@ -314,15 +314,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Endpoint POST /api/admin/backup untuk create backup database"
-    - "Endpoint GET /api/admin/backups untuk list semua backup"
-    - "Endpoint POST /api/admin/restore/{backup_id} untuk restore database"
-    - "Endpoint DELETE /api/admin/backups/{backup_id} untuk hapus backup"
-    - "Endpoint POST /api/admin/clear-all-data untuk hapus semua data"
-    - "Halaman AdminSettings dengan UI Backup & Restore"
-    - "Fitur Create Backup dengan timestamp"
-    - "Daftar backup dengan detail dan aksi"
-    - "Dialog konfirmasi Restore dengan detail backup"
+    - "Endpoint POST /api/projects untuk create project perencanaan"
+    - "Fix TaskInput model untuk support Drafter Dashboard"
+    - "Button dan Dialog 'Buat Project Baru' di Planning Dashboard"
+    - "Route /planning/dashboard di App.js"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
