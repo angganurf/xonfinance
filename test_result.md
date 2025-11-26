@@ -305,12 +305,12 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "5.0"
-  test_sequence: 8
+  version: "6.0"
+  test_sequence: 9
   run_ui: true
-  last_backend_test: "2025-11-26T05:31:00Z"
-  backend_backup_status: "NEEDS_TESTING"
-  admin_settings_status: "NEEDS_TESTING"
+  last_backend_test: "2025-11-26T07:25:00Z"
+  planning_create_project_status: "NEEDS_TESTING"
+  drafter_create_task_status: "NEEDS_TESTING"
 
 test_plan:
   current_focus:
