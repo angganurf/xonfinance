@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import ProjectProgressBar from '../../components/ProjectProgressBar';
 import api from '../../utils/api';
-import { TrendingUp, DollarSign, Briefcase, PieChart as PieIcon, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { TrendingDown, DollarSign, Building2 } from 'lucide-react';
 
 const AccountingDashboard = () => {
-  const [summary, setSummary] = useState(null);
-  const [transactions, setTransactions] = useState([]);
-  const [monthlyData, setMonthlyData] = useState([]);
-  const [projectAllocation, setProjectAllocation] = useState([]);
-  const [projectsProgress, setProjectsProgress] = useState([]);
-  const [cashFlowData, setCashFlowData] = useState([]);
+  const [totalOutflow, setTotalOutflow] = useState(0);
+  const [projectCount, setProjectCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -20,235 +15,106 @@ const AccountingDashboard = () => {
 
   const loadData = async () => {
     try {
-      const [summaryRes, transRes, monthlyRes, allocRes, progressRes] = await Promise.all([
-        api.get('/financial/summary'),
-        api.get('/transactions/recent'),
-        api.get('/financial/monthly'),
-        api.get('/financial/project-allocation'),
-        api.get('/financial/projects-progress')
-      ]);
+      setLoading(true);
+      // Get all transactions and calculate total outflow
+      const transRes = await api.get('/transactions');
+      const transactions = transRes.data;
       
-      setSummary(summaryRes.data);
-      setTransactions(transRes.data);
-      setProjectsProgress(progressRes.data);
+      // Calculate total outflow (expenses)
+      const total = transactions.reduce((sum, t) => {
+        if (t.type === 'expense') {
+          return sum + (t.total_amount || 0);
+        }
+        return sum;
+      }, 0);
       
-      // Transform monthly data for charts
-      const monthly = Object.keys(monthlyRes.data).map(month => ({
-        month,
-        income: monthlyRes.data[month].income || 0,
-        expenses: (monthlyRes.data[month].cogs || 0) + (monthlyRes.data[month].opex || 0),
-        cogs: monthlyRes.data[month].cogs || 0,
-        opex: monthlyRes.data[month].opex || 0,
-        netProfit: monthlyRes.data[month].net_profit || 0
-      }));
-      setMonthlyData(monthly);
-      setCashFlowData(monthly);
-      setProjectAllocation(allocRes.data);
+      setTotalOutflow(total);
+      
+      // Get project count
+      const projectsRes = await api.get('/projects');
+      setProjectCount(projectsRes.data.length);
     } catch (error) {
       console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
-  const EXPENSE_COLORS = ['#ef4444', '#f97316'];
 
   return (
     <Layout>
       <div className="space-y-6" data-testid="accounting-dashboard">
-        {/* Project Progress Section */}
-        {projectsProgress.length > 0 && (
-          <div>
-            <h3 className="text-lg font-bold text-slate-800 mb-4">Progress Anggaran Proyek</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="projects-progress-section">
-              {projectsProgress.map((project) => (
-                <ProjectProgressBar key={project.project_id} project={project} />
-              ))}
-            </div>
-          </div>
-        )}
+        <div>
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Accounting</h2>
+          <p className="text-slate-600">Informasi keuangan proyek</p>
+        </div>
 
-        {/* Cash Flow Chart - Income vs Expenses */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ArrowUpCircle className="h-5 w-5 text-green-600" />
-              <ArrowDownCircle className="h-5 w-5 text-red-600" />
-              Arus Kas - Pemasukan vs Pengeluaran
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <AreaChart data={cashFlowData}>
-                <defs>
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="month" stroke="#64748b" />
-                <YAxis stroke="#64748b" />
-                <Tooltip 
-                  formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`}
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                />
-                <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="income" 
-                  stroke="#10b981" 
-                  strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorIncome)" 
-                  name="Pemasukan"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="expenses" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorExpenses)" 
-                  name="Pengeluaran"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Total Outflow Card */}
+          <Card className="shadow-lg border-l-4 border-l-red-500 hover:shadow-xl transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-slate-700">
+                <div className="p-3 bg-red-100 rounded-lg">
+                  <TrendingDown className="h-6 w-6 text-red-600" />
+                </div>
+                <span>Total Outflow</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-12 bg-slate-200 rounded w-3/4"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-4xl font-bold text-red-600 mb-2">
+                    Rp {totalOutflow.toLocaleString('id-ID')}
+                  </p>
+                  <p className="text-sm text-slate-500">Total pengeluaran semua proyek</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Project Count Card */}
+          <Card className="shadow-lg border-l-4 border-l-blue-500 hover:shadow-xl transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-slate-700">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Building2 className="h-6 w-6 text-blue-600" />
+                </div>
+                <span>Total Proyek</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-12 bg-slate-200 rounded w-1/2"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-4xl font-bold text-blue-600 mb-2">
+                    {projectCount}
+                  </p>
+                  <p className="text-sm text-slate-500">Proyek aktif</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Info Card */}
+        <Card className="shadow-lg bg-gradient-to-br from-blue-50 to-slate-50">
+          <CardContent className="py-8">
+            <div className="text-center">
+              <DollarSign className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Dashboard Accounting Sederhana</h3>
+              <p className="text-slate-600 max-w-2xl mx-auto">
+                Dashboard ini menampilkan informasi outflow (pengeluaran) dari semua proyek. 
+                Untuk melihat detail inventory, silakan akses menu Inventory.
+              </p>
+            </div>
           </CardContent>
         </Card>
-
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Net Profit Line Chart */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Laba Bersih Bulanan</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="month" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip 
-                    formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`}
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="netProfit" 
-                    stroke="#3b82f6" 
-                    strokeWidth={3} 
-                    name="Laba Bersih"
-                    dot={{ fill: '#3b82f6', r: 5 }}
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* COGS & Opex Bar Chart */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Breakdown Pengeluaran</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="month" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip 
-                    formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`}
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                  />
-                  <Legend />
-                  <Bar dataKey="cogs" fill="#ef4444" name="COGS" radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="opex" fill="#f97316" name="Opex" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Pie Chart and Recent Transactions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Alokasi Anggaran Per Proyek</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={projectAllocation}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={(entry) => `${entry.name}: ${((entry.value / projectAllocation.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {projectAllocation.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `Rp ${value?.toLocaleString('id-ID')}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Transaksi Terbaru</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-80 overflow-y-auto" data-testid="recent-transactions">
-                {transactions.map((trans) => {
-                  const isIncome = trans.category === 'kas_masuk' || trans.category === 'uang_masuk';
-                  return (
-                    <div key={trans.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors" data-testid={`transaction-${trans.id}`}>
-                      <div className="flex items-center gap-3">
-                        {isIncome ? (
-                          <ArrowUpCircle className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <ArrowDownCircle className="h-5 w-5 text-red-600" />
-                        )}
-                        <div>
-                          <p className="font-medium text-slate-800">{trans.description}</p>
-                          <div className="flex items-center gap-2 text-xs text-slate-500">
-                            <span>{trans.category}</span>
-                            {trans.project_name && (
-                              <>
-                                <span>•</span>
-                                <span className="text-blue-600 font-medium">{trans.project_name}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <p className={`font-bold ${
-                        isIncome ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {isIncome ? '+' : '-'}Rp {trans.amount?.toLocaleString('id-ID')}
-                      </p>
-                    </div>
-                  );
-                })}
-                {transactions.length === 0 && (
-                  <p className="text-center text-slate-500">Belum ada transaksi</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </Layout>
   );
