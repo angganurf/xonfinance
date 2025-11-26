@@ -338,13 +338,14 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "7.0"
-  test_sequence: 10
+  version: "7.1"
+  test_sequence: 11
   run_ui: true
-  last_backend_test: "2025-11-26T15:30:00Z"
+  last_backend_test: "2025-11-26T16:45:00Z"
   planning_create_project_status: "COMPLETED"
   drafter_create_task_status: "COMPLETED"
   rab_creation_flow_status: "COMPLETED"
+  planning_dashboard_debug_status: "COMPLETED"
 
 test_plan:
   current_focus:
