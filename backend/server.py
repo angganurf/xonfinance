@@ -269,6 +269,13 @@ class InventoryUpdateInput(BaseModel):
     unit_price: Optional[float] = None
     status: Optional[str] = None
 
+class WarehouseTransactionInput(BaseModel):
+    inventory_id: str
+    quantity: float
+    project_id: str
+    notes: Optional[str] = None
+    usage_type: str = "production"  # production, return, adjustment
+
 # ============= AUTH HELPERS =============
 
 async def get_current_user(request: Request, authorization: Optional[str] = Header(None)) -> User:
