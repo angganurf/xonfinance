@@ -112,20 +112,65 @@ user_problem_statement: |
   7. Fitur Delete Backup untuk menghapus backup yang tidak diperlukan
 
 backend:
-  - task: "Modifikasi endpoint GET /api/inventory/price-comparison untuk support filter project_type"
+  - task: "Endpoint POST /api/admin/backup untuk create backup database"
     implemented: true
-    working: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Added parameter project_type to price-comparison endpoint. Query projects by type, get project_ids, filter transactions to only include those from projects with matching type. This ensures Interior and Arsitektur have separate price comparison data."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Price comparison endpoint working perfectly. All test cases passed (9/9 - 100% success rate). Fixed minor filtering logic issue for invalid project types. Endpoint correctly filters by project_type (interior/arsitektur), supports combined filters (item_name + project_type), returns proper response format with suppliers sorted by price, and handles edge cases appropriately. Response format matches specification exactly."
+        comment: "Created backup endpoint that saves snapshot of all collections (projects, transactions, inventory, rabs, rab_items, schedules, tasks, users) to backups collection with timestamp, created_by, and collection counts. Returns backup ID and metadata."
+  
+  - task: "Endpoint GET /api/admin/backups untuk list semua backup"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created endpoint to list all backups sorted by timestamp (newest first). Returns backup metadata without the actual data to keep response size small."
+  
+  - task: "Endpoint POST /api/admin/restore/{backup_id} untuk restore database"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created restore endpoint that clears existing data and restores from selected backup. Skips users collection for security (to prevent admin lockout). Returns restored counts for each collection."
+  
+  - task: "Endpoint DELETE /api/admin/backups/{backup_id} untuk hapus backup"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created endpoint to delete specific backup by ID. Returns 404 if backup not found."
+  
+  - task: "Endpoint POST /api/admin/clear-all-data untuk hapus semua data"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created endpoint to clear all data from database except users and backups. Returns deleted counts for each collection."
 
 frontend:
   - task: "Implementasi sub-tabs (Stok / Daftar Bahan) di dalam tab Interior dan Arsitektur"
