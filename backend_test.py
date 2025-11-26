@@ -3223,6 +3223,326 @@ class XONArchitectAPITester:
         
         return self.tests_passed == self.tests_run
 
+    # ============= PLANNING PROJECT MIGRATION TESTS =============
+    
+    def test_migration_admin_login(self):
+        """Test admin login for migration tests"""
+        login_data = {
+            "email": "admin",
+            "password": "admin"
+        }
+        
+        success, data = self.make_request('POST', '/auth/login', login_data, 200)
+        if success and 'session_token' in data:
+            self.session_token = data['session_token']
+            self.user_id = data['user']['id']
+        
+        self.log_test("Migration Admin Login", success, f"Admin token received: {bool(self.session_token)}")
+        return success
+
+    def test_check_initial_projects_state(self):
+        """Check initial state of projects with phase=perencanaan"""
+        success, data = self.make_request('GET', '/projects?phase=perencanaan')
+        
+        if success and isinstance(data, list):
+            self.initial_perencanaan_count = len(data)
+            self.initial_perencanaan_projects = data.copy()
+            details = f"Found {self.initial_perencanaan_count} projects with phase=perencanaan"
+            self.log_test("Check Initial Projects State", True, details)
+            return True
+        else:
+            self.log_test("Check Initial Projects State", False, f"Failed to get projects: {data}")
+            return False
+
+    def test_check_initial_planning_projects_state(self):
+        """Check initial state of planning_projects collection"""
+        success, data = self.make_request('GET', '/planning-projects')
+        
+        if success and isinstance(data, list):
+            self.initial_planning_count = len(data)
+            self.initial_planning_projects = data.copy()
+            details = f"Found {self.initial_planning_count} projects in planning_projects collection"
+            self.log_test("Check Initial Planning Projects State", True, details)
+            return True
+        else:
+            self.log_test("Check Initial Planning Projects State", False, f"Failed to get planning projects: {data}")
+            return False
+
+    def test_create_test_perencanaan_projects(self):
+        """Create test projects with phase=perencanaan for migration testing"""
+        if not hasattr(self, 'initial_perencanaan_count'):
+            self.initial_perencanaan_count = 0
+        
+        # Create test projects that should have phase=perencanaan
+        test_projects = [
+            {
+                "name": f"Test Planning Project 1 - {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "type": "interior",
+                "description": "Test project for migration - Interior design",
+                "location": "Jakarta Selatan",
+                "project_value": 150000000
+            },
+            {
+                "name": f"Test Planning Project 2 - {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "type": "arsitektur", 
+                "description": "Test project for migration - Architecture",
+                "location": "Bandung",
+                "project_value": 300000000
+            }
+        ]
+        
+        created_projects = []
+        for i, project_data in enumerate(test_projects):
+            success, data = self.make_request('POST', '/projects', project_data, 200)
+            if success and 'id' in data:
+                created_projects.append(data['id'])
+                print(f"✅ Created test project {i+1}: {project_data['name']}")
+            else:
+                print(f"❌ Failed to create test project {i+1}")
+                self.log_test("Create Test Perencanaan Projects", False, f"Failed to create project {i+1}")
+                return False
+        
+        self.test_project_ids = created_projects
+        details = f"Created {len(created_projects)} test projects for migration"
+        self.log_test("Create Test Perencanaan Projects", True, details)
+        return True
+
+    def test_verify_test_projects_in_perencanaan(self):
+        """Verify test projects are created with phase=perencanaan"""
+        success, data = self.make_request('GET', '/projects?phase=perencanaan')
+        
+        if success and isinstance(data, list):
+            current_count = len(data)
+            expected_count = self.initial_perencanaan_count + 2  # We created 2 test projects
+            
+            count_correct = current_count == expected_count
+            
+            # Verify our test projects are in the list
+            project_ids_in_response = [p.get('id') for p in data]
+            test_projects_found = all(pid in project_ids_in_response for pid in self.test_project_ids)
+            
+            all_correct = count_correct and test_projects_found
+            details = f"Expected count: {expected_count}, Actual count: {current_count}, Test projects found: {test_projects_found}"
+            self.log_test("Verify Test Projects in Perencanaan", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Verify Test Projects in Perencanaan", False, f"Failed to get projects: {data}")
+            return False
+
+    def test_run_migration(self):
+        """Run the migration endpoint"""
+        success, data = self.make_request('POST', '/admin/migrate-planning-projects', expected_status=200)
+        
+        if success and isinstance(data, dict):
+            migrated_count = data.get('count', 0)
+            migrated_ids = data.get('migrated_ids', [])
+            message = data.get('message', '')
+            
+            # Store migration results for verification
+            self.migration_count = migrated_count
+            self.migrated_ids = migrated_ids
+            
+            migration_successful = migrated_count > 0 and len(migrated_ids) == migrated_count
+            details = f"Migrated count: {migrated_count}, IDs: {migrated_ids}, Message: {message}"
+            self.log_test("Run Migration", migration_successful, details)
+            return migration_successful
+        else:
+            self.log_test("Run Migration", False, f"Migration failed: {data}")
+            return False
+
+    def test_verify_projects_removed_from_projects_collection(self):
+        """Verify projects with phase=perencanaan are removed from projects collection"""
+        success, data = self.make_request('GET', '/projects?phase=perencanaan')
+        
+        if success and isinstance(data, list):
+            remaining_count = len(data)
+            expected_remaining = 0  # Should be 0 after migration
+            
+            # Should be 0 after migration
+            migration_successful = remaining_count == expected_remaining
+            
+            # Verify our test projects are NOT in the list anymore
+            project_ids_in_response = [p.get('id') for p in data]
+            test_projects_removed = not any(pid in project_ids_in_response for pid in self.test_project_ids)
+            
+            all_correct = migration_successful and test_projects_removed
+            details = f"Remaining projects with phase=perencanaan: {remaining_count}, Test projects removed: {test_projects_removed}"
+            self.log_test("Verify Projects Removed from Projects Collection", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Verify Projects Removed from Projects Collection", False, f"Failed to get projects: {data}")
+            return False
+
+    def test_verify_projects_added_to_planning_projects_collection(self):
+        """Verify migrated projects appear in planning_projects collection"""
+        success, data = self.make_request('GET', '/planning-projects')
+        
+        if success and isinstance(data, list):
+            current_count = len(data)
+            expected_count = self.initial_planning_count + self.migration_count
+            
+            count_correct = current_count == expected_count
+            
+            # Verify our migrated projects are in the list with same IDs
+            project_ids_in_response = [p.get('id') for p in data]
+            migrated_projects_found = all(pid in project_ids_in_response for pid in self.migrated_ids)
+            
+            # Verify data integrity - check that migrated projects have correct fields
+            data_integrity_ok = True
+            for project in data:
+                if project.get('id') in self.migrated_ids:
+                    # Check required fields exist
+                    required_fields = ['id', 'name', 'type', 'status', 'created_at']
+                    if not all(field in project for field in required_fields):
+                        data_integrity_ok = False
+                        break
+                    
+                    # Check status is 'planning'
+                    if project.get('status') != 'planning':
+                        data_integrity_ok = False
+                        break
+            
+            all_correct = count_correct and migrated_projects_found and data_integrity_ok
+            details = f"Expected count: {expected_count}, Actual count: {current_count}, Migrated projects found: {migrated_projects_found}, Data integrity: {data_integrity_ok}"
+            self.log_test("Verify Projects Added to Planning Projects Collection", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Verify Projects Added to Planning Projects Collection", False, f"Failed to get planning projects: {data}")
+            return False
+
+    def test_verify_planning_overview_shows_migrated_projects(self):
+        """Verify planning overview endpoint shows migrated projects"""
+        success, data = self.make_request('GET', '/planning/overview')
+        
+        if success and isinstance(data, list):
+            # Find our migrated projects in the overview
+            migrated_projects_in_overview = []
+            for item in data:
+                project = item.get('project', {})
+                if project.get('id') in self.migrated_ids:
+                    migrated_projects_in_overview.append(project.get('id'))
+            
+            all_migrated_found = len(migrated_projects_in_overview) == len(self.migrated_ids)
+            
+            # Verify overview structure
+            overview_structure_ok = True
+            for item in data:
+                required_keys = ['project', 'rab', 'modeling_3d', 'shop_drawing', 'schedule', 'design_progress']
+                if not all(key in item for key in required_keys):
+                    overview_structure_ok = False
+                    break
+            
+            all_correct = all_migrated_found and overview_structure_ok
+            details = f"Migrated projects in overview: {len(migrated_projects_in_overview)}/{len(self.migrated_ids)}, Structure OK: {overview_structure_ok}"
+            self.log_test("Verify Planning Overview Shows Migrated Projects", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Verify Planning Overview Shows Migrated Projects", False, f"Failed to get planning overview: {data}")
+            return False
+
+    def test_verify_no_data_loss(self):
+        """Verify no data loss during migration - check project details match"""
+        if not hasattr(self, 'initial_perencanaan_projects') or not hasattr(self, 'migrated_ids'):
+            self.log_test("Verify No Data Loss", False, "Missing initial data or migration results")
+            return False
+        
+        # Get current planning projects
+        success, planning_data = self.make_request('GET', '/planning-projects')
+        
+        if not success or not isinstance(planning_data, list):
+            self.log_test("Verify No Data Loss", False, "Failed to get planning projects")
+            return False
+        
+        # Create lookup for planning projects by ID
+        planning_lookup = {p.get('id'): p for p in planning_data}
+        
+        data_matches = True
+        mismatched_fields = []
+        
+        # Check each originally perencanaan project that was migrated
+        for original_project in self.initial_perencanaan_projects:
+            original_id = original_project.get('id')
+            if original_id in self.migrated_ids:
+                planning_project = planning_lookup.get(original_id)
+                
+                if not planning_project:
+                    data_matches = False
+                    mismatched_fields.append(f"Project {original_id} not found in planning_projects")
+                    continue
+                
+                # Check key fields match
+                fields_to_check = ['name', 'type', 'description', 'location', 'project_value']
+                for field in fields_to_check:
+                    original_value = original_project.get(field)
+                    planning_value = planning_project.get(field)
+                    
+                    if original_value != planning_value:
+                        data_matches = False
+                        mismatched_fields.append(f"Project {original_id} field '{field}': original='{original_value}', planning='{planning_value}'")
+        
+        details = f"Data matches: {data_matches}"
+        if mismatched_fields:
+            details += f", Mismatches: {mismatched_fields[:3]}"  # Show first 3 mismatches
+        
+        self.log_test("Verify No Data Loss", data_matches, details)
+        return data_matches
+
+    def run_planning_migration_tests(self):
+        """Run comprehensive planning project migration tests"""
+        print("\n🔄 Starting Planning Project Migration Tests")
+        print("=" * 60)
+        
+        # Admin login for migration tests
+        if not self.test_migration_admin_login():
+            print("❌ Admin login failed. Stopping migration tests.")
+            return False
+        
+        # Step 1: Check current state
+        print("\n📋 Step 1: Checking current state...")
+        self.test_check_initial_projects_state()
+        self.test_check_initial_planning_projects_state()
+        
+        # Step 2: Create test projects if needed
+        print("\n🏗️ Step 2: Creating test projects...")
+        self.test_create_test_perencanaan_projects()
+        self.test_verify_test_projects_in_perencanaan()
+        
+        # Step 3: Run migration
+        print("\n🔄 Step 3: Running migration...")
+        if not self.test_run_migration():
+            print("❌ Migration failed. Stopping tests.")
+            return False
+        
+        # Step 4: Verify migration results
+        print("\n✅ Step 4: Verifying migration results...")
+        self.test_verify_projects_removed_from_projects_collection()
+        self.test_verify_projects_added_to_planning_projects_collection()
+        self.test_verify_planning_overview_shows_migrated_projects()
+        self.test_verify_no_data_loss()
+        
+        return True
+
+    def run_planning_migration_only_tests(self):
+        """Run only planning project migration tests as requested"""
+        print("🔄 Starting Planning Project Migration Tests")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run migration tests
+        self.run_planning_migration_tests()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Planning Migration Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = XONArchitectAPITester()
     
