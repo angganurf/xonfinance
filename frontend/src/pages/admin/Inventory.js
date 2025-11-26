@@ -17,8 +17,9 @@ const AdminInventory = () => {
   const [filteredInventory, setFilteredInventory] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('interior'); // interior or arsitektur
+  const [activeTab, setActiveTab] = useState('interior'); // interior, arsitektur, or daftar_bahan
   const [projects, setProjects] = useState([]);
+  const [priceComparison, setPriceComparison] = useState([]);
   const [open, setOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
