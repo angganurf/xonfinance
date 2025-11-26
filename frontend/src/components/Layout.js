@@ -126,6 +126,7 @@ export const Layout = ({ children }) => {
           { label: 'Home', path: '/admin', icon: '🏠' },
           { label: 'Proyek Perencanaan', path: '/admin/planning-projects', icon: '📋' },
           { label: 'Proyek Pelaksanaan', path: '/admin/projects', icon: '📁' },
+          { label: 'Accounting Admin', path: '/admin/accounting-admin', icon: '💰' },
           { label: 'Transaksi', path: '/admin/transactions', icon: '💳' },
           { label: 'Inventory', path: '/admin/inventory', icon: '📦' }
         ]
