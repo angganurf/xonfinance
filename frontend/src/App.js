@@ -12,6 +12,7 @@ import EstimatorDashboard from './pages/estimator/Dashboard';
 import EstimatorRAB from './pages/estimator/RAB';
 import RABEditor from './pages/estimator/RABEditor';
 import RABList from './pages/estimator/RABList';
+import DrafterDashboard from './pages/drafter/Dashboard';
 import SupervisorDashboard from './pages/supervisor/Dashboard';
 import SupervisorSchedule from './pages/supervisor/Schedule';
 import EmployeeDashboard from './pages/employee/Dashboard';
