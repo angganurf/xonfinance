@@ -130,10 +130,21 @@ const ProjectDetail = () => {
     }
 
     try {
-      await api.post(`/projects/${id}/comments`, null, {
-        params: {
-          message: newComment
+      // Extract mentions from comment
+      const mentionRegex = /@([^\s]+)/g;
+      const mentions = [];
+      let match;
+      while ((match = mentionRegex.exec(newComment)) !== null) {
+        const email = match[1];
+        const user = users.find(u => u.email === email);
+        if (user) {
+          mentions.push(user.id);
         }
+      }
+
+      await api.post(`/projects/${id}/comments`, {
+        message: newComment,
+        mentions: mentions
       });
       toast.success('Komentar berhasil dikirim!');
       setNewComment('');
