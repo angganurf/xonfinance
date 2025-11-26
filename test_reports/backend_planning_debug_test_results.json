@@ -1,63 +1,27 @@
 {
   "test_type": "planning_debug",
-  "timestamp": "2025-11-26T08:36:51.319494",
-  "total_tests": 9,
-  "passed_tests": 9,
+  "timestamp": "2025-11-26T08:44:24.273042",
+  "total_tests": 3,
+  "passed_tests": 3,
   "success_rate": 100.0,
   "test_results": [
     {
       "test_name": "API Health Check",
       "success": true,
       "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
-      "timestamp": "2025-11-26T08:36:50.860366"
+      "timestamp": "2025-11-26T08:44:23.931056"
     },
     {
       "test_name": "Admin Login",
       "success": true,
       "details": "Admin token received: True",
-      "timestamp": "2025-11-26T08:36:51.124514"
+      "timestamp": "2025-11-26T08:44:24.192345"
     },
     {
       "test_name": "Get Planning Overview (Before)",
       "success": true,
-      "details": "Found 1 projects in planning overview",
-      "timestamp": "2025-11-26T08:36:51.164348"
-    },
-    {
-      "test_name": "Create Debug Project",
-      "success": true,
-      "details": "Project created with ID: c348bc7f-84e1-45be-b60f-4f3b7038c275",
-      "timestamp": "2025-11-26T08:36:51.209006"
-    },
-    {
-      "test_name": "Verify Project Creation Response",
-      "success": true,
-      "details": "Has ID: True, Response OK: True",
-      "timestamp": "2025-11-26T08:36:51.209025"
-    },
-    {
-      "test_name": "Get Planning Overview (After)",
-      "success": true,
-      "details": "Count increased: True, New project in overview: True, Phase: perencanaan",
-      "timestamp": "2025-11-26T08:36:51.244816"
-    },
-    {
-      "test_name": "Get All Projects",
-      "success": true,
-      "details": "Found in all projects: True, Phase: perencanaan",
-      "timestamp": "2025-11-26T08:36:51.278410"
-    },
-    {
-      "test_name": "Get Perencanaan Projects",
-      "success": true,
-      "details": "Perencanaan projects: 2, New project in perencanaan: True",
-      "timestamp": "2025-11-26T08:36:51.319150"
-    },
-    {
-      "test_name": "Planning Dashboard Debug - Overall",
-      "success": true,
-      "details": "Issue: No issue found - everything working correctly",
-      "timestamp": "2025-11-26T08:36:51.319183"
+      "details": "Found 0 projects in planning overview",
+      "timestamp": "2025-11-26T08:44:24.272718"
     }
   ]
 }
