@@ -681,6 +681,56 @@ async def delete_planning_project(project_id: str, user: User = Depends(get_curr
     
     return {"message": "Planning project deleted"}
 
+@api_router.post("/admin/migrate-planning-projects")
+async def migrate_planning_projects(user: User = Depends(get_current_user)):
+    """Migrate projects with phase='perencanaan' to planning_projects collection"""
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can migrate data")
+    
+    # Find all projects with phase='perencanaan'
+    projects_to_migrate = await db.projects.find(
+        {"phase": "perencanaan"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    if not projects_to_migrate:
+        return {"message": "No projects to migrate", "count": 0}
+    
+    migrated_count = 0
+    migrated_ids = []
+    
+    for project in projects_to_migrate:
+        # Create planning project from execution project
+        planning_project = {
+            "id": project["id"],  # Keep same ID
+            "name": project["name"],
+            "type": project["type"],
+            "description": project.get("description"),
+            "location": project.get("location"),
+            "project_value": project.get("project_value", 0),
+            "status": "planning",
+            "design_progress": project.get("design_progress", 0),
+            "created_by": project.get("created_by", "system"),
+            "created_at": project["created_at"],
+            "approved_at": None,
+            "execution_project_id": None
+        }
+        
+        # Insert to planning_projects
+        await db.planning_projects.insert_one(planning_project)
+        
+        # Delete from projects
+        await db.projects.delete_one({"id": project["id"]})
+        
+        migrated_count += 1
+        migrated_ids.append(project["id"])
+    
+    return {
+        "message": f"Successfully migrated {migrated_count} projects from projects to planning_projects",
+        "count": migrated_count,
+        "migrated_ids": migrated_ids
+    }
+
 # ============= PROJECT ENDPOINTS (EXECUTION) =============
 
 @api_router.post("/projects")
