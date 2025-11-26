@@ -267,19 +267,39 @@ const PlanningTeamDashboard = () => {
               </span>
             </div>
           </div>
-          <Button onClick={() => {
-            setCreateDialog(true);
-            setSelectedRAB(null);
-            setFormData({
-              name: '',
-              type: 'interior',
-              description: '',
-              location: '',
-              project_value: 0
-            });
-          }} className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan Perencanaan
-          </Button>
+          <div className="flex items-center gap-2">
+            {selectedProjects.length > 0 && (
+              <>
+                <Button 
+                  onClick={() => setBulkEditDialog(true)}
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  <Edit className="mr-2 h-4 w-4" /> Update Progress ({selectedProjects.length})
+                </Button>
+                <Button 
+                  onClick={handleBulkDelete}
+                  variant="outline"
+                  className="border-red-600 text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Hapus ({selectedProjects.length})
+                </Button>
+              </>
+            )}
+            <Button onClick={() => {
+              setCreateDialog(true);
+              setSelectedRAB(null);
+              setFormData({
+                name: '',
+                type: 'interior',
+                description: '',
+                location: '',
+                project_value: 0
+              });
+            }} className="bg-green-600 hover:bg-green-700">
+              <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan Perencanaan
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
