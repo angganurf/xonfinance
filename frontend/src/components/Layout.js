@@ -320,7 +320,7 @@ export const Layout = ({ children }) => {
                 size="icon"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 data-testid="sidebar-toggle-btn"
-                className="hidden lg:flex"
+                className="hidden md:flex"
               >
                 <Menu className="h-5 w-5" />
               </Button>
