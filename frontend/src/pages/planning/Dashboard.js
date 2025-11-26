@@ -15,8 +15,16 @@ const PlanningTeamDashboard = () => {
   const [overview, setOverview] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editDialog, setEditDialog] = useState(false);
+  const [createDialog, setCreateDialog] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [newProgress, setNewProgress] = useState(0);
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'interior',
+    description: '',
+    location: '',
+    project_value: 0
+  });
 
   useEffect(() => {
     loadOverview();
