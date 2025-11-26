@@ -364,20 +364,15 @@ agent_communication:
       3. ✅ Fixed blank page issue when navigating to /planning/dashboard
       
       Testing diperlukan:
-      1. Backend: Test POST /api/projects with Planning Team user
-      2. Backend: Test POST /api/tasks with Drafter data (no project_id, no assigned_to)
-      3. Backend: Test restore from backup
-      4. Backend: Test delete backup
-      5. Backend: Test clear all data
-      6. Frontend: Test backup creation flow
-      7. Frontend: Test restore flow with confirmation
-      8. Frontend: Test delete backup
-      9. Frontend: Test export/import functionality
-      10. E2E: Create backup → Clear data → Restore backup → Verify data restored
+      1. Backend: Test POST /api/projects endpoint (verify phase="perencanaan" for Planning Team)
+      2. Backend: Test POST /api/tasks with Drafter data (title, description, priority, duration_days, role, status)
+      3. Frontend: Test "Buat Project Baru" dialog and form submission
+      4. Frontend: Test Drafter Dashboard create task functionality
+      5. E2E: Planning Team creates project → Verify project appears in overview with correct phase
+      6. E2E: Drafter creates task → Verify task appears with auto-calculated deadline
       
       Test credentials:
-      - Admin: email="admin", password="admin"
-      2. ✅ Updated status options di halaman Inventory berdasarkan kategori:
+      - Admin: email="admin", password="admin" (has access to all roles including project_planning_team)
          - Bahan: Tersedia, Order (Pengambilan), Habis
          - Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam
       3. ✅ Updated status color mapping untuk semua status baru
