@@ -172,27 +172,33 @@ backend:
   
   - task: "Endpoint DELETE /api/admin/backups/{backup_id} untuk hapus backup"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created endpoint to delete specific backup by ID. Returns 404 if backup not found."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: DELETE /api/admin/backups/{backup_id} working correctly. Successfully deleted existing backup and verified removal. Returns 404 for non-existent backup IDs as expected. Endpoint handles both success and error cases properly."
   
   - task: "Endpoint POST /api/admin/clear-all-data untuk hapus semua data"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created endpoint to clear all data from database except users and backups. Returns deleted counts for each collection."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: POST /api/admin/clear-all-data working correctly. Successfully clears all data (projects, transactions, inventory, rabs, rab_items, schedules, tasks) while preserving users and backups. Returns proper deleted_count response with counts for each collection. Admin user can still login after data clearing, confirming users are preserved."
 
   - task: "RAB Creation Flow untuk Planning Team Dashboard"
     implemented: true
