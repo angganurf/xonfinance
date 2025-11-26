@@ -101,6 +101,7 @@ export const Layout = ({ children }) => {
     if (userRoles.includes('accounting')) {
       combinedItems.push(
         { label: 'Home', path: '/accounting', icon: '🏠' },
+        { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
         { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
         { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
       );
