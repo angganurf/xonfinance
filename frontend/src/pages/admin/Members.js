@@ -362,7 +362,8 @@ const Members = () => {
                           className="w-4 h-4"
                         />
                         <span className="text-sm capitalize">
-                          {role === 'site_supervisor' ? 'Site Supervisor' : role}
+                          {role === 'site_supervisor' ? 'Site Supervisor' : 
+                           role === 'project_planning_team' ? 'Project Planning Team' : role}
                         </span>
                       </label>
                     ))}
