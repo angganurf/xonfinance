@@ -376,6 +376,7 @@ metadata:
   drafter_create_task_status: "COMPLETED"
   rab_creation_flow_status: "COMPLETED"
   planning_dashboard_debug_status: "COMPLETED"
+  project_visibility_debug_status: "COMPLETED"
 
 test_plan:
   current_focus:
