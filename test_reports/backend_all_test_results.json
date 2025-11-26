@@ -1,0 +1,21 @@
+{
+  "test_type": "all",
+  "timestamp": "2025-11-26T15:09:19.060111",
+  "total_tests": 2,
+  "passed_tests": 1,
+  "success_rate": 50.0,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T15:09:19.020990"
+    },
+    {
+      "test_name": "User Registration",
+      "success": false,
+      "details": "User: test.accounting.1764169759@example.com",
+      "timestamp": "2025-11-26T15:09:19.059795"
+    }
+  ]
+}
