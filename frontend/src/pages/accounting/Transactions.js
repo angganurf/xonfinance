@@ -78,11 +78,11 @@ const AccountingTransactions = () => {
     }
   };
   
-  const loadItemNames = async (category, projectId = null) => {
+  const loadItemNames = async (category, projectType = null) => {
     try {
       let url = `/inventory/item-names?category=${category}`;
-      if (projectId) {
-        url += `&project_id=${projectId}`;
+      if (projectType) {
+        url += `&project_type=${projectType}`;
       }
       const res = await api.get(url);
       setItemNames(res.data.item_names || []);
