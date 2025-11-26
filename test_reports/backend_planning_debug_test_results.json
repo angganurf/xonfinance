@@ -1,0 +1,63 @@
+{
+  "test_type": "planning_debug",
+  "timestamp": "2025-11-26T08:35:59.066311",
+  "total_tests": 9,
+  "passed_tests": 7,
+  "success_rate": 77.77777777777779,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T08:35:58.554256"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T08:35:58.817997"
+    },
+    {
+      "test_name": "Get Planning Overview (Before)",
+      "success": true,
+      "details": "Found 0 projects in planning overview",
+      "timestamp": "2025-11-26T08:35:58.899956"
+    },
+    {
+      "test_name": "Create Debug Project",
+      "success": true,
+      "details": "Project created with ID: d32aad86-3ba6-44cd-ad2b-cd4c9c582701",
+      "timestamp": "2025-11-26T08:35:58.940041"
+    },
+    {
+      "test_name": "Verify Project Creation Response",
+      "success": true,
+      "details": "Has ID: True, Response OK: True",
+      "timestamp": "2025-11-26T08:35:58.940060"
+    },
+    {
+      "test_name": "Get Planning Overview (After)",
+      "success": true,
+      "details": "Count increased: True, New project in overview: True, Phase: perencanaan",
+      "timestamp": "2025-11-26T08:35:58.982225"
+    },
+    {
+      "test_name": "Get All Projects",
+      "success": false,
+      "details": "Found in all projects: False, Phase: None",
+      "timestamp": "2025-11-26T08:35:59.023382"
+    },
+    {
+      "test_name": "Get Perencanaan Projects",
+      "success": true,
+      "details": "Perencanaan projects: 1, New project in perencanaan: True",
+      "timestamp": "2025-11-26T08:35:59.066050"
+    },
+    {
+      "test_name": "Planning Dashboard Debug - Overall",
+      "success": false,
+      "details": "Issue: Project created with wrong phase",
+      "timestamp": "2025-11-26T08:35:59.066090"
+    }
+  ]
+}
