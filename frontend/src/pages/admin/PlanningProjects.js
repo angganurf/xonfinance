@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { Plus, Building2, Edit, Trash2, MoreVertical, Eye } from 'lucide-react';
 import api from '../../utils/api';
 
-const AccountingProjects = () => {
+const PlanningProjects = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [projectsProgress, setProjectsProgress] = useState([]);
