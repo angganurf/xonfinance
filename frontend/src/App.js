@@ -228,6 +228,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/planning/rab"
+            element={
+              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+                <PlanningRABList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning/schedule"
+            element={
+              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+                <PlanningScheduleList />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Drafter Routes */}
           <Route
