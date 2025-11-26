@@ -76,9 +76,9 @@ export const Layout = ({ children }) => {
       : (user?.role ? [user.role] : []);
     
     // Check current path to determine context
-    const currentPath = window.location.pathname;
+    const currentPath = location.pathname;
     const isAccountingContext = currentPath.startsWith('/accounting');
-    const isPlanningContext = currentPath.startsWith('/planning');
+    const isPlanningContext = currentPath.startsWith('/planning') && !currentPath.startsWith('/planning-projects');
     const isSupervisorContext = currentPath.startsWith('/supervisor');
     
     // If admin is in accounting context, show accounting menu
