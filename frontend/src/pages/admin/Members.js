@@ -250,6 +250,7 @@ const Members = () => {
       accounting: 'Accounting',
       estimator: 'Estimator',
       site_supervisor: 'Site Supervisor',
+      project_planning_team: 'Project Planning Team',
       employee: 'Employee'
     };
     return labels[role] || role;
