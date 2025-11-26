@@ -1857,6 +1857,148 @@ class XONArchitectAPITester:
         
         return result
 
+    # ============= ADMIN BACKUP TESTS =============
+    
+    def test_admin_delete_backup(self):
+        """Test DELETE /api/admin/backups/{backup_id} endpoint"""
+        # First, get list of existing backups
+        success, backups_data = self.make_request('GET', '/admin/backups')
+        if not success:
+            self.log_test("Get Admin Backups for Delete Test", False, f"Failed to get backups: {backups_data}")
+            return False
+        
+        if not isinstance(backups_data, list) or len(backups_data) == 0:
+            self.log_test("Delete Admin Backup", False, "No backups available to delete")
+            return False
+        
+        # Get the first backup ID
+        backup_to_delete = backups_data[0]
+        backup_id = backup_to_delete.get('id')
+        
+        if not backup_id:
+            self.log_test("Delete Admin Backup", False, "No backup ID found")
+            return False
+        
+        # Delete the backup
+        success, delete_response = self.make_request('DELETE', f'/admin/backups/{backup_id}')
+        
+        if success:
+            # Verify backup was deleted by checking if it's no longer in the list
+            success_verify, backups_after = self.make_request('GET', '/admin/backups')
+            if success_verify and isinstance(backups_after, list):
+                backup_still_exists = any(b.get('id') == backup_id for b in backups_after)
+                deletion_verified = not backup_still_exists
+                details = f"Backup {backup_id} deleted successfully, verified: {deletion_verified}"
+                self.log_test("Delete Admin Backup", deletion_verified, details)
+                return deletion_verified
+            else:
+                self.log_test("Delete Admin Backup", True, f"Backup {backup_id} deleted (verification failed)")
+                return True
+        else:
+            self.log_test("Delete Admin Backup", False, f"Failed to delete backup: {delete_response}")
+            return False
+
+    def test_admin_delete_nonexistent_backup(self):
+        """Test DELETE /api/admin/backups/{backup_id} with non-existent ID (should return 404)"""
+        fake_backup_id = "non-existent-backup-id-12345"
+        success, response = self.make_request('DELETE', f'/admin/backups/{fake_backup_id}', expected_status=404)
+        
+        details = f"Expected 404 for non-existent backup, got: {response}"
+        self.log_test("Delete Non-existent Backup (404)", success, details)
+        return success
+
+    def test_admin_clear_all_data(self):
+        """Test POST /api/admin/clear-all-data endpoint"""
+        # First, check current data counts by getting some collections
+        success_projects, projects = self.make_request('GET', '/projects')
+        success_transactions, transactions = self.make_request('GET', '/transactions')
+        success_inventory, inventory = self.make_request('GET', '/inventory')
+        
+        projects_before = len(projects) if success_projects and isinstance(projects, list) else 0
+        transactions_before = len(transactions) if success_transactions and isinstance(transactions, list) else 0
+        inventory_before = len(inventory) if success_inventory and isinstance(inventory, list) else 0
+        
+        print(f"📊 Data before clear: Projects: {projects_before}, Transactions: {transactions_before}, Inventory: {inventory_before}")
+        
+        # Clear all data
+        success, clear_response = self.make_request('POST', '/admin/clear-all-data')
+        
+        if not success:
+            self.log_test("Clear All Data", False, f"Failed to clear data: {clear_response}")
+            return False
+        
+        # Verify response contains deleted counts
+        has_deleted_counts = isinstance(clear_response, dict) and 'deleted_counts' in clear_response
+        if not has_deleted_counts:
+            self.log_test("Clear All Data", False, f"Response missing deleted_counts: {clear_response}")
+            return False
+        
+        deleted_counts = clear_response['deleted_counts']
+        print(f"📊 Deleted counts: {deleted_counts}")
+        
+        # Verify data was actually cleared
+        success_projects_after, projects_after = self.make_request('GET', '/projects')
+        success_transactions_after, transactions_after = self.make_request('GET', '/transactions')
+        success_inventory_after, inventory_after = self.make_request('GET', '/inventory')
+        
+        projects_after_count = len(projects_after) if success_projects_after and isinstance(projects_after, list) else 0
+        transactions_after_count = len(transactions_after) if success_transactions_after and isinstance(transactions_after, list) else 0
+        inventory_after_count = len(inventory_after) if success_inventory_after and isinstance(inventory_after, list) else 0
+        
+        data_cleared = projects_after_count == 0 and transactions_after_count == 0 and inventory_after_count == 0
+        
+        # Verify users are preserved (should still be able to login)
+        login_success, login_data = self.make_request('POST', '/auth/login', {"email": "admin", "password": "admin"})
+        users_preserved = login_success
+        
+        all_correct = has_deleted_counts and data_cleared and users_preserved
+        details = f"Deleted counts present: {has_deleted_counts}, Data cleared: {data_cleared}, Users preserved: {users_preserved}"
+        self.log_test("Clear All Data", all_correct, details)
+        
+        return all_correct
+
+    def run_admin_backup_tests(self):
+        """Run admin backup endpoint tests"""
+        print("\n🗄️ Starting Admin Backup Tests")
+        print("=" * 50)
+        
+        # Admin login for tests
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Stopping admin backup tests.")
+            return False
+        
+        # Test delete backup endpoint
+        print("\n🗑️ Testing DELETE /api/admin/backups/{backup_id}")
+        self.test_admin_delete_backup()
+        self.test_admin_delete_nonexistent_backup()
+        
+        # Test clear all data endpoint
+        print("\n🧹 Testing POST /api/admin/clear-all-data")
+        self.test_admin_clear_all_data()
+        
+        return True
+
+    def run_admin_backup_only_tests(self):
+        """Run only admin backup tests as requested"""
+        print("🗄️ Starting Admin Backup Tests")
+        print("=" * 50)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run admin backup tests
+        self.run_admin_backup_tests()
+        
+        # Print summary
+        print("\n" + "=" * 50)
+        print(f"📊 Admin Backup Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
     # ============= PLANNING TEAM & DRAFTER TESTS =============
     
     def test_admin_login_with_planning_role(self):
