@@ -352,10 +352,23 @@ const PlanningTeamDashboard = () => {
         {/* Projects List */}
         <Card>
           <CardHeader>
-            <CardTitle>Daftar Pekerjaan Perencanaan</CardTitle>
-            <p className="text-sm text-slate-600 mt-2">
-              Project ini hanya visible untuk Planning Team. Setelah RAB di-approve, project akan pindah ke fase Pelaksanaan dan visible untuk semua role.
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Daftar Pekerjaan Perencanaan</CardTitle>
+                <p className="text-sm text-slate-600 mt-2">
+                  Project ini hanya visible untuk Planning Team. Setelah RAB di-approve, project akan pindah ke fase Pelaksanaan dan visible untuk semua role.
+                </p>
+              </div>
+              {overview.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={selectedProjects.length === overview.length}
+                    onCheckedChange={handleSelectAll}
+                  />
+                  <Label className="text-sm text-slate-600">Pilih Semua</Label>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {overview.length === 0 ? (
