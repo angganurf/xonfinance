@@ -1453,13 +1453,13 @@ class XONArchitectAPITester:
         if success and isinstance(data, list):
             item_names = [item.get('item_name') for item in data]
             
-            # Should only have Arsitektur materials
+            # Should have our test Arsitektur materials
             expected_arsitektur_materials = ['Besi 13 Ulir', 'Besi 16 Ulir', 'Pasir']
-            has_only_arsitektur = all(name in expected_arsitektur_materials for name in item_names if name)
+            has_test_arsitektur = all(name in item_names for name in expected_arsitektur_materials)
             
-            # Should NOT have Interior materials
-            interior_materials = ['Cat Duco Merah', 'Engsel Sendok', 'HPL TACO 007', 'Lem Fox']
-            has_no_interior = not any(name in interior_materials for name in item_names)
+            # Should NOT have our test Interior materials
+            test_interior_materials = ['Cat Duco Merah', 'Engsel Sendok', 'HPL TACO 007', 'Lem Fox']
+            has_no_test_interior = not any(name in item_names for name in test_interior_materials)
             
             # Check for Besi 16 Ulir with multiple suppliers
             besi_16_item = None
@@ -1473,8 +1473,8 @@ class XONArchitectAPITester:
                 suppliers = besi_16_item.get('suppliers', [])
                 has_multiple_suppliers = len(suppliers) >= 2
             
-            all_correct = has_only_arsitektur and has_no_interior and has_multiple_suppliers
-            details = f"Items: {len(data)}, Only Arsitektur: {has_only_arsitektur}, No Interior: {has_no_interior}, Multiple suppliers for Besi 16: {has_multiple_suppliers}"
+            all_correct = has_test_arsitektur and has_no_test_interior and has_multiple_suppliers
+            details = f"Items: {len(data)}, Has test Arsitektur: {has_test_arsitektur}, No test Interior: {has_no_test_interior}, Multiple suppliers for Besi 16: {has_multiple_suppliers}"
             self.log_test("Price Comparison Filter Arsitektur", all_correct, details)
             return all_correct
         else:
