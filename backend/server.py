@@ -1086,6 +1086,88 @@ async def get_inventory_item_names(category: Optional[str] = None, project_id: O
     
     return {"item_names": sorted(item_names)}
 
+@api_router.get("/inventory/suppliers")
+async def get_suppliers(user: User = Depends(get_current_user)):
+    """Get unique supplier names for autocomplete"""
+    # Get all transactions with items
+    transactions = await db.transactions.find(
+        {"category": {"$in": ["bahan", "alat"]}, "items": {"$exists": True}},
+        {"_id": 0, "items": 1}
+    ).to_list(10000)
+    
+    # Extract unique suppliers
+    suppliers = set()
+    for trans in transactions:
+        for item in trans.get("items", []):
+            supplier = item.get("supplier")
+            if supplier:
+                suppliers.add(supplier)
+    
+    return {"suppliers": sorted(list(suppliers))}
+
+@api_router.get("/inventory/price-comparison")
+async def get_price_comparison(item_name: Optional[str] = None, user: User = Depends(get_current_user)):
+    """Get price comparison for items across suppliers"""
+    # Get all transactions with items
+    query = {"category": "bahan", "items": {"$exists": True}}
+    transactions = await db.transactions.find(query, {"_id": 0}).to_list(10000)
+    
+    # Build price comparison data
+    comparison = {}
+    
+    for trans in transactions:
+        for item in trans.get("items", []):
+            item_desc = item.get("description")
+            supplier = item.get("supplier", "Tidak ada nama toko")
+            unit_price = item.get("unit_price", 0)
+            unit = item.get("unit", "")
+            
+            # Filter by item_name if provided
+            if item_name and item_desc != item_name:
+                continue
+            
+            if item_desc not in comparison:
+                comparison[item_desc] = {
+                    "item_name": item_desc,
+                    "unit": unit,
+                    "suppliers": {}
+                }
+            
+            if supplier not in comparison[item_desc]["suppliers"]:
+                comparison[item_desc]["suppliers"][supplier] = {
+                    "supplier": supplier,
+                    "prices": []
+                }
+            
+            comparison[item_desc]["suppliers"][supplier]["prices"].append({
+                "price": unit_price,
+                "date": trans.get("transaction_date")
+            })
+    
+    # Calculate average and latest price for each supplier
+    result = []
+    for item_desc, data in comparison.items():
+        suppliers_data = []
+        for supplier, supplier_info in data["suppliers"].items():
+            prices = supplier_info["prices"]
+            avg_price = sum(p["price"] for p in prices) / len(prices)
+            latest_price = sorted(prices, key=lambda x: x["date"], reverse=True)[0]["price"]
+            
+            suppliers_data.append({
+                "supplier": supplier,
+                "latest_price": latest_price,
+                "average_price": avg_price,
+                "transaction_count": len(prices)
+            })
+        
+        result.append({
+            "item_name": item_desc,
+            "unit": data["unit"],
+            "suppliers": sorted(suppliers_data, key=lambda x: x["latest_price"])
+        })
+    
+    return sorted(result, key=lambda x: x["item_name"])
+
 @api_router.get("/inventory")
 async def get_inventory(category: Optional[str] = None, user: User = Depends(get_current_user)):
     query = {}
