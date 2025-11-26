@@ -257,7 +257,7 @@ class RABInput(BaseModel):
 
 class RABItemInput(BaseModel):
     rab_id: str
-    project_id: str
+    project_id: Optional[str] = None
     category: str
     description: str
     unit_price: float
