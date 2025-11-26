@@ -13,9 +13,6 @@ import api from '../../utils/api';
 
 const DrafterDashboard = () => {
   const [tasks, setTasks] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [filteredProjects, setFilteredProjects] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('all');
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -26,12 +23,7 @@ const DrafterDashboard = () => {
 
   useEffect(() => {
     loadTasks();
-    loadProjects();
   }, []);
-
-  useEffect(() => {
-    filterProjects();
-  }, [projects, statusFilter]);
 
   const loadTasks = async () => {
     try {
