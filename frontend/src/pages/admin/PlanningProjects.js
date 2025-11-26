@@ -39,7 +39,7 @@ const PlanningProjects = () => {
   const loadProjects = async () => {
     try {
       const [projectsRes, progressRes] = await Promise.all([
-        api.get('/projects'),
+        api.get('/planning-projects'),
         api.get('/financial/projects-progress')
       ]);
       setProjects(projectsRes.data);
