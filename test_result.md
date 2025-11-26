@@ -97,16 +97,19 @@
 #====================================================================================================
 
 user_problem_statement: |
-  User meminta implementasi fitur "Daftar Bahan" dengan perbandingan harga:
-  1. Menambahkan sub-menu "Daftar Bahan" di dalam tab Interior dan Arsitektur
-  2. Menampilkan perbandingan harga bahan dari berbagai supplier
-  3. Filter data berdasarkan project_type (Interior vs Arsitektur)
-  4. Menampilkan detail: nama bahan, satuan, jumlah supplier, harga terendah, harga tertinggi
-  5. Dialog detail untuk melihat breakdown harga per supplier dengan:
-     - Harga terakhir (latest price)
-     - Harga rata-rata (average price)
-     - Jumlah transaksi
-     - Label termurah/termahal
+  User meminta implementasi fitur Pengaturan Admin (Backup & Restore):
+  1. Menambahkan halaman pengaturan admin mirip dengan settings accounting
+  2. Fitur Export Data (download semua data dalam format JSON)
+  3. Fitur Import Data (upload file JSON untuk restore)
+  4. Fitur Hapus Semua Data (clear database kecuali users & backups)
+  5. Fitur Backup Database dengan timestamp:
+     - Menyimpan snapshot database ke collection backups
+     - Menampilkan daftar backup dengan waktu, pembuat, dan jumlah data
+  6. Fitur Restore Database:
+     - Memilih backup dari daftar
+     - Restore data ke state sebelumnya (kecuali users untuk keamanan)
+     - Confirmation dialog sebelum restore
+  7. Fitur Delete Backup untuk menghapus backup yang tidak diperlukan
 
 backend:
   - task: "Modifikasi endpoint GET /api/inventory/price-comparison untuk support filter project_type"
