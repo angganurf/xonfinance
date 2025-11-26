@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, FolderOpen, CreditCard, FileText, Calendar, Package, ClipboardList, ArrowLeft } from 'lucide-react';
+import { Home, FolderOpen, CreditCard, FileText, Calendar, Package, ClipboardList, ArrowLeft, DollarSign } from 'lucide-react';
 
 const MobileNav = () => {
   const { user } = useAuth();
