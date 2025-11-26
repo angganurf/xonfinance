@@ -123,6 +123,73 @@ const PlanningTeamDashboard = () => {
     }
   };
 
+  // Multi-select handlers
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedProjects(overview.map(item => item.project.id));
+    } else {
+      setSelectedProjects([]);
+    }
+  };
+
+  const handleSelectProject = (projectId, checked) => {
+    if (checked) {
+      setSelectedProjects([...selectedProjects, projectId]);
+    } else {
+      setSelectedProjects(selectedProjects.filter(id => id !== projectId));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedProjects.length === 0) {
+      toast.error('Pilih minimal satu pekerjaan untuk dihapus');
+      return;
+    }
+
+    if (!window.confirm(`Hapus ${selectedProjects.length} pekerjaan yang dipilih?`)) {
+      return;
+    }
+
+    try {
+      await Promise.all(
+        selectedProjects.map(projectId => api.delete(`/projects/${projectId}`))
+      );
+      
+      toast.success(`${selectedProjects.length} pekerjaan berhasil dihapus!`);
+      setSelectedProjects([]);
+      loadOverview();
+    } catch (error) {
+      console.error('Error deleting projects:', error);
+      toast.error('Gagal menghapus beberapa pekerjaan');
+    }
+  };
+
+  const handleBulkUpdateProgress = async () => {
+    if (selectedProjects.length === 0) {
+      toast.error('Pilih minimal satu pekerjaan untuk diupdate');
+      return;
+    }
+
+    try {
+      await Promise.all(
+        selectedProjects.map(projectId => 
+          api.patch(`/projects/${projectId}/design-progress`, {
+            progress: parseInt(bulkProgress)
+          })
+        )
+      );
+      
+      toast.success(`Progress ${selectedProjects.length} pekerjaan berhasil diupdate!`);
+      setBulkEditDialog(false);
+      setSelectedProjects([]);
+      setBulkProgress(0);
+      loadOverview();
+    } catch (error) {
+      console.error('Error updating progress:', error);
+      toast.error('Gagal update progress beberapa pekerjaan');
+    }
+  };
+
   const getProgressColor = (progress) => {
     if (progress >= 80) return 'bg-green-500';
     if (progress >= 50) return 'bg-blue-500';
