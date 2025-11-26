@@ -328,7 +328,7 @@ agent_communication:
       Implementasi fitur "Buat Project Baru" dan Bug Fix "Create Task" selesai:
       
       BACKEND (server.py):
-      1. ✅ Created endpoint POST /api/admin/backup:
+      1. ✅ Verified endpoint POST /api/projects exists and supports Planning Team:
          - Saves snapshot of all collections to backups collection
          - Includes timestamp (WIB), created_by (user email), and collection counts
          - Returns backup ID and metadata
