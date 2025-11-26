@@ -142,15 +142,18 @@ backend:
   
   - task: "Endpoint GET /api/admin/backups untuk list semua backup"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created endpoint to list all backups sorted by timestamp (newest first). Returns backup metadata without the actual data to keep response size small."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: GET /api/admin/backups working correctly. Returns array of backups with id, timestamp, created_by, and collections_count. Found 2 existing backups with correct metadata structure. Endpoint accessible with admin authentication."
   
   - task: "Endpoint POST /api/admin/restore/{backup_id} untuk restore database"
     implemented: true
