@@ -2444,6 +2444,9 @@ def main():
         elif sys.argv[1] == "planning_debug":
             success = tester.run_planning_dashboard_debug_tests()
             test_type = "planning_debug"
+        elif sys.argv[1] == "admin_backup":
+            success = tester.run_admin_backup_only_tests()
+            test_type = "admin_backup"
         else:
             success = tester.run_all_tests()
             test_type = "all"
