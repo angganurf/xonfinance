@@ -146,7 +146,7 @@ const DrafterDashboard = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-600">Total Task</CardTitle>
@@ -169,14 +169,6 @@ const DrafterDashboard = () => {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-green-600">{completedTasks.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Total Proyek</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-purple-600">{projects.length}</p>
             </CardContent>
           </Card>
         </div>
