@@ -1106,16 +1106,30 @@ async def get_suppliers(user: User = Depends(get_current_user)):
     return {"suppliers": sorted(list(suppliers))}
 
 @api_router.get("/inventory/price-comparison")
-async def get_price_comparison(item_name: Optional[str] = None, user: User = Depends(get_current_user)):
+async def get_price_comparison(
+    item_name: Optional[str] = None, 
+    project_type: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
     """Get price comparison for items across suppliers"""
     # Get all transactions with items
     query = {"category": "bahan", "items": {"$exists": True}}
     transactions = await db.transactions.find(query, {"_id": 0}).to_list(10000)
     
+    # If project_type filter is provided, get project IDs of that type
+    project_ids_filter = None
+    if project_type:
+        projects = await db.projects.find({"type": project_type}, {"_id": 0, "id": 1}).to_list(1000)
+        project_ids_filter = {p["id"] for p in projects}
+    
     # Build price comparison data
     comparison = {}
     
     for trans in transactions:
+        # Filter by project_type if provided
+        if project_ids_filter and trans.get("project_id") not in project_ids_filter:
+            continue
+            
         for item in trans.get("items", []):
             item_desc = item.get("description")
             supplier = item.get("supplier", "Tidak ada nama toko")
