@@ -234,10 +234,13 @@ const AdminInventory = () => {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Main Tabs */}
         <div className="flex gap-2 border-b">
           <button
-            onClick={() => setActiveTab('interior')}
+            onClick={() => {
+              setActiveTab('interior');
+              setSubTab('stok');
+            }}
             className={`px-6 py-3 font-medium transition-all ${
               activeTab === 'interior'
                 ? 'text-blue-600 border-b-2 border-blue-600'
@@ -247,7 +250,10 @@ const AdminInventory = () => {
             📐 Inventory Interior
           </button>
           <button
-            onClick={() => setActiveTab('arsitektur')}
+            onClick={() => {
+              setActiveTab('arsitektur');
+              setSubTab('stok');
+            }}
             className={`px-6 py-3 font-medium transition-all ${
               activeTab === 'arsitektur'
                 ? 'text-blue-600 border-b-2 border-blue-600'
@@ -256,11 +262,25 @@ const AdminInventory = () => {
           >
             🏗️ Inventory Arsitektur
           </button>
+        </div>
+
+        {/* Sub Tabs */}
+        <div className="flex gap-2 bg-slate-50 p-2 rounded-lg">
           <button
-            onClick={() => setActiveTab('daftar_bahan')}
-            className={`px-6 py-3 font-medium transition-all ${
-              activeTab === 'daftar_bahan'
-                ? 'text-blue-600 border-b-2 border-blue-600'
+            onClick={() => setSubTab('stok')}
+            className={`px-4 py-2 rounded-md font-medium transition-all ${
+              subTab === 'stok'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            📦 Stok
+          </button>
+          <button
+            onClick={() => setSubTab('daftar_bahan')}
+            className={`px-4 py-2 rounded-md font-medium transition-all ${
+              subTab === 'daftar_bahan'
+                ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
