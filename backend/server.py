@@ -1221,6 +1221,114 @@ async def delete_inventory(inventory_id: str, user: User = Depends(get_current_u
         raise HTTPException(status_code=404, detail="Inventory item not found")
     return {"message": "Inventory item deleted"}
 
+# ============= WAREHOUSE TRANSACTION ENDPOINTS =============
+
+@api_router.post("/inventory/warehouse-transaction")
+async def create_warehouse_transaction(input: WarehouseTransactionInput, user: User = Depends(get_current_user)):
+    """Create warehouse transaction for production usage"""
+    # Get inventory item
+    inventory = await db.inventory.find_one({"id": input.inventory_id}, {"_id": 0})
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    # Check if enough stock in warehouse
+    if inventory.get("quantity_in_warehouse", 0) < input.quantity:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stok tidak cukup. Tersedia: {inventory.get('quantity_in_warehouse', 0)}, Diminta: {input.quantity}"
+        )
+    
+    # Get project name
+    project = await db.projects.find_one({"id": input.project_id}, {"_id": 0, "name": 1})
+    project_name = project.get("name") if project else "Unknown Project"
+    
+    # Create warehouse transaction record
+    warehouse_trans = WarehouseTransaction(
+        inventory_id=input.inventory_id,
+        item_name=inventory["item_name"],
+        quantity=input.quantity,
+        unit=inventory["unit"],
+        project_id=input.project_id,
+        project_name=project_name,
+        usage_type=input.usage_type,
+        notes=input.notes,
+        created_by=user.id
+    )
+    
+    trans_dict = warehouse_trans.model_dump()
+    trans_dict["created_at"] = trans_dict["created_at"].isoformat()
+    await db.warehouse_transactions.insert_one(trans_dict)
+    
+    # Update inventory - reduce quantity in warehouse
+    new_qty_in_warehouse = inventory.get("quantity_in_warehouse", 0) - input.quantity
+    new_total_qty = new_qty_in_warehouse + inventory.get("quantity_out_warehouse", 0)
+    
+    await db.inventory.update_one(
+        {"id": input.inventory_id},
+        {"$set": {
+            "quantity_in_warehouse": new_qty_in_warehouse,
+            "quantity": new_total_qty,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Warehouse transaction created", "id": warehouse_trans.id}
+
+@api_router.get("/inventory/usage-report")
+async def get_inventory_usage_report(
+    project_id: Optional[str] = None,
+    category: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
+    """Get inventory usage report by project"""
+    query = {}
+    if project_id:
+        query["project_id"] = project_id
+    
+    # Get all warehouse transactions
+    transactions = await db.warehouse_transactions.find(query, {"_id": 0}).to_list(10000)
+    
+    # Group by project and item
+    report = {}
+    for trans in transactions:
+        proj_id = trans["project_id"]
+        proj_name = trans["project_name"]
+        item_name = trans["item_name"]
+        
+        if proj_id not in report:
+            report[proj_id] = {
+                "project_id": proj_id,
+                "project_name": proj_name,
+                "items": {}
+            }
+        
+        if item_name not in report[proj_id]["items"]:
+            report[proj_id]["items"][item_name] = {
+                "item_name": item_name,
+                "total_quantity": 0,
+                "unit": trans["unit"],
+                "usage_type": trans["usage_type"],
+                "transactions": []
+            }
+        
+        report[proj_id]["items"][item_name]["total_quantity"] += trans["quantity"]
+        report[proj_id]["items"][item_name]["transactions"].append({
+            "quantity": trans["quantity"],
+            "notes": trans.get("notes"),
+            "created_at": trans["created_at"]
+        })
+    
+    # Convert to list format
+    result = []
+    for proj_id, proj_data in report.items():
+        result.append({
+            "project_id": proj_data["project_id"],
+            "project_name": proj_data["project_name"],
+            "items": list(proj_data["items"].values())
+        })
+    
+    return result
+
 # ============= FINANCIAL ENDPOINTS =============
 
 @api_router.get("/financial/summary")
