@@ -23,6 +23,7 @@ import AdminMembers from './pages/admin/Members';
 import AdminInventory from './pages/admin/Inventory';
 import AdminSettings from './pages/admin/Settings';
 import PlanningProjects from './pages/admin/PlanningProjects';
+import PlanningProjectDetail from './pages/admin/PlanningProjectDetail';
 import ProjectDetail from './pages/admin/ProjectDetail';
 import Settings from './pages/Settings';
 import './App.css';
