@@ -178,7 +178,10 @@ const PlanningTeamDashboard = () => {
         {/* Projects List */}
         <Card>
           <CardHeader>
-            <CardTitle>Daftar Pekerjaan Desain</CardTitle>
+            <CardTitle>Daftar Pekerjaan Desain (Project Perencanaan)</CardTitle>
+            <p className="text-sm text-slate-600 mt-2">
+              Project ini hanya visible untuk Planning Team. Setelah RAB di-approve, project akan pindah ke fase Pelaksanaan dan visible untuk semua role.
+            </p>
           </CardHeader>
           <CardContent>
             {overview.length === 0 ? (
