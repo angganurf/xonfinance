@@ -1,0 +1,45 @@
+{
+  "test_type": "planning_test_projects",
+  "timestamp": "2025-11-26T08:46:57.451708",
+  "total_tests": 6,
+  "passed_tests": 6,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T08:46:56.863012"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T08:46:57.127835"
+    },
+    {
+      "test_name": "Create Project 1 - Renovasi Rumah Pak Budi",
+      "success": true,
+      "details": "ID: b404d87b-d30e-4b55-b009-a167d06a83ee, Phase: perencanaan",
+      "timestamp": "2025-11-26T08:46:57.250891"
+    },
+    {
+      "test_name": "Create Project 2 - Pembangunan Gedung Kantor",
+      "success": true,
+      "details": "ID: 430a55d8-db82-489e-b4df-535c5f7ead5a, Phase: perencanaan",
+      "timestamp": "2025-11-26T08:46:57.333725"
+    },
+    {
+      "test_name": "Create Project 3 - Desain Interior Cafe",
+      "success": true,
+      "details": "ID: 3dd62f2c-4ac8-4e9a-aba2-32b6e0be7006, Phase: perencanaan",
+      "timestamp": "2025-11-26T08:46:57.410483"
+    },
+    {
+      "test_name": "Verify Planning Overview",
+      "success": true,
+      "details": "Projects in overview: 4, All test projects found: True, All have design_progress=0: True",
+      "timestamp": "2025-11-26T08:46:57.451353"
+    }
+  ]
+}
