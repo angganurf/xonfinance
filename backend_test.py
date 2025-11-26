@@ -3258,6 +3258,9 @@ def main():
         elif sys.argv[1] == "debug":
             success = tester.run_planning_debug_tests()
             test_type = "debug"
+        elif sys.argv[1] == "planning_migration":
+            success = tester.run_planning_migration_only_tests()
+            test_type = "planning_migration"
         else:
             success = tester.run_all_tests()
             test_type = "all"
