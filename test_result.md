@@ -407,7 +407,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Route-aware sidebar menu untuk Accounting role"
+    - "XON Architect New Features Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
