@@ -694,11 +694,6 @@ async def delete_planning_project(project_id: str, user: User = Depends(get_curr
     
     return {"message": "Planning project deleted"}
 
-class BulkOperationRequest(BaseModel):
-    """Request model for bulk operations"""
-    project_ids: List[str]
-    updates: Optional[Dict[str, Any]] = None
-
 @api_router.post("/planning-projects/bulk/delete")
 async def bulk_delete_planning_projects(request: BulkOperationRequest, user: User = Depends(get_current_user)):
     """Delete multiple planning projects at once"""
