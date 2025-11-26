@@ -345,6 +345,7 @@ const Members = () => {
                       <SelectItem value="accounting">Accounting</SelectItem>
                       <SelectItem value="estimator">Estimator</SelectItem>
                       <SelectItem value="site_supervisor">Site Supervisor</SelectItem>
+                      <SelectItem value="project_planning_team">Project Planning Team</SelectItem>
                       <SelectItem value="employee">Employee</SelectItem>
                     </SelectContent>
                   </Select>
