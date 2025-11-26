@@ -142,15 +142,20 @@ const ProjectDetail = () => {
         }
       }
 
-      await api.post(`/projects/${id}/comments`, {
-        message: newComment,
-        mentions: mentions
-      });
+      // Send as query parameters
+      const params = new URLSearchParams();
+      params.append('message', newComment);
+      if (mentions.length > 0) {
+        mentions.forEach(m => params.append('mentions', m));
+      }
+
+      await api.post(`/projects/${id}/comments?${params.toString()}`);
       toast.success('Komentar berhasil dikirim!');
       setNewComment('');
       loadComments();
     } catch (error) {
       console.error('Error sending comment:', error);
+      console.error('Error details:', error.response?.data);
       toast.error('Gagal mengirim komentar');
     }
   };
