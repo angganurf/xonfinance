@@ -230,6 +230,21 @@ backend:
         agent: "testing"
         comment: "VERIFIED: GET /api/inventory/item-names with project_type filter working correctly. All 5 test scenarios passed (100% success rate): 1) No filter returns all items from both project types, 2) project_type=interior filter returns BOTH 'Keramik Granit 60x60' and 'Cat Tembok Avitex' from different interior projects, excludes arsitektur items, 3) project_type=arsitektur filter returns 'Besi Beton 12mm' from arsitektur project, excludes interior items, 4) Backward compatibility with project_id parameter works correctly (filters by project type), 5) Items are successfully shared across projects of same type. Main requirement verified: items from different projects but same type appear together in response."
 
+  - task: "RAB Item Creation Fix - Optional project_id"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "user"
+        comment: "User reported issue: 'gagal menambahkan item pekerjaan' di RAB Editor. Frontend tidak mengirim project_id saat menambahkan RAB item, causing validation error. Fix needed: Make project_id optional in RABItemInput and auto-fetch from RAB if not provided."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: RAB Item Creation Fix working correctly. All 6 test scenarios passed (100% success rate): 1) ✅ Admin login successful, 2) ✅ Existing RAB found for testing, 3) ✅ CREATE RAB ITEM without project_id successful (Keramik Granit 60x60 cm, 150000 x 50 m2 = 7,500,000), 4) ✅ CREATE RAB ITEM with project_id successful for backward compatibility (Tukang Pasang Keramik, 50000 x 50 m2 = 2,500,000), 5) ✅ Both items created and total calculations correct, 6) ✅ Invalid RAB ID handled gracefully. Fix applied: Made project_id optional in both RABItemInput and RABItem models, backend auto-fetches project_id from RAB when not provided. Frontend can now add RAB items successfully without validation errors."
+
 frontend:
   - task: "Button dan Dialog 'Buat Project Baru' di Planning Dashboard"
     implemented: true
