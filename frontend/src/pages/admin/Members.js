@@ -353,7 +353,7 @@ const Members = () => {
                 <div>
                   <Label>Role Tambahan (Opsional)</Label>
                   <div className="grid grid-cols-2 gap-2 mt-2">
-                    {['accounting', 'estimator', 'site_supervisor', 'employee'].map((role) => (
+                    {['accounting', 'estimator', 'site_supervisor', 'project_planning_team', 'employee'].map((role) => (
                       <label key={role} className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
