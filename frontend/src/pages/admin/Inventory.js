@@ -255,6 +255,16 @@ const AdminInventory = () => {
           >
             🏗️ Inventory Arsitektur
           </button>
+          <button
+            onClick={() => setActiveTab('daftar_bahan')}
+            className={`px-6 py-3 font-medium transition-all ${
+              activeTab === 'daftar_bahan'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            💰 Daftar Bahan
+          </button>
         </div>
 
         <Card>
