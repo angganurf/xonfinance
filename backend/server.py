@@ -1037,12 +1037,16 @@ async def update_transaction_item_status(
             return {"message": "Status updated"}
         
         # Update inventory
+        final_in_warehouse = max(0, new_in_warehouse)
+        final_out_warehouse = max(0, new_out_warehouse)
+        final_total = final_in_warehouse + final_out_warehouse
+        
         await db.inventory.update_one(
             {"id": inventory_item["id"]},
             {"$set": {
-                "quantity_in_warehouse": max(0, new_in_warehouse),
-                "quantity_out_warehouse": max(0, new_out_warehouse),
-                "quantity": new_in_warehouse + new_out_warehouse,
+                "quantity_in_warehouse": final_in_warehouse,
+                "quantity_out_warehouse": final_out_warehouse,
+                "quantity": final_total,
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
