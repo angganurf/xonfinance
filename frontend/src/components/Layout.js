@@ -146,12 +146,6 @@ export const Layout = ({ children }) => {
       );
     }
     
-    if (userRoles.includes('estimator')) {
-      combinedItems.push(
-        { label: 'Estimator', path: '/estimator', icon: '📐' }
-      );
-    }
-    
     if (userRoles.includes('site_supervisor')) {
       combinedItems.push(
         { label: 'Home', path: '/supervisor', icon: '🏠' },
