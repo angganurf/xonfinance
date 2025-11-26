@@ -1197,6 +1197,485 @@ class XONArchitectAPITester:
         
         return self.tests_passed == self.tests_run
 
+    # ============= PRICE COMPARISON TESTS =============
+    
+    def setup_price_comparison_test_data(self):
+        """Setup test data for price comparison tests"""
+        print("\n🔧 Setting up price comparison test data...")
+        
+        # Create Interior project
+        interior_project_data = {
+            "name": f"Interior Project {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "type": "interior",
+            "description": "Test interior project for price comparison",
+            "contract_date": "2024-01-15",
+            "duration": 30,
+            "location": "Jakarta"
+        }
+        
+        success, data = self.make_request('POST', '/projects', interior_project_data, 200)
+        if success and 'id' in data:
+            self.interior_project_id = data['id']
+            print(f"✅ Created Interior project: {self.interior_project_id}")
+        else:
+            print("❌ Failed to create Interior project")
+            return False
+        
+        # Create Arsitektur project
+        arsitektur_project_data = {
+            "name": f"Arsitektur Project {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "type": "arsitektur",
+            "description": "Test arsitektur project for price comparison",
+            "contract_date": "2024-01-15",
+            "duration": 45,
+            "location": "Bandung"
+        }
+        
+        success, data = self.make_request('POST', '/projects', arsitektur_project_data, 200)
+        if success and 'id' in data:
+            self.arsitektur_project_id = data['id']
+            print(f"✅ Created Arsitektur project: {self.arsitektur_project_id}")
+        else:
+            print("❌ Failed to create Arsitektur project")
+            return False
+        
+        # Create Interior transactions with materials
+        interior_transactions = [
+            {
+                "project_id": self.interior_project_id,
+                "category": "bahan",
+                "description": "Pembelian bahan interior",
+                "amount": 1750000,
+                "items": [
+                    {
+                        "description": "Cat Duco Merah",
+                        "quantity": 5,
+                        "unit": "Liter",
+                        "unit_price": 35000,
+                        "total": 175000,
+                        "supplier": "Toto Cat1"
+                    },
+                    {
+                        "description": "Engsel Sendok",
+                        "quantity": 20,
+                        "unit": "Buah",
+                        "unit_price": 15000,
+                        "total": 300000,
+                        "supplier": "Hardware Store A"
+                    },
+                    {
+                        "description": "HPL TACO 007",
+                        "quantity": 10,
+                        "unit": "Lembar",
+                        "unit_price": 85000,
+                        "total": 850000,
+                        "supplier": "Material Center"
+                    },
+                    {
+                        "description": "Lem Fox",
+                        "quantity": 12,
+                        "unit": "Tube",
+                        "unit_price": 35000,
+                        "total": 420000,
+                        "supplier": "Chemical Supply"
+                    }
+                ],
+                "transaction_date": "2025-01-15"
+            }
+        ]
+        
+        # Create Arsitektur transactions with materials
+        arsitektur_transactions = [
+            {
+                "project_id": self.arsitektur_project_id,
+                "category": "bahan",
+                "description": "Pembelian bahan arsitektur",
+                "amount": 2100000,
+                "items": [
+                    {
+                        "description": "Besi 13 Ulir",
+                        "quantity": 50,
+                        "unit": "Batang",
+                        "unit_price": 25000,
+                        "total": 1250000,
+                        "supplier": "Steel Supplier A"
+                    },
+                    {
+                        "description": "Besi 16 Ulir",
+                        "quantity": 30,
+                        "unit": "Batang",
+                        "unit_price": 28000,
+                        "total": 840000,
+                        "supplier": "Steel Supplier B"
+                    },
+                    {
+                        "description": "Pasir",
+                        "quantity": 5,
+                        "unit": "m³",
+                        "unit_price": 200000,
+                        "total": 1000000,
+                        "supplier": "Material Quarry"
+                    }
+                ],
+                "transaction_date": "2025-01-15"
+            }
+        ]
+        
+        # Create additional transactions with different suppliers for price comparison
+        additional_transactions = [
+            {
+                "project_id": self.interior_project_id,
+                "category": "bahan",
+                "description": "Pembelian cat dari supplier lain",
+                "amount": 180000,
+                "items": [
+                    {
+                        "description": "Cat Duco Merah",
+                        "quantity": 5,
+                        "unit": "Liter",
+                        "unit_price": 36000,
+                        "total": 180000,
+                        "supplier": "Cat Store B"
+                    }
+                ],
+                "transaction_date": "2025-01-16"
+            },
+            {
+                "project_id": self.arsitektur_project_id,
+                "category": "bahan",
+                "description": "Pembelian besi dari supplier lain",
+                "amount": 840000,
+                "items": [
+                    {
+                        "description": "Besi 16 Ulir",
+                        "quantity": 30,
+                        "unit": "Batang",
+                        "unit_price": 28000,
+                        "total": 840000,
+                        "supplier": "Steel Supplier C"
+                    }
+                ],
+                "transaction_date": "2025-01-16"
+            }
+        ]
+        
+        # Create all transactions
+        all_transactions = interior_transactions + arsitektur_transactions + additional_transactions
+        
+        for i, transaction_data in enumerate(all_transactions):
+            success, data = self.make_request('POST', '/transactions', transaction_data, 200)
+            if success:
+                print(f"✅ Created transaction {i+1}/{len(all_transactions)}")
+            else:
+                print(f"❌ Failed to create transaction {i+1}")
+                return False
+        
+        print("✅ All test data created successfully")
+        return True
+
+    def test_price_comparison_no_filter(self):
+        """Test price comparison endpoint without filters (should return all materials)"""
+        success, data = self.make_request('GET', '/inventory/price-comparison')
+        
+        if success and isinstance(data, list):
+            # Should have materials from both Interior and Arsitektur projects
+            item_names = [item.get('item_name') for item in data]
+            
+            # Check for Interior materials
+            has_interior_materials = any(name in ['Cat Duco Merah', 'Engsel Sendok', 'HPL TACO 007', 'Lem Fox'] for name in item_names)
+            
+            # Check for Arsitektur materials
+            has_arsitektur_materials = any(name in ['Besi 13 Ulir', 'Besi 16 Ulir', 'Pasir'] for name in item_names)
+            
+            # Validate response format
+            format_valid = True
+            for item in data:
+                if not all(key in item for key in ['item_name', 'unit', 'suppliers']):
+                    format_valid = False
+                    break
+                
+                for supplier in item.get('suppliers', []):
+                    if not all(key in supplier for key in ['supplier', 'latest_price', 'average_price', 'transaction_count']):
+                        format_valid = False
+                        break
+            
+            all_correct = has_interior_materials and has_arsitektur_materials and format_valid
+            details = f"Items found: {len(data)}, Has Interior: {has_interior_materials}, Has Arsitektur: {has_arsitektur_materials}, Format valid: {format_valid}"
+            self.log_test("Price Comparison No Filter", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Price Comparison No Filter", False, f"Failed to get data or invalid format: {data}")
+            return False
+
+    def test_price_comparison_filter_interior(self):
+        """Test price comparison with project_type=interior filter"""
+        success, data = self.make_request('GET', '/inventory/price-comparison?project_type=interior')
+        
+        if success and isinstance(data, list):
+            item_names = [item.get('item_name') for item in data]
+            
+            # Should only have Interior materials
+            expected_interior_materials = ['Cat Duco Merah', 'Engsel Sendok', 'HPL TACO 007', 'Lem Fox']
+            has_only_interior = all(name in expected_interior_materials for name in item_names if name)
+            
+            # Should NOT have Arsitektur materials
+            arsitektur_materials = ['Besi 13 Ulir', 'Besi 16 Ulir', 'Pasir']
+            has_no_arsitektur = not any(name in arsitektur_materials for name in item_names)
+            
+            # Check for Cat Duco Merah with multiple suppliers
+            cat_duco_item = None
+            for item in data:
+                if item.get('item_name') == 'Cat Duco Merah':
+                    cat_duco_item = item
+                    break
+            
+            has_multiple_suppliers = False
+            if cat_duco_item:
+                suppliers = cat_duco_item.get('suppliers', [])
+                has_multiple_suppliers = len(suppliers) >= 2
+                # Check if suppliers are sorted by price
+                prices = [s.get('latest_price', 0) for s in suppliers]
+                prices_sorted = prices == sorted(prices)
+            else:
+                prices_sorted = False
+            
+            all_correct = has_only_interior and has_no_arsitektur and has_multiple_suppliers and prices_sorted
+            details = f"Items: {len(data)}, Only Interior: {has_only_interior}, No Arsitektur: {has_no_arsitektur}, Multiple suppliers for Cat: {has_multiple_suppliers}, Prices sorted: {prices_sorted}"
+            self.log_test("Price Comparison Filter Interior", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Price Comparison Filter Interior", False, f"Failed to get data: {data}")
+            return False
+
+    def test_price_comparison_filter_arsitektur(self):
+        """Test price comparison with project_type=arsitektur filter"""
+        success, data = self.make_request('GET', '/inventory/price-comparison?project_type=arsitektur')
+        
+        if success and isinstance(data, list):
+            item_names = [item.get('item_name') for item in data]
+            
+            # Should only have Arsitektur materials
+            expected_arsitektur_materials = ['Besi 13 Ulir', 'Besi 16 Ulir', 'Pasir']
+            has_only_arsitektur = all(name in expected_arsitektur_materials for name in item_names if name)
+            
+            # Should NOT have Interior materials
+            interior_materials = ['Cat Duco Merah', 'Engsel Sendok', 'HPL TACO 007', 'Lem Fox']
+            has_no_interior = not any(name in interior_materials for name in item_names)
+            
+            # Check for Besi 16 Ulir with multiple suppliers
+            besi_16_item = None
+            for item in data:
+                if item.get('item_name') == 'Besi 16 Ulir':
+                    besi_16_item = item
+                    break
+            
+            has_multiple_suppliers = False
+            if besi_16_item:
+                suppliers = besi_16_item.get('suppliers', [])
+                has_multiple_suppliers = len(suppliers) >= 2
+            
+            all_correct = has_only_arsitektur and has_no_interior and has_multiple_suppliers
+            details = f"Items: {len(data)}, Only Arsitektur: {has_only_arsitektur}, No Interior: {has_no_interior}, Multiple suppliers for Besi 16: {has_multiple_suppliers}"
+            self.log_test("Price Comparison Filter Arsitektur", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Price Comparison Filter Arsitektur", False, f"Failed to get data: {data}")
+            return False
+
+    def test_price_comparison_combined_filters(self):
+        """Test price comparison with both item_name and project_type filters"""
+        # Test: Get Besi 16 Ulir from Arsitektur projects only
+        success, data = self.make_request('GET', '/inventory/price-comparison?item_name=Besi%2016%20Ulir&project_type=arsitektur')
+        
+        if success and isinstance(data, list):
+            # Should return exactly one item: Besi 16 Ulir
+            correct_count = len(data) == 1
+            
+            if len(data) == 1:
+                item = data[0]
+                correct_item_name = item.get('item_name') == 'Besi 16 Ulir'
+                correct_unit = item.get('unit') == 'Batang'
+                
+                # Should have suppliers from Arsitektur projects
+                suppliers = item.get('suppliers', [])
+                has_suppliers = len(suppliers) >= 1
+                
+                # Validate supplier data structure
+                supplier_data_valid = True
+                for supplier in suppliers:
+                    if not all(key in supplier for key in ['supplier', 'latest_price', 'average_price', 'transaction_count']):
+                        supplier_data_valid = False
+                        break
+                
+                all_correct = correct_count and correct_item_name and correct_unit and has_suppliers and supplier_data_valid
+                details = f"Count: {len(data)}, Item: {item.get('item_name')}, Unit: {item.get('unit')}, Suppliers: {len(suppliers)}, Data valid: {supplier_data_valid}"
+            else:
+                all_correct = False
+                details = f"Expected 1 item, got {len(data)}"
+            
+            self.log_test("Price Comparison Combined Filters", all_correct, details)
+            return all_correct
+        else:
+            self.log_test("Price Comparison Combined Filters", False, f"Failed to get data: {data}")
+            return False
+
+    def test_price_comparison_data_validation(self):
+        """Test price comparison data validation and calculations"""
+        success, data = self.make_request('GET', '/inventory/price-comparison')
+        
+        if success and isinstance(data, list):
+            validation_passed = True
+            validation_details = []
+            
+            for item in data:
+                item_name = item.get('item_name', 'Unknown')
+                
+                # Validate required fields
+                if not all(key in item for key in ['item_name', 'unit', 'suppliers']):
+                    validation_passed = False
+                    validation_details.append(f"{item_name}: Missing required fields")
+                    continue
+                
+                # Validate suppliers
+                suppliers = item.get('suppliers', [])
+                if not suppliers:
+                    validation_passed = False
+                    validation_details.append(f"{item_name}: No suppliers")
+                    continue
+                
+                # Check if suppliers are sorted by latest_price (ascending)
+                prices = [s.get('latest_price', 0) for s in suppliers]
+                if prices != sorted(prices):
+                    validation_passed = False
+                    validation_details.append(f"{item_name}: Suppliers not sorted by price")
+                
+                # Validate each supplier
+                for supplier in suppliers:
+                    supplier_name = supplier.get('supplier', 'Unknown')
+                    
+                    # Check required fields
+                    if not all(key in supplier for key in ['supplier', 'latest_price', 'average_price', 'transaction_count']):
+                        validation_passed = False
+                        validation_details.append(f"{item_name} - {supplier_name}: Missing supplier fields")
+                        continue
+                    
+                    # Check data types and values
+                    latest_price = supplier.get('latest_price')
+                    average_price = supplier.get('average_price')
+                    transaction_count = supplier.get('transaction_count')
+                    
+                    if not isinstance(latest_price, (int, float)) or latest_price < 0:
+                        validation_passed = False
+                        validation_details.append(f"{item_name} - {supplier_name}: Invalid latest_price")
+                    
+                    if not isinstance(average_price, (int, float)) or average_price < 0:
+                        validation_passed = False
+                        validation_details.append(f"{item_name} - {supplier_name}: Invalid average_price")
+                    
+                    if not isinstance(transaction_count, int) or transaction_count < 1:
+                        validation_passed = False
+                        validation_details.append(f"{item_name} - {supplier_name}: Invalid transaction_count")
+            
+            details = f"Items validated: {len(data)}, Issues: {len(validation_details)}"
+            if validation_details:
+                details += f", First issue: {validation_details[0]}"
+            
+            self.log_test("Price Comparison Data Validation", validation_passed, details)
+            return validation_passed
+        else:
+            self.log_test("Price Comparison Data Validation", False, f"Failed to get data: {data}")
+            return False
+
+    def test_price_comparison_invalid_project_type(self):
+        """Test price comparison with invalid project_type"""
+        success, data = self.make_request('GET', '/inventory/price-comparison?project_type=invalid_type')
+        
+        if success and isinstance(data, list):
+            # Should return empty list for invalid project type
+            is_empty = len(data) == 0
+            self.log_test("Price Comparison Invalid Project Type", is_empty, f"Returned {len(data)} items for invalid project type")
+            return is_empty
+        else:
+            self.log_test("Price Comparison Invalid Project Type", False, f"Failed to get data: {data}")
+            return False
+
+    def test_price_comparison_nonexistent_item(self):
+        """Test price comparison with non-existent item name"""
+        success, data = self.make_request('GET', '/inventory/price-comparison?item_name=NonExistentItem')
+        
+        if success and isinstance(data, list):
+            # Should return empty list for non-existent item
+            is_empty = len(data) == 0
+            self.log_test("Price Comparison Nonexistent Item", is_empty, f"Returned {len(data)} items for non-existent item")
+            return is_empty
+        else:
+            self.log_test("Price Comparison Nonexistent Item", False, f"Failed to get data: {data}")
+            return False
+
+    def run_price_comparison_tests(self):
+        """Run comprehensive price comparison tests"""
+        print("\n💰 Starting Price Comparison Feature Tests")
+        print("=" * 60)
+        
+        # Admin login for tests
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Stopping price comparison tests.")
+            return False
+        
+        # Setup test data
+        if not self.setup_price_comparison_test_data():
+            print("❌ Failed to setup test data. Stopping price comparison tests.")
+            return False
+        
+        # Wait a moment for data to be processed
+        import time
+        time.sleep(2)
+        
+        # Run price comparison tests
+        print("\n🔍 Test 1: Price Comparison No Filter")
+        self.test_price_comparison_no_filter()
+        
+        print("\n🔍 Test 2: Price Comparison Filter Interior")
+        self.test_price_comparison_filter_interior()
+        
+        print("\n🔍 Test 3: Price Comparison Filter Arsitektur")
+        self.test_price_comparison_filter_arsitektur()
+        
+        print("\n🔍 Test 4: Price Comparison Combined Filters")
+        self.test_price_comparison_combined_filters()
+        
+        print("\n🔍 Test 5: Price Comparison Data Validation")
+        self.test_price_comparison_data_validation()
+        
+        print("\n🔍 Test 6: Price Comparison Invalid Project Type")
+        self.test_price_comparison_invalid_project_type()
+        
+        print("\n🔍 Test 7: Price Comparison Nonexistent Item")
+        self.test_price_comparison_nonexistent_item()
+        
+        return True
+
+    def run_price_comparison_only_tests(self):
+        """Run only price comparison tests as requested"""
+        print("💰 Starting Price Comparison Tests (Backend Only)")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run price comparison tests
+        self.run_price_comparison_tests()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Price Comparison Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = XONArchitectAPITester()
     
