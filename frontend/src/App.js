@@ -135,6 +135,14 @@ function App() {
             }
           />
           <Route
+            path="/accounting/inventory"
+            element={
+              <ProtectedRoute allowedRoles={['accounting', 'admin']}>
+                <AdminInventory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/settings"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
