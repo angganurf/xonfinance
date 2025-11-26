@@ -1959,6 +1959,9 @@ def main():
         elif sys.argv[1] == "price_comparison":
             success = tester.run_price_comparison_only_tests()
             test_type = "price_comparison"
+        elif sys.argv[1] == "planning_drafter":
+            success = tester.run_planning_drafter_only_tests()
+            test_type = "planning_drafter"
         else:
             success = tester.run_all_tests()
             test_type = "all"
