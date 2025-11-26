@@ -30,6 +30,8 @@ const ProjectDetail = () => {
   useEffect(() => {
     loadProjectDetail();
     loadStatistics();
+    loadComments();
+    loadUsers();
   }, [id]);
 
   const loadProjectDetail = async () => {
