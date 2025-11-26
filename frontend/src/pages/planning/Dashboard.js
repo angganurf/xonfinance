@@ -207,7 +207,7 @@ const PlanningTeamDashboard = () => {
               project_value: 0
             });
           }} className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan Desain Baru
+            <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan Perencanaan
           </Button>
         </div>
 
