@@ -191,6 +191,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/planning/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+                <PlanningTeamDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Drafter Routes */}
           <Route
