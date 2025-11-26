@@ -423,4 +423,4 @@ const PlanningProjects = () => {
   );
 };
 
-export default AccountingProjects;
+export default PlanningProjects;
