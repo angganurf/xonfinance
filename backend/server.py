@@ -788,10 +788,10 @@ async def create_project(input: ProjectInput, user: User = Depends(get_current_u
 @api_router.get("/projects")
 async def get_projects(phase: Optional[str] = None, user: User = Depends(get_current_user)):
     """
-    Get projects filtered by phase and user role
-    - project_planning_team: only see 'perencanaan' projects
-    - other roles (accounting, supervisor, etc): only see 'pelaksanaan' projects
-    - admin: see all projects
+    Get execution projects (pelaksanaan phase only)
+    Note: Planning projects are now in separate planning_projects collection
+    - All roles see only execution/pelaksanaan projects
+    - For planning projects, use /planning-projects endpoint
     """
     query = {}
     
