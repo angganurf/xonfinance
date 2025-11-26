@@ -100,7 +100,7 @@ class RABItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     rab_id: str
-    project_id: str
+    project_id: Optional[str] = None  # Made optional to support frontend calls without project_id
     category: str  # persiapan, struktur, dinding, finishing, etc (custom)
     description: str
     unit_price: float
