@@ -10,6 +10,7 @@ import AccountingTransactions from './pages/accounting/Transactions';
 import AccountingReports from './pages/accounting/Reports';
 import EstimatorDashboard from './pages/estimator/Dashboard';
 import EstimatorRAB from './pages/estimator/RAB';
+import RABList from './pages/estimator/RABList';
 import SupervisorDashboard from './pages/supervisor/Dashboard';
 import SupervisorSchedule from './pages/supervisor/Schedule';
 import EmployeeDashboard from './pages/employee/Dashboard';
