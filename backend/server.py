@@ -623,9 +623,9 @@ async def update_design_progress(project_id: str, data: dict, user: User = Depen
 
 @api_router.get("/planning/overview")
 async def get_planning_overview(user: User = Depends(get_current_user)):
-    """Get planning team overview: projects, RAB, schedules"""
-    # Get all projects
-    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    """Get planning team overview: projects, RAB, schedules - Only perencanaan phase"""
+    # Get only perencanaan projects
+    projects = await db.projects.find({"phase": "perencanaan"}, {"_id": 0}).to_list(1000)
     
     # Get RAB info for each project
     rabs = await db.rabs.find({}, {"_id": 0}).to_list(1000)
