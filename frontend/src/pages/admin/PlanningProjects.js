@@ -10,10 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../../components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
-import { toast } from 'sonner';
 import { Checkbox } from '../../components/ui/checkbox';
-import { Label } from '../../components/ui/label';
-import { Plus, Building2, Edit, Trash2, MoreVertical, Eye } from 'lucide-react';
+import { toast } from 'sonner';
+import { Plus, Building2, Edit, Trash2, MoreVertical, Eye, CheckSquare, Square } from 'lucide-react';
 import api from '../../utils/api';
 
 const PlanningProjects = () => {
@@ -22,6 +21,7 @@ const PlanningProjects = () => {
   const [projectsProgress, setProjectsProgress] = useState([]);
   const [selectedProjects, setSelectedProjects] = useState([]);
   const [bulkStatusDialog, setBulkStatusDialog] = useState(false);
+  const [bulkDeleteDialog, setBulkDeleteDialog] = useState(false);
   const [bulkStatus, setBulkStatus] = useState('planning');
   const [open, setOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -49,8 +49,56 @@ const PlanningProjects = () => {
       ]);
       setProjects(projectsRes.data);
       setProjectsProgress(progressRes.data);
+      setSelectedProjects([]);
     } catch (error) {
       toast.error('Gagal memuat proyek perencanaan');
+    }
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedProjects(projects.map(p => p.id));
+    } else {
+      setSelectedProjects([]);
+    }
+  };
+
+  const handleSelectProject = (projectId, checked) => {
+    if (checked) {
+      setSelectedProjects([...selectedProjects, projectId]);
+    } else {
+      setSelectedProjects(selectedProjects.filter(id => id !== projectId));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedProjects.length === 0) return;
+    
+    try {
+      await api.post('/planning-projects/bulk/delete', {
+        project_ids: selectedProjects
+      });
+      toast.success(`${selectedProjects.length} proyek berhasil dihapus`);
+      setBulkDeleteDialog(false);
+      loadProjects();
+    } catch (error) {
+      toast.error('Gagal menghapus proyek');
+    }
+  };
+
+  const handleBulkUpdateStatus = async () => {
+    if (selectedProjects.length === 0) return;
+    
+    try {
+      await api.post('/planning-projects/bulk/update', {
+        project_ids: selectedProjects,
+        updates: { status: bulkStatus }
+      });
+      toast.success(`${selectedProjects.length} proyek berhasil diupdate`);
+      setBulkStatusDialog(false);
+      loadProjects();
+    } catch (error) {
+      toast.error('Gagal update status proyek');
     }
   };
 
@@ -121,7 +169,7 @@ const PlanningProjects = () => {
 
   const handleStatusChange = async (projectId, newStatus) => {
     try {
-      await api.patch(`/projects/${projectId}`, { status: newStatus });
+      await api.patch(`/planning-projects/${projectId}`, { status: newStatus });
       toast.success(`Status berhasil diubah ke ${newStatus}`);
       loadProjects();
     } catch (error) {
@@ -129,139 +177,166 @@ const PlanningProjects = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'waiting':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'active':
-        return 'Ongoing';
-      case 'waiting':
-        return 'Waiting';
-      case 'completed':
-        return 'Finished';
-      default:
-        return status;
-    }
-  };
+  const allSelected = projects.length > 0 && selectedProjects.length === projects.length;
+  const someSelected = selectedProjects.length > 0 && selectedProjects.length < projects.length;
 
   return (
     <Layout>
       <div className="space-y-6" data-testid="projects-page">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800">Daftar Proyek Perencanaan</h2>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => handleOpenDialog()} data-testid="add-project-btn">
-                <Plus className="mr-2 h-4 w-4" /> Tambah Proyek
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="project-dialog">
-              <DialogHeader>
-                <DialogTitle>{editingProject ? 'Edit Proyek' : 'Tambah Proyek Baru'}</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label>Nama Proyek</Label>
-                  <Input 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({...formData, name: e.target.value})} 
-                    required 
-                    data-testid="project-name-input" 
-                  />
-                </div>
-                <div>
-                  <Label>Tipe</Label>
-                  <Select value={formData.type} onValueChange={(v) => setFormData({...formData, type: v})}>
-                    <SelectTrigger data-testid="project-type-select"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="interior">Interior</SelectItem>
-                      <SelectItem value="arsitektur">Arsitektur</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Nilai Proyek (Rp)</Label>
-                  <Input 
-                    type="number" 
-                    value={formData.project_value} 
-                    onChange={(e) => setFormData({...formData, project_value: e.target.value})} 
-                    data-testid="project-value-input"
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <Label>Deskripsi</Label>
-                  <Textarea 
-                    value={formData.description} 
-                    onChange={(e) => setFormData({...formData, description: e.target.value})} 
-                    data-testid="project-description-input" 
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold text-slate-800">Daftar Proyek Perencanaan</h2>
+            {projects.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="select-all"
+                  checked={allSelected}
+                  onCheckedChange={handleSelectAll}
+                  className="h-5 w-5"
+                />
+                <Label htmlFor="select-all" className="text-sm text-slate-600 cursor-pointer">
+                  Pilih Semua ({selectedProjects.length}/{projects.length})
+                </Label>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {selectedProjects.length > 0 && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setBulkStatusDialog(true)}
+                  data-testid="bulk-edit-btn"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Status ({selectedProjects.length})
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setBulkDeleteDialog(true)}
+                  data-testid="bulk-delete-btn"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Hapus ({selectedProjects.length})
+                </Button>
+              </>
+            )}
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => handleOpenDialog()} data-testid="add-project-btn">
+                  <Plus className="mr-2 h-4 w-4" /> Tambah Proyek
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="project-dialog">
+                <DialogHeader>
+                  <DialogTitle>{editingProject ? 'Edit Proyek' : 'Tambah Proyek Baru'}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label>Tanggal Kontrak</Label>
+                    <Label>Nama Proyek</Label>
                     <Input 
-                      type="date" 
-                      value={formData.contract_date} 
-                      onChange={(e) => setFormData({...formData, contract_date: e.target.value})} 
-                      data-testid="project-contract-date-input" 
+                      value={formData.name} 
+                      onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                      required 
+                      data-testid="project-name-input" 
                     />
                   </div>
                   <div>
-                    <Label>Durasi (hari)</Label>
+                    <Label>Tipe</Label>
+                    <Select value={formData.type} onValueChange={(v) => setFormData({...formData, type: v})}>
+                      <SelectTrigger data-testid="project-type-select"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="interior">Interior</SelectItem>
+                        <SelectItem value="arsitektur">Arsitektur</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Nilai Proyek (Rp)</Label>
                     <Input 
                       type="number" 
-                      value={formData.duration} 
-                      onChange={(e) => setFormData({...formData, duration: e.target.value})} 
-                      data-testid="project-duration-input" 
+                      value={formData.project_value} 
+                      onChange={(e) => setFormData({...formData, project_value: e.target.value})} 
+                      data-testid="project-value-input"
+                      placeholder="0"
                     />
                   </div>
-                </div>
-                <div>
-                  <Label>Lokasi</Label>
-                  <Input 
-                    value={formData.location} 
-                    onChange={(e) => setFormData({...formData, location: e.target.value})} 
-                    data-testid="project-location-input" 
-                  />
-                </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
-                  <Button type="submit" data-testid="submit-project-btn">{editingProject ? 'Update' : 'Simpan'}</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+                  <div>
+                    <Label>Deskripsi</Label>
+                    <Textarea 
+                      value={formData.description} 
+                      onChange={(e) => setFormData({...formData, description: e.target.value})} 
+                      data-testid="project-description-input" 
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Tanggal Kontrak</Label>
+                      <Input 
+                        type="date" 
+                        value={formData.contract_date} 
+                        onChange={(e) => setFormData({...formData, contract_date: e.target.value})} 
+                        data-testid="project-contract-date-input" 
+                      />
+                    </div>
+                    <div>
+                      <Label>Durasi (hari)</Label>
+                      <Input 
+                        type="number" 
+                        value={formData.duration} 
+                        onChange={(e) => setFormData({...formData, duration: e.target.value})} 
+                        data-testid="project-duration-input" 
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Lokasi</Label>
+                    <Input 
+                      value={formData.location} 
+                      onChange={(e) => setFormData({...formData, location: e.target.value})} 
+                      data-testid="project-location-input" 
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
+                    <Button type="submit" data-testid="submit-project-btn">{editingProject ? 'Update' : 'Simpan'}</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="projects-grid">
           {projects.map((project) => {
             const progress = projectsProgress.find(p => p.project_id === project.id);
+            const isSelected = selectedProjects.includes(project.id);
+            
             return (
             <Card 
               key={project.id} 
-              className="hover:shadow-lg transition-shadow relative cursor-pointer" 
+              className={`hover:shadow-lg transition-all relative ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
               data-testid={`project-card-${project.id}`}
-              onClick={() => navigate(`/admin/projects/${project.id}`)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="p-3 bg-blue-100 rounded-lg">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={(checked) => handleSelectProject(project.id, checked)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-5 w-5"
+                    />
+                    <div 
+                      className="p-3 bg-blue-100 rounded-lg cursor-pointer" 
+                      onClick={() => navigate(`/admin/projects/${project.id}`)}
+                    >
                       <Building2 className="h-6 w-6 text-blue-600" />
                     </div>
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 cursor-pointer" 
+                      onClick={() => navigate(`/admin/projects/${project.id}`)}
+                    >
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-lg">{project.name}</CardTitle>
                         <span className="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-700 rounded-full">
@@ -333,9 +408,9 @@ const PlanningProjects = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="waiting">Waiting</SelectItem>
-                        <SelectItem value="active">Ongoing</SelectItem>
-                        <SelectItem value="completed">Finished</SelectItem>
+                        <SelectItem value="planning">Planning</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -406,7 +481,7 @@ const PlanningProjects = () => {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Single Project Dialog */}
       <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
         <AlertDialogContent data-testid="delete-confirmation-dialog">
           <AlertDialogHeader>
@@ -429,6 +504,56 @@ const PlanningProjects = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={bulkDeleteDialog} onOpenChange={setBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus {selectedProjects.length} Proyek?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus {selectedProjects.length} proyek yang dipilih? 
+              Semua data terkait akan ikut terhapus. Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleBulkDelete} 
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Hapus Semua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Edit Status Dialog */}
+      <Dialog open={bulkStatusDialog} onOpenChange={setBulkStatusDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Status {selectedProjects.length} Proyek</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Status Baru</Label>
+              <Select value={bulkStatus} onValueChange={setBulkStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planning">Planning</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkStatusDialog(false)}>Batal</Button>
+            <Button onClick={handleBulkUpdateStatus}>Update Status</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
