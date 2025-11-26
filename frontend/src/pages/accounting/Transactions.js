@@ -79,7 +79,16 @@ const AccountingTransactions = () => {
         api.get('/transactions'),
         api.get('/projects')
       ]);
-      setTransactions(transRes.data);
+      
+      // Filter out kas_masuk for accounting route
+      let filteredTransactions = transRes.data;
+      if (hideKasMasuk) {
+        filteredTransactions = transRes.data.filter(t => 
+          t.category !== 'kas_masuk' && t.category !== 'uang_masuk'
+        );
+      }
+      
+      setTransactions(filteredTransactions);
       setProjects(projRes.data);
     } catch (error) {
       toast.error('Gagal memuat data');
