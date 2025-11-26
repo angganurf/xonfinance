@@ -172,6 +172,7 @@ export const Layout = ({ children }) => {
         icon: '📐',
         group: 'planning',
         children: [
+          { label: 'Dashboard', path: '/planning', icon: '📊' },
           { label: 'Estimator', path: '/estimator', icon: '💼' },
           { label: 'Drafter', path: '/drafter', icon: '📝' }
         ]
