@@ -846,10 +846,19 @@ async def delete_rab(rab_id: str, user: User = Depends(get_current_user)):
 
 @api_router.post("/rab-items")
 async def create_rab_item(input: RABItemInput, user: User = Depends(get_current_user)):
+    # If project_id not provided, get it from RAB
+    project_id = input.project_id
+    if not project_id:
+        rab = await db.rabs.find_one({"id": input.rab_id}, {"_id": 0, "project_id": 1})
+        if rab and rab.get("project_id"):
+            project_id = rab["project_id"]
+        else:
+            project_id = None  # RAB might not have project_id yet
+    
     total = input.unit_price * input.quantity
     rab_item = RABItem(
         rab_id=input.rab_id,
-        project_id=input.project_id,
+        project_id=project_id,
         category=input.category,
         description=input.description,
         unit_price=input.unit_price,
