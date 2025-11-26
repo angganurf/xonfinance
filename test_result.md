@@ -407,10 +407,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "RAB Creation Flow untuk Planning Team Dashboard"
-    - "Endpoint GET /api/admin/backups untuk list semua backup"
-    - "Endpoint POST /api/admin/restore/{backup_id} untuk restore database"
-    - "Button dan Dialog 'Buat Project Baru' di Planning Dashboard"
+    - "Planning Project Detail Page dan Progress Tracking"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
