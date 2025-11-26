@@ -358,7 +358,7 @@ const PlanningTeamDashboard = () => {
                                     size="sm"
                                     variant="link"
                                     className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/estimator?createRAB=true&projectId=${item.project.id}&projectName=${encodeURIComponent(item.project.name)}&projectType=${item.project.type}`)}
+                                    onClick={() => navigate(`/estimator?createRAB=true&projectId=${item.project.id}&projectName=${encodeURIComponent(item.project.name)}&projectType=${item.project.type}&location=${encodeURIComponent(item.project.location || '')}`)}
                                   >
                                     Buat RAB →
                                   </Button>
