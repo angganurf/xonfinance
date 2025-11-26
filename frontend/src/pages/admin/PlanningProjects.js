@@ -104,13 +104,13 @@ const PlanningProjects = () => {
     if (!projectToDelete) return;
     
     try {
-      await api.delete(`/projects/${projectToDelete.id}`);
-      toast.success('Proyek berhasil dihapus');
+      await api.delete(`/planning-projects/${projectToDelete.id}`);
+      toast.success('Proyek perencanaan berhasil dihapus');
       setDeleteDialog(false);
       setProjectToDelete(null);
       loadProjects();
     } catch (error) {
-      toast.error('Gagal menghapus proyek');
+      toast.error('Gagal menghapus proyek perencanaan');
     }
   };
 
