@@ -172,7 +172,7 @@ export const Layout = ({ children }) => {
         { label: 'Home', path: '/planning', icon: '🏠' },
         { label: 'RAB', path: '/planning/rab', icon: '📋' },
         { label: 'Time Schedule', path: '/planning/schedule', icon: '📅' },
-        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
+        { label: 'Pengaturan', path: '/planning/settings', icon: '⚙️' }
       );
     }
     
