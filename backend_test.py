@@ -2299,6 +2299,9 @@ def main():
         elif sys.argv[1] == "rab_creation":
             success = tester.run_rab_creation_flow_test()
             test_type = "rab_creation"
+        elif sys.argv[1] == "planning_debug":
+            success = tester.run_planning_dashboard_debug_tests()
+            test_type = "planning_debug"
         else:
             success = tester.run_all_tests()
             test_type = "all"
