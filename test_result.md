@@ -845,3 +845,70 @@ agent_communication:
       
       🎯 RAB CREATION FLOW IS PRODUCTION READY
       Test Files: /app/backend_test.py (rab_creation), /app/rab_flow_verification_test.py
+
+  - agent: "testing"
+    message: |
+      PLANNING DASHBOARD DEBUG ISSUE RESOLVED ✅
+      
+      Debug testing performed for: "Project baru tidak muncul di Planning Dashboard setelah dibuat"
+      
+      🔍 ISSUE IDENTIFIED AND FIXED:
+      
+      📋 ROOT CAUSE FOUND:
+      - GET /api/projects endpoint had incorrect admin role checking logic
+      - Code was checking user.roles array but admin user has role='admin' in user.role field
+      - This caused admin users to not see all projects as intended
+      
+      🔧 FIX IMPLEMENTED:
+      - Updated GET /api/projects endpoint in server.py line 593
+      - Changed from: if 'admin' not in user_roles
+      - Changed to: is_admin = user.role == 'admin' or 'admin' in user_roles; if not is_admin
+      - Now properly checks both user.role and user.roles for admin access
+      
+      ✅ VERIFICATION COMPLETED:
+      - Admin login working correctly ✓
+      - Project creation with correct phase (perencanaan) ✓
+      - Project appears in GET /api/projects (all projects) ✓
+      - Project appears in GET /api/projects?phase=perencanaan ✓
+      - Project appears in GET /api/planning/overview ✓
+      - Planning overview count increases correctly ✓
+      
+      📊 DEBUG TEST RESULTS:
+      - Total Tests: 9/9 PASSED (100% success rate)
+      - All project visibility issues resolved ✓
+      - Planning Dashboard now shows new projects immediately ✓
+      
+      🎯 PLANNING DASHBOARD PROJECT VISIBILITY IS NOW WORKING CORRECTLY
+      Test File: /app/backend_test.py (planning_debug)
+
+  - agent: "testing"
+    message: |
+      ADMIN BACKUP ENDPOINTS TESTING COMPLETED SUCCESSFULLY ✅
+      
+      Comprehensive admin backup endpoints testing performed (2025-11-26):
+      
+      🗄️ ADMIN BACKUP FEATURES - ALL WORKING PERFECTLY:
+      
+      🗑️ DELETE BACKUP ENDPOINT:
+      1. ✅ DELETE /api/admin/backups/{backup_id} working correctly
+      2. ✅ Successfully deletes existing backups and removes from list
+      3. ✅ Returns 404 for non-existent backup IDs as expected
+      4. ✅ Proper error handling for invalid backup IDs
+      
+      🧹 CLEAR ALL DATA ENDPOINT:
+      1. ✅ POST /api/admin/clear-all-data working correctly
+      2. ✅ Clears all data: projects, transactions, inventory, rabs, rab_items, schedules, tasks
+      3. ✅ Preserves users and backups as designed for security
+      4. ✅ Returns proper deleted_count response with counts for each collection
+      5. ✅ Admin user can still login after clearing, confirming users preserved
+      
+      📊 COMPREHENSIVE TEST RESULTS:
+      - Total Tests: 5/5 PASSED (100% success rate)
+      - DELETE backup endpoint working correctly ✓
+      - Error handling for non-existent backups working ✓
+      - Clear all data functionality working correctly ✓
+      - Data preservation logic working (users/backups preserved) ✓
+      - Response format correct with deleted counts ✓
+      
+      🎯 ADMIN BACKUP ENDPOINTS ARE PRODUCTION READY
+      Test File: /app/backend_test.py (admin_backup)
