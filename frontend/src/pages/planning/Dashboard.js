@@ -14,10 +14,12 @@ import api from '../../utils/api';
 const PlanningTeamDashboard = () => {
   const navigate = useNavigate();
   const [overview, setOverview] = useState([]);
+  const [rabs, setRabs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editDialog, setEditDialog] = useState(false);
   const [createDialog, setCreateDialog] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedRAB, setSelectedRAB] = useState(null);
   const [newProgress, setNewProgress] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
@@ -29,6 +31,7 @@ const PlanningTeamDashboard = () => {
 
   useEffect(() => {
     loadOverview();
+    loadRABs();
   }, []);
 
   const loadOverview = async () => {
@@ -40,6 +43,15 @@ const PlanningTeamDashboard = () => {
       toast.error('Gagal memuat data overview');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRABs = async () => {
+    try {
+      const res = await api.get('/rabs');
+      setRabs(res.data);
+    } catch (error) {
+      console.error('Error loading RABs:', error);
     }
   };
 
