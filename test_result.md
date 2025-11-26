@@ -175,11 +175,12 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "4.0"
-  test_sequence: 6
+  version: "4.1"
+  test_sequence: 7
   run_ui: true
-  last_backend_test: "2025-11-26T05:11:00Z"
-  backend_inventory_status: "NEEDS_TESTING"
+  last_backend_test: "2025-11-26T05:20:00Z"
+  backend_inventory_status: "TESTED_WORKING"
+  price_comparison_status: "TESTED_WORKING"
 
 test_plan:
   current_focus:
