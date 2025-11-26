@@ -544,9 +544,26 @@ const AccountingTransactions = () => {
                     </>
                   )}
                   
-                  <div>
-                    <Label>Tanggal Transaksi</Label>
-                    <Input type="date" value={formData.transaction_date} onChange={(e) => setFormData({...formData, transaction_date: e.target.value})} data-testid="transaction-date-input" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Tanggal Transaksi</Label>
+                      <Input 
+                        type="date" 
+                        value={formData.transaction_date} 
+                        onChange={(e) => setFormData({...formData, transaction_date: e.target.value})} 
+                        data-testid="transaction-date-input" 
+                      />
+                    </div>
+                    <div>
+                      <Label>Waktu</Label>
+                      <Input 
+                        type="time" 
+                        value={formData.transaction_time} 
+                        onChange={(e) => setFormData({...formData, transaction_time: e.target.value})} 
+                        data-testid="transaction-time-input"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">Waktu WIB</p>
+                    </div>
                   </div>
                   <div>
                     <Label>Upload Struk/Nota (Max 6MB)</Label>
