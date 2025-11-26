@@ -159,7 +159,7 @@ function App() {
           <Route
             path="/estimator"
             element={
-              <ProtectedRoute allowedRoles={['estimator', 'admin']}>
+              <ProtectedRoute allowedRoles={['estimator', 'admin', 'project_planning_team']}>
                 <EstimatorDashboard />
               </ProtectedRoute>
             }
@@ -167,7 +167,7 @@ function App() {
           <Route
             path="/estimator/rab"
             element={
-              <ProtectedRoute allowedRoles={['estimator', 'admin']}>
+              <ProtectedRoute allowedRoles={['estimator', 'admin', 'project_planning_team']}>
                 <EstimatorDashboard />
               </ProtectedRoute>
             }
@@ -175,8 +175,18 @@ function App() {
           <Route
             path="/estimator/rab/:rabId"
             element={
-              <ProtectedRoute allowedRoles={['estimator', 'admin']}>
+              <ProtectedRoute allowedRoles={['estimator', 'admin', 'project_planning_team']}>
                 <RABEditor />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Drafter Routes */}
+          <Route
+            path="/drafter"
+            element={
+              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+                <DrafterDashboard />
               </ProtectedRoute>
             }
           />
