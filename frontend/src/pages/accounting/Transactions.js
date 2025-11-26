@@ -656,6 +656,59 @@ const AccountingTransactions = () => {
                           </DropdownMenu>
                         </td>
                       </tr>
+                      
+                      {/* Expanded Row - Detail Items */}
+                      {isExpanded && hasItems && (
+                        <tr className="bg-slate-50">
+                          <td colSpan="5" className="p-4">
+                            <div className="bg-white rounded-lg p-4 border">
+                              <h4 className="font-semibold mb-3 text-slate-700">Detail Item Bahan:</h4>
+                              <div className="space-y-2">
+                                {trans.items.map((item, idx) => (
+                                  <div key={idx} className="flex items-center justify-between border-b pb-2">
+                                    <div className="flex-1">
+                                      <p className="font-medium">{item.description}</p>
+                                      <p className="text-xs text-slate-600">
+                                        {item.quantity} {item.unit} × Rp {item.unit_price?.toLocaleString('id-ID')} = Rp {item.total?.toLocaleString('id-ID')}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <Select 
+                                        value={item.status || 'receiving'} 
+                                        onValueChange={(newStatus) => handleUpdateItemStatus(trans.id, idx, newStatus)}
+                                      >
+                                        <SelectTrigger className="w-40">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="receiving">
+                                            <span className="flex items-center gap-2">
+                                              ✅ Di Gudang
+                                            </span>
+                                          </SelectItem>
+                                          <SelectItem value="out_warehouse">
+                                            <span className="flex items-center gap-2">
+                                              📦 Belum Sampai
+                                            </span>
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <span className={`text-xs px-2 py-1 rounded ${
+                                        item.status === 'receiving' 
+                                          ? 'bg-green-100 text-green-700' 
+                                          : 'bg-orange-100 text-orange-700'
+                                      }`}>
+                                        {item.status === 'receiving' ? 'Di Gudang' : 'Belum Sampai'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
