@@ -110,7 +110,7 @@ user_problem_statement: |
      - Membuat project_id dan assigned_to menjadi optional
 
 backend:
-  - task: "Endpoint POST /api/admin/backup untuk create backup database"
+  - task: "Endpoint POST /api/projects untuk create project perencanaan"
     implemented: true
     working: "NA"
     file: "server.py"
@@ -120,7 +120,19 @@ backend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Created backup endpoint that saves snapshot of all collections (projects, transactions, inventory, rabs, rab_items, schedules, tasks, users) to backups collection with timestamp, created_by, and collection counts. Returns backup ID and metadata."
+        comment: "Endpoint sudah ada sebelumnya. Endpoint ini sudah support creation project dengan auto-detection fase berdasarkan role user. Project Planning Team akan otomatis create project dengan fase 'perencanaan'."
+  
+  - task: "Fix TaskInput model untuk support Drafter Dashboard"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated TaskInput model to include: duration_days, role, priority, status fields. Made project_id and assigned_to optional. Simplified create_task function to directly use TaskInput fields without hasattr checks."
   
   - task: "Endpoint GET /api/admin/backups untuk list semua backup"
     implemented: true
