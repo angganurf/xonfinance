@@ -521,7 +521,12 @@ async def create_project(input: ProjectInput, user: User = Depends(get_current_u
     user_roles = user.roles if isinstance(user.roles, list) else [user.roles] if user.roles else []
     
     # Determine phase based on role
-    phase = "perencanaan" if 'project_planning_team' in user_roles else "pelaksanaan"
+    # Admin users can create projects in perencanaan phase (they have access to all roles)
+    # Planning team users create perencanaan phase projects
+    # Other roles create pelaksanaan phase projects
+    is_admin = user.role == 'admin'
+    has_planning_role = 'project_planning_team' in user_roles
+    phase = "perencanaan" if (is_admin or has_planning_role) else "pelaksanaan"
     
     project = Project(
         name=input.name,
