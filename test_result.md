@@ -215,6 +215,21 @@ backend:
         agent: "testing"
         comment: "VERIFIED: Complete RAB creation flow working correctly. Admin login successful, Test Project Planning Team found via GET /api/projects?phase=perencanaan, RAB created via POST /api/rabs with correct data (project_name='Test Project Planning Team', project_type='interior', client_name='Pak Budi Testing', location='Jakarta Selatan'), RAB status='draft', RAB appears in planning overview when linked to project. 'Lihat RAB →' link will be available in Planning Dashboard. All 7 test steps passed (100% success rate)."
 
+  - task: "Inventory Item-Names Filter by Project Type"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "user"
+        comment: "User requested testing of inventory item-names filter functionality based on project_type. The endpoint GET /api/inventory/item-names should filter items by project_type (interior/arsitektur) instead of per project, allowing items from different projects but same type to appear together."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: GET /api/inventory/item-names with project_type filter working correctly. All 5 test scenarios passed (100% success rate): 1) No filter returns all items from both project types, 2) project_type=interior filter returns BOTH 'Keramik Granit 60x60' and 'Cat Tembok Avitex' from different interior projects, excludes arsitektur items, 3) project_type=arsitektur filter returns 'Besi Beton 12mm' from arsitektur project, excludes interior items, 4) Backward compatibility with project_id parameter works correctly (filters by project type), 5) Items are successfully shared across projects of same type. Main requirement verified: items from different projects but same type appear together in response."
+
 frontend:
   - task: "Button dan Dialog 'Buat Project Baru' di Planning Dashboard"
     implemented: true
