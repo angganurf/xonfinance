@@ -624,18 +624,36 @@ async def update_rab(rab_id: str, input: RABUpdateInput, user: User = Depends(ge
 
 @api_router.patch("/rabs/{rab_id}/status")
 async def update_rab_status(rab_id: str, data: dict, user: User = Depends(get_current_user)):
-    """Update RAB status and create project if approved"""
+    """Update RAB status and create/delete project accordingly"""
     rab = await db.rabs.find_one({"id": rab_id}, {"_id": 0})
     if not rab:
         raise HTTPException(status_code=404, detail="RAB not found")
     
+    old_status = rab.get("status")
     new_status = data.get("status")
     if new_status not in ["draft", "bidding_process", "approved", "rejected"]:
         raise HTTPException(status_code=400, detail="Invalid status")
     
     updates = {"status": new_status}
     
-    # If approved, create project automatically
+    # If changing FROM approved TO other status, delete the associated project
+    if old_status == "approved" and new_status != "approved":
+        project_id = rab.get("project_id")
+        if project_id:
+            # Delete project and related data
+            await db.projects.delete_one({"id": project_id})
+            # Also delete transactions related to this project
+            await db.transactions.delete_many({"project_id": project_id})
+            # Delete inventory related to this project
+            await db.inventory.delete_many({"project_id": project_id})
+            # Delete schedules and tasks
+            await db.schedules.delete_many({"project_id": project_id})
+            await db.tasks.delete_many({"project_id": project_id})
+            
+            updates["project_id"] = None
+            updates["approved_at"] = None
+    
+    # If changing TO approved, create project automatically
     if new_status == "approved":
         # Calculate total from RAB items
         rab_items = await db.rab_items.find({"rab_id": rab_id}, {"_id": 0}).to_list(1000)
@@ -678,6 +696,8 @@ async def update_rab_status(rab_id: str, data: dict, user: User = Depends(get_cu
     
     if new_status == "approved":
         return {"message": "RAB approved and project created", "project_id": project.id}
+    elif old_status == "approved" and new_status != "approved":
+        return {"message": f"RAB status updated to {new_status} and project deleted"}
     
     return {"message": f"RAB status updated to {new_status}"}
 
