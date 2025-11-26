@@ -2737,9 +2737,10 @@ async def get_project_comments(project_id: str, user: User = Depends(get_current
         {"_id": 0}
     ).sort("created_at", 1).to_list(1000)
     
-    # Convert datetime to ISO string
+    # Convert datetime to ISO string if needed
     for comment in comments:
-        comment["created_at"] = comment["created_at"].isoformat()
+        if comment.get("created_at") and not isinstance(comment["created_at"], str):
+            comment["created_at"] = comment["created_at"].isoformat()
     
     return comments
 
