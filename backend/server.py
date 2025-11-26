@@ -282,6 +282,11 @@ class LoginInput(BaseModel):
     email: str  # can be email or username
     password: str
 
+class BulkOperationRequest(BaseModel):
+    """Request model for bulk operations"""
+    project_ids: List[str]
+    updates: Optional[Dict[str, Any]] = None
+
 class ProjectInput(BaseModel):
     name: str
     type: str
