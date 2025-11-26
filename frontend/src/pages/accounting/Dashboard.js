@@ -63,9 +63,9 @@ const AccountingDashboard = () => {
       const projectsWithExpenses = projects.map(project => ({
         ...project,
         expenses: projectExpensesMap[project.id] || {
-          material: 0,
-          labor: 0,
-          equipment: 0,
+          bahan: 0,
+          upah: 0,
+          alat: 0,
           total: 0
         }
       }));
