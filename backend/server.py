@@ -585,6 +585,120 @@ async def get_planning_project(project_id: str, user: User = Depends(get_current
         raise HTTPException(status_code=404, detail="Planning project not found")
     return project
 
+@api_router.get("/planning-projects/{project_id}/overview")
+async def get_planning_project_overview(project_id: str, user: User = Depends(get_current_user)):
+    """Get planning project overview with all related data and progress calculation"""
+    # Get planning project
+    project = await db.planning_projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Planning project not found")
+    
+    # Get RAB data
+    rabs = await db.rabs.find({"project_id": project_id}, {"_id": 0}).to_list(100)
+    rab_items = await db.rab_items.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    
+    # Calculate RAB progress (0-100%)
+    rab_progress = 0
+    rab_status = "not_started"
+    if rabs:
+        rab_progress = 100  # If RAB exists, consider it complete
+        rab_status = "completed"
+    
+    # Get Modeling 3D data
+    modeling_3d = await db.modeling_3d.find({"project_id": project_id}, {"_id": 0}).to_list(100)
+    modeling_progress = 0
+    modeling_status = "not_started"
+    if modeling_3d:
+        # Calculate average progress from all modeling items
+        if len(modeling_3d) > 0:
+            total_progress = sum([m.get("progress", 0) for m in modeling_3d])
+            modeling_progress = total_progress // len(modeling_3d)
+            modeling_status = "in_progress" if modeling_progress < 100 else "completed"
+    
+    # Get Shop Drawing data
+    shop_drawings = await db.shop_drawing.find({"project_id": project_id}, {"_id": 0}).to_list(100)
+    shop_drawing_progress = 0
+    shop_drawing_status = "not_started"
+    if shop_drawings:
+        # Calculate average progress from all shop drawing items
+        if len(shop_drawings) > 0:
+            total_progress = sum([s.get("progress", 0) for s in shop_drawings])
+            shop_drawing_progress = total_progress // len(shop_drawings)
+            shop_drawing_status = "in_progress" if shop_drawing_progress < 100 else "completed"
+    
+    # Get Schedule data
+    schedule_items = await db.schedule_items.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    schedule_progress = 0
+    schedule_status = "not_started"
+    if schedule_items:
+        completed_count = sum(1 for item in schedule_items if item.get("status") == "completed")
+        schedule_progress = (completed_count * 100) // len(schedule_items) if schedule_items else 0
+        schedule_status = "in_progress" if schedule_progress < 100 else "completed"
+    
+    # Calculate overall progress (average of 4 components)
+    overall_progress = (rab_progress + modeling_progress + shop_drawing_progress + schedule_progress) // 4
+    
+    # Create task list
+    tasks = [
+        {
+            "id": "rab",
+            "name": "RAB (Rencana Anggaran Biaya)",
+            "status": rab_status,
+            "progress": rab_progress,
+            "count": len(rabs),
+            "items_count": len(rab_items)
+        },
+        {
+            "id": "modeling_3d",
+            "name": "Modeling 3D",
+            "status": modeling_status,
+            "progress": modeling_progress,
+            "count": len(modeling_3d)
+        },
+        {
+            "id": "shop_drawing",
+            "name": "Gambar Kerja (Shop Drawing)",
+            "status": shop_drawing_status,
+            "progress": shop_drawing_progress,
+            "count": len(shop_drawings)
+        },
+        {
+            "id": "schedule",
+            "name": "Time Schedule",
+            "status": schedule_status,
+            "progress": schedule_progress,
+            "total_items": len(schedule_items),
+            "completed_items": sum(1 for item in schedule_items if item.get("status") == "completed")
+        }
+    ]
+    
+    return {
+        "project": project,
+        "overall_progress": overall_progress,
+        "tasks": tasks,
+        "rab": {
+            "status": rab_status,
+            "progress": rab_progress,
+            "data": rabs,
+            "items": rab_items
+        },
+        "modeling_3d": {
+            "status": modeling_status,
+            "progress": modeling_progress,
+            "data": modeling_3d
+        },
+        "shop_drawing": {
+            "status": shop_drawing_status,
+            "progress": shop_drawing_progress,
+            "data": shop_drawings
+        },
+        "schedule": {
+            "status": schedule_status,
+            "progress": schedule_progress,
+            "items": schedule_items
+        }
+    }
+
 @api_router.post("/planning-projects")
 async def create_planning_project(input: ProjectInput, user: User = Depends(get_current_user)):
     """Create new planning project"""
