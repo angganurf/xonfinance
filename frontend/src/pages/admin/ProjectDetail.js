@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Progress } from '../../components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, Building2, MapPin, Calendar, DollarSign, FileText, TrendingUp, Users, Package } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Calendar, DollarSign, FileText, TrendingUp, Users, Package, MessageCircle, Send, Trash2 } from 'lucide-react';
+import { Textarea } from '../../components/ui/textarea';
 import api from '../../utils/api';
 
 const ProjectDetail = () => {
