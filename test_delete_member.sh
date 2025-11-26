@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BACKEND_URL="https://taskflow-xon.preview.emergentagent.com/api"
+BACKEND_URL="https://taskmaster-952.preview.emergentagent.com/api"
 
 echo "=== Testing Delete Member ==="
 echo ""

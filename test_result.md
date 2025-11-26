@@ -637,7 +637,7 @@ agent_communication:
       3. ✅ Found 5 user options in dropdown (Administrator, Idrus, Angga Nurfaisal, etc.)
       4. ✅ User selection working correctly
       5. ✅ Mention inserted properly: "@admin "
-      6. ✅ API call with mentions parameter: POST /api/projects/{id}/comments?message=@admin+-+testing+mention+feature&mentions=cbf459ba-8cf7-427f-949c-3dd02c0a4b96
+      6. ✅ API call with mentions parameter: POST /api/projects/{id}/comments?message=@admin+-+testing+mention+feature&mentions=taskmaster-952
       7. ✅ Mention functionality fully operational
       
       🔧 TEST 6: BACKEND API VERIFICATION:

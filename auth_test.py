@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class AuthenticationTester:
-    def __init__(self, base_url="https://taskflow-xon.preview.emergentagent.com"):
+    def __init__(self, base_url="https://taskmaster-952.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
