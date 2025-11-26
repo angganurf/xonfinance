@@ -1698,6 +1698,224 @@ class XONArchitectAPITester:
         print(f"📋 Projects in planning overview before: {projects_before_count}")
         self.log_test("Get Planning Overview (Before)", True, f"Found {projects_before_count} projects in planning overview")
         
+    # ============= PLANNING DASHBOARD DEBUG TESTS =============
+    
+    def test_planning_dashboard_debug(self):
+        """Debug Planning Dashboard issue: projects not showing"""
+        print("\n🔍 DEBUGGING PLANNING DASHBOARD ISSUE")
+        print("=" * 60)
+        
+        # Step 1: Admin Login
+        print("\n1️⃣ Testing Admin Login...")
+        login_data = {
+            "email": "admin",
+            "password": "admin"
+        }
+        
+        success, data = self.make_request('POST', '/auth/login', login_data, 200)
+        if success and 'session_token' in data:
+            self.session_token = data['session_token']
+            self.user_id = data['user']['id']
+            print(f"✅ Admin login successful - Token: {self.session_token[:20]}...")
+            print(f"   User ID: {self.user_id}")
+            print(f"   User Role: {data['user'].get('role')}")
+        else:
+            print(f"❌ Admin login failed: {data}")
+            return False
+        
+        # Step 2: Test GET /api/planning/overview endpoint in detail
+        print("\n2️⃣ Testing GET /api/planning/overview endpoint...")
+        success, overview_data = self.make_request('GET', '/planning/overview')
+        
+        if success:
+            project_count = len(overview_data) if isinstance(overview_data, list) else 0
+            print(f"✅ Planning overview endpoint working")
+            print(f"   Projects returned: {project_count}")
+            
+            if project_count > 0:
+                print("   Project names in overview:")
+                for i, project_item in enumerate(overview_data):
+                    project_info = project_item.get('project', {})
+                    project_name = project_info.get('name', 'Unknown')
+                    project_phase = project_info.get('phase', 'Unknown')
+                    print(f"     {i+1}. {project_name} (phase: {project_phase})")
+            else:
+                print("   ⚠️ NO PROJECTS RETURNED BY PLANNING OVERVIEW")
+        else:
+            print(f"❌ Planning overview failed: {overview_data}")
+            return False
+        
+        # Step 3: Test GET /api/projects with various filters
+        print("\n3️⃣ Testing GET /api/projects with various filters...")
+        
+        # 3a: All projects (no filter)
+        success, all_projects = self.make_request('GET', '/projects')
+        if success:
+            all_count = len(all_projects) if isinstance(all_projects, list) else 0
+            print(f"✅ GET /api/projects (all): {all_count} projects")
+            
+            if all_count > 0:
+                print("   All project names and phases:")
+                for i, project in enumerate(all_projects):
+                    name = project.get('name', 'Unknown')
+                    phase = project.get('phase', 'Unknown')
+                    project_type = project.get('type', 'Unknown')
+                    print(f"     {i+1}. {name} (phase: {phase}, type: {project_type})")
+        else:
+            print(f"❌ GET /api/projects failed: {all_projects}")
+        
+        # 3b: Projects with phase=perencanaan
+        success, perencanaan_projects = self.make_request('GET', '/projects?phase=perencanaan')
+        if success:
+            perencanaan_count = len(perencanaan_projects) if isinstance(perencanaan_projects, list) else 0
+            print(f"✅ GET /api/projects?phase=perencanaan: {perencanaan_count} projects")
+            
+            if perencanaan_count > 0:
+                print("   Perencanaan project names:")
+                for i, project in enumerate(perencanaan_projects):
+                    name = project.get('name', 'Unknown')
+                    phase = project.get('phase', 'Unknown')
+                    project_type = project.get('type', 'Unknown')
+                    print(f"     {i+1}. {name} (phase: {phase}, type: {project_type})")
+            else:
+                print("   ⚠️ NO PROJECTS WITH PHASE=PERENCANAAN FOUND")
+        else:
+            print(f"❌ GET /api/projects?phase=perencanaan failed: {perencanaan_projects}")
+        
+        # Step 4: Check database for projects with phase="perencanaan"
+        print("\n4️⃣ Analyzing project phases in database...")
+        if isinstance(all_projects, list):
+            phase_counts = {}
+            for project in all_projects:
+                phase = project.get('phase', 'Unknown')
+                phase_counts[phase] = phase_counts.get(phase, 0) + 1
+            
+            print("   Phase distribution:")
+            for phase, count in phase_counts.items():
+                print(f"     {phase}: {count} projects")
+        
+        # Step 5: Create a NEW test project and verify immediately
+        print("\n5️⃣ Creating NEW test project for Planning Team...")
+        
+        test_project_data = {
+            "name": "Debug Planning Dashboard Test",
+            "type": "interior",
+            "location": "Jakarta",
+            "project_value": 100000000,
+            "description": "Testing planning dashboard visibility"
+        }
+        
+        success, create_response = self.make_request('POST', '/projects', test_project_data, 200)
+        if success and 'id' in create_response:
+            new_project_id = create_response['id']
+            print(f"✅ New project created successfully")
+            print(f"   Project ID: {new_project_id}")
+            print(f"   Project Name: {test_project_data['name']}")
+        else:
+            print(f"❌ Failed to create new project: {create_response}")
+            return False
+        
+        # Step 6: Immediately verify new project appears in various endpoints
+        print("\n6️⃣ Verifying new project appears immediately...")
+        
+        # 6a: Check in GET /api/projects
+        success, updated_all_projects = self.make_request('GET', '/projects')
+        if success:
+            found_in_all = any(p.get('id') == new_project_id for p in updated_all_projects)
+            print(f"   Found in GET /api/projects: {found_in_all}")
+        
+        # 6b: Check in GET /api/projects?phase=perencanaan
+        success, updated_perencanaan_projects = self.make_request('GET', '/projects?phase=perencanaan')
+        if success:
+            found_in_perencanaan = any(p.get('id') == new_project_id for p in updated_perencanaan_projects)
+            print(f"   Found in GET /api/projects?phase=perencanaan: {found_in_perencanaan}")
+            
+            if found_in_perencanaan:
+                # Get the project details
+                new_project = next((p for p in updated_perencanaan_projects if p.get('id') == new_project_id), None)
+                if new_project:
+                    print(f"   New project phase: {new_project.get('phase')}")
+                    print(f"   New project type: {new_project.get('type')}")
+        
+        # 6c: Check in GET /api/planning/overview
+        success, updated_overview = self.make_request('GET', '/planning/overview')
+        if success:
+            found_in_overview = False
+            for overview_item in updated_overview:
+                project_info = overview_item.get('project', {})
+                if project_info.get('id') == new_project_id:
+                    found_in_overview = True
+                    break
+            
+            print(f"   Found in GET /api/planning/overview: {found_in_overview}")
+            
+            new_overview_count = len(updated_overview) if isinstance(updated_overview, list) else 0
+            print(f"   Planning overview count after creation: {new_overview_count}")
+        
+        # Step 7: Debug response structure
+        print("\n7️⃣ Debugging response structures...")
+        
+        # Check if planning overview returns empty array
+        if isinstance(updated_overview, list):
+            if len(updated_overview) == 0:
+                print("   ⚠️ ISSUE: Planning overview returns empty array")
+            else:
+                print(f"   ✅ Planning overview returns {len(updated_overview)} items")
+                
+                # Check structure of first item
+                if len(updated_overview) > 0:
+                    first_item = updated_overview[0]
+                    print("   First overview item structure:")
+                    print(f"     Has 'project' key: {'project' in first_item}")
+                    print(f"     Has 'rab' key: {'rab' in first_item}")
+                    print(f"     Has 'shop_drawing' key: {'shop_drawing' in first_item}")
+                    print(f"     Has 'schedule' key: {'schedule' in first_item}")
+                    
+                    if 'project' in first_item:
+                        project_info = first_item['project']
+                        print(f"     Project name: {project_info.get('name')}")
+                        print(f"     Project phase: {project_info.get('phase')}")
+        
+        # Summary
+        print("\n📊 DEBUG SUMMARY:")
+        print(f"   Total projects in database: {len(all_projects) if isinstance(all_projects, list) else 0}")
+        print(f"   Projects with phase=perencanaan: {len(perencanaan_projects) if isinstance(perencanaan_projects, list) else 0}")
+        print(f"   Projects in planning overview: {len(updated_overview) if isinstance(updated_overview, list) else 0}")
+        print(f"   New test project created: {success}")
+        print(f"   New project appears in overview: {found_in_overview if 'found_in_overview' in locals() else 'Unknown'}")
+        
+        # Determine root cause
+        if len(updated_overview) == 0:
+            print("\n🔍 ROOT CAUSE ANALYSIS:")
+            print("   Planning overview returns empty - possible causes:")
+            print("   1. No projects with phase='perencanaan' exist")
+            print("   2. Admin user role filtering issue")
+            print("   3. Database query issue in planning/overview endpoint")
+            print("   4. Project creation not setting correct phase for admin users")
+        
+        self.log_test("Planning Dashboard Debug", True, "Debug analysis completed")
+        return True
+    
+    def run_planning_dashboard_debug_tests(self):
+        """Run Planning Dashboard debug tests"""
+        print("🔍 Starting Planning Dashboard Debug Tests")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run debug tests
+        self.test_planning_dashboard_debug()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Debug Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return True
         # Step 3: Create new project with specific data
         print("\n🏗️ Step 3: Create new project")
         project_data = {
