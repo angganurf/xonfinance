@@ -356,8 +356,31 @@ export const Layout = ({ children }) => {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Settings */}
-              <Button variant="ghost" size="icon" data-testid="settings-btn">
+              {/* Settings Icon */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => {
+                  const userRoles = user?.roles && user.roles.length > 0 
+                    ? user.roles 
+                    : (user?.role ? [user.role] : []);
+                  
+                  const currentPath = location.pathname;
+                  const isPlanningContext = currentPath.startsWith('/planning') && !currentPath.startsWith('/planning-projects');
+                  
+                  // Navigate to appropriate settings based on context
+                  if (userRoles.includes('admin') && isPlanningContext) {
+                    navigate('/planning/settings');
+                  } else if (userRoles.includes('admin')) {
+                    navigate('/admin/settings');
+                  } else if (userRoles.includes('project_planning_team')) {
+                    navigate('/planning/settings');
+                  } else {
+                    navigate('/settings');
+                  }
+                }}
+                data-testid="settings-btn"
+              >
                 <Settings className="h-5 w-5" />
               </Button>
               
