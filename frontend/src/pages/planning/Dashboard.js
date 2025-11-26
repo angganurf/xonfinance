@@ -147,14 +147,19 @@ const PlanningTeamDashboard = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Dashboard Planning Team</h2>
-          <p className="text-sm text-slate-600 mt-1">Monitoring progress desain, RAB, dan time schedule</p>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-              📋 Project Perencanaan (Tahap Sebelum Pembangunan)
-            </span>
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">Dashboard Planning Team</h2>
+            <p className="text-sm text-slate-600 mt-1">Monitoring progress desain, RAB, dan time schedule</p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                📋 Project Perencanaan (Tahap Sebelum Pembangunan)
+              </span>
+            </div>
           </div>
+          <Button onClick={() => setCreateDialog(true)} className="bg-green-600 hover:bg-green-700">
+            <Plus className="mr-2 h-4 w-4" /> Buat Project Baru
+          </Button>
         </div>
 
         {/* Stats Cards */}
