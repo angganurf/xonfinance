@@ -172,18 +172,22 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.0"
-  test_sequence: 5
+  version: "4.0"
+  test_sequence: 6
   run_ui: true
-  last_backend_test: "2025-01-16T10:30:00Z"
-  backend_inventory_status: "COMPLETED_ALL_TESTS_PASSED"
+  last_backend_test: "2025-11-26T05:11:00Z"
+  backend_inventory_status: "NEEDS_TESTING"
 
 test_plan:
   current_focus:
-    - "Frontend status transaksi testing completed successfully"
+    - "Modifikasi endpoint GET /api/inventory/price-comparison untuk support filter project_type"
+    - "Implementasi sub-tabs (Stok / Daftar Bahan) di dalam tab Interior dan Arsitektur"
+    - "Tampilan tabel Daftar Bahan dengan perbandingan harga"
+    - "Dialog detail perbandingan harga per supplier"
+    - "Filter data perbandingan harga berdasarkan project_type"
   stuck_tasks: []
-  test_all: true
-  test_priority: "completed"
+  test_all: false
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
