@@ -1,0 +1,51 @@
+{
+  "test_type": "rab_item_fix",
+  "timestamp": "2025-11-26T14:50:18.634163",
+  "total_tests": 7,
+  "passed_tests": 5,
+  "success_rate": 71.42857142857143,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T14:50:18.108909"
+    },
+    {
+      "test_name": "RAB Item Fix - Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T14:50:18.408697"
+    },
+    {
+      "test_name": "RAB Item Fix - Get Existing RAB",
+      "success": true,
+      "details": "Using existing RAB ID: 3fbfb38b-ed8b-4d08-a890-4ea131dc47b1",
+      "timestamp": "2025-11-26T14:50:18.449795"
+    },
+    {
+      "test_name": "RAB Item Fix - Create Without Project ID",
+      "success": false,
+      "details": "RAB Item ID: N/A, Expected: Success without project_id",
+      "timestamp": "2025-11-26T14:50:18.488996"
+    },
+    {
+      "test_name": "RAB Item Fix - Create With Project ID",
+      "success": true,
+      "details": "RAB Item ID: 3f964d78-4664-4aa7-8d8a-5e3bb4e63467, Expected: Success with project_id",
+      "timestamp": "2025-11-26T14:50:18.562370"
+    },
+    {
+      "test_name": "RAB Item Fix - Verify Items Created",
+      "success": false,
+      "details": "Items found: 1, Keramik found: False, Tukang found: True, Totals correct: False",
+      "timestamp": "2025-11-26T14:50:18.597521"
+    },
+    {
+      "test_name": "RAB Item Fix - Invalid RAB ID",
+      "success": true,
+      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}, Handled gracefully: True",
+      "timestamp": "2025-11-26T14:50:18.633915"
+    }
+  ]
+}
