@@ -1021,3 +1021,60 @@ agent_communication:
       
       🎯 PLANNING DASHBOARD TEST DATA IS NOW AVAILABLE
       Test File: /app/test_reports/backend_planning_test_projects_test_results.json
+
+  - agent: "testing"
+    message: |
+      INVENTORY ITEM-NAMES FILTER TESTING COMPLETED SUCCESSFULLY ✅
+      
+      Comprehensive inventory item-names filter testing performed (2025-11-26):
+      
+      📦 INVENTORY ITEM-NAMES FILTER BY PROJECT TYPE - ALL WORKING PERFECTLY:
+      
+      🔧 TEST DATA SETUP:
+      1. ✅ Created Interior Project A with "Keramik Granit 60x60" transaction
+      2. ✅ Created Interior Project B with "Cat Tembok Avitex" transaction  
+      3. ✅ Created Arsitektur Project with "Besi Beton 12mm" transaction
+      
+      🔍 TEST SCENARIOS EXECUTED:
+      
+      ✅ 1. NO FILTER TEST:
+      - GET /api/inventory/item-names?category=bahan returns all items
+      - Found 5 items including Keramik, Cat, and Besi from all project types
+      - Baseline functionality working correctly
+      
+      ✅ 2. FILTER BY PROJECT_TYPE=INTERIOR:
+      - GET /api/inventory/item-names?category=bahan&project_type=interior
+      - Returns BOTH "Keramik Granit 60x60" AND "Cat Tembok Avitex" 
+      - Items from different interior projects appear together ✓
+      - Excludes arsitektur items ("Besi Beton 12mm") ✓
+      - Found 4 interior items total
+      
+      ✅ 3. FILTER BY PROJECT_TYPE=ARSITEKTUR:
+      - GET /api/inventory/item-names?category=bahan&project_type=arsitektur
+      - Returns "Besi Beton 12mm" from arsitektur project ✓
+      - Excludes interior items (Keramik and Cat) ✓
+      - Found 2 arsitektur items total
+      
+      ✅ 4. BACKWARD COMPATIBILITY WITH PROJECT_ID:
+      - GET /api/inventory/item-names?category=bahan&project_id={interior_project_id}
+      - Returns ALL interior items (not just from that specific project) ✓
+      - Backward compatibility maintained - filters by project type ✓
+      - Found 4 interior items (same as project_type=interior filter)
+      
+      ✅ 5. ITEMS SHARED ACROSS PROJECTS SAME TYPE (MAIN REQUIREMENT):
+      - Verified items from different projects but same type appear together
+      - Interior items from Project A and Project B both appear in response ✓
+      - Main requirement satisfied: shared item names across projects of same type
+      
+      📊 COMPREHENSIVE TEST RESULTS:
+      - Total Tests: 7/7 PASSED (100% success rate)
+      - All filtering scenarios working as designed ✓
+      - project_type filter correctly separates Interior and Arsitektur items ✓
+      - Items shared across projects of same type ✓
+      - Backward compatibility with project_id maintained ✓
+      - Response format correct with item_names array ✓
+      - No project_id filtering (only type-based filtering) ✓
+      - Filter logic working for both interior and arsitektur types ✓
+      
+      🎯 INVENTORY ITEM-NAMES FILTER FEATURE IS PRODUCTION READY
+      Test File: /app/test_reports/backend_inventory_item_names_filter_test_results.json
