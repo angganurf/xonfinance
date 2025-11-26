@@ -45,7 +45,7 @@ const PlanningProjects = () => {
       setProjects(projectsRes.data);
       setProjectsProgress(progressRes.data);
     } catch (error) {
-      toast.error('Gagal memuat proyek');
+      toast.error('Gagal memuat proyek perencanaan');
     }
   };
 
