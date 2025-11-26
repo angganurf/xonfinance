@@ -174,8 +174,8 @@ const PlanningTeamDashboard = () => {
     try {
       await Promise.all(
         selectedProjects.map(projectId => 
-          api.patch(`/projects/${projectId}/design-progress`, {
-            progress: parseInt(bulkProgress)
+          api.patch(`/planning-projects/${projectId}/design-progress`, null, {
+            params: { progress: parseInt(bulkProgress) }
           })
         )
       );
