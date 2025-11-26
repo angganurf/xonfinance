@@ -442,6 +442,111 @@ const ProjectDetail = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Discussion / Chat Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-blue-600" />
+              Diskusi Proyek ({comments.length})
+            </CardTitle>
+            <p className="text-sm text-slate-600 mt-2">
+              Gunakan @email untuk mention member dan kirim notifikasi
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Comments List */}
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {comments.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    <MessageCircle className="mx-auto h-12 w-12 mb-2 text-slate-300" />
+                    <p>Belum ada diskusi. Mulai diskusi sekarang!</p>
+                  </div>
+                ) : (
+                  comments.map((comment) => (
+                    <div key={comment.id} className="bg-slate-50 rounded-lg p-4 border">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Users className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-slate-800">{comment.user_name}</span>
+                              <span className="text-xs text-slate-500">{comment.user_email}</span>
+                            </div>
+                            <p className="text-sm text-slate-600 mt-1">{formatDate(comment.created_at)}</p>
+                            <p className="text-slate-800 mt-2 whitespace-pre-wrap">{comment.message}</p>
+                            {comment.mentions && comment.mentions.length > 0 && (
+                              <div className="mt-2 flex items-center gap-1">
+                                <span className="text-xs text-blue-600">
+                                  🔔 {comment.mentions.length} member disebutkan
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* New Comment Input */}
+              <div className="border-t pt-4">
+                <div className="relative">
+                  <Textarea
+                    value={newComment}
+                    onChange={handleCommentChange}
+                    placeholder="Tulis komentar... (gunakan @email untuk mention)"
+                    className="min-h-[100px] resize-none"
+                  />
+                  
+                  {/* Mention Autocomplete */}
+                  {showMentionList && (
+                    <div className="absolute bottom-full mb-2 w-full bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
+                      {users
+                        .filter(u => 
+                          u.email.toLowerCase().includes(mentionSearch.toLowerCase()) ||
+                          u.name.toLowerCase().includes(mentionSearch.toLowerCase())
+                        )
+                        .slice(0, 5)
+                        .map(user => (
+                          <div
+                            key={user.id}
+                            onClick={() => insertMention(user)}
+                            className="p-3 hover:bg-slate-100 cursor-pointer border-b last:border-b-0"
+                          >
+                            <p className="font-medium text-sm">{user.name}</p>
+                            <p className="text-xs text-slate-600">{user.email}</p>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex justify-between items-center mt-2">
+                  <p className="text-xs text-slate-500">
+                    💡 Tip: Ketik @ untuk mention member
+                  </p>
+                  <Button onClick={handleSendComment} className="bg-blue-600 hover:bg-blue-700">
+                    <Send className="mr-2 h-4 w-4" /> Kirim Komentar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );
