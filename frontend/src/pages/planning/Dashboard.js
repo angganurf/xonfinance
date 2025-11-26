@@ -18,9 +18,12 @@ const PlanningTeamDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [editDialog, setEditDialog] = useState(false);
   const [createDialog, setCreateDialog] = useState(false);
+  const [bulkEditDialog, setBulkEditDialog] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedRAB, setSelectedRAB] = useState(null);
+  const [selectedProjects, setSelectedProjects] = useState([]);
   const [newProgress, setNewProgress] = useState(0);
+  const [bulkProgress, setBulkProgress] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     type: 'interior',
