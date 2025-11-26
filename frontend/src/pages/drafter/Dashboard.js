@@ -34,26 +34,6 @@ const DrafterDashboard = () => {
     }
   };
 
-  const loadProjects = async () => {
-    try {
-      const res = await api.get('/projects');
-      setProjects(res.data);
-    } catch (error) {
-      console.error('Error loading projects:', error);
-      toast.error('Gagal memuat proyek');
-    }
-  };
-
-  const filterProjects = () => {
-    let filtered = [...projects];
-    
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(p => p.status === statusFilter);
-    }
-    
-    setFilteredProjects(filtered);
-  };
-
   const handleCreateTask = async (e) => {
     e.preventDefault();
     
