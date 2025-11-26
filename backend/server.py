@@ -1841,20 +1841,21 @@ async def create_task(input: TaskInput, user: User = Depends(get_current_user)):
     
     # Calculate due_date if duration_days is provided
     due_date = None
-    if hasattr(input, 'duration_days') and input.duration_days:
+    if input.duration_days:
         due_date = start_date + timedelta(days=input.duration_days)
     elif input.due_date:
         due_date = datetime.fromisoformat(input.due_date)
     
     task = Task(
-        project_id=input.project_id if hasattr(input, 'project_id') else None,
+        project_id=input.project_id,
         title=input.title,
-        description=input.description if hasattr(input, 'description') else None,
-        assigned_to=input.assigned_to if hasattr(input, 'assigned_to') else None,
-        role=input.role if hasattr(input, 'role') else None,
-        priority=input.priority if hasattr(input, 'priority') else "medium",
+        description=input.description,
+        assigned_to=input.assigned_to,
+        role=input.role,
+        priority=input.priority,
+        status=input.status,
         start_date=start_date,
-        duration_days=input.duration_days if hasattr(input, 'duration_days') else None,
+        duration_days=input.duration_days,
         due_date=due_date
     )
     
