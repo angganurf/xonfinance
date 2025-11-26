@@ -75,6 +75,7 @@ class Project(BaseModel):
     location: Optional[str] = None
     project_value: Optional[float] = 0.0  # nilai pekerjaan
     status: str = "active"  # active, waiting, completed
+    phase: str = "perencanaan"  # perencanaan, pelaksanaan
     design_progress: Optional[int] = 0  # progress desain 0-100%
     created_by: str
     created_at: datetime = Field(default_factory=lambda: now_wib())
