@@ -1830,30 +1830,48 @@ async def get_schedule_items(project_id: str, user: User = Depends(get_current_u
 
 @api_router.post("/tasks")
 async def create_task(input: TaskInput, user: User = Depends(get_current_user)):
+    from datetime import timedelta
+    
+    # Start date is now (WIB)
+    start_date = now_wib()
+    
+    # Calculate due_date if duration_days is provided
+    due_date = None
+    if hasattr(input, 'duration_days') and input.duration_days:
+        due_date = start_date + timedelta(days=input.duration_days)
+    elif input.due_date:
+        due_date = datetime.fromisoformat(input.due_date)
+    
     task = Task(
-        project_id=input.project_id,
+        project_id=input.project_id if hasattr(input, 'project_id') else None,
         title=input.title,
-        description=input.description,
-        assigned_to=input.assigned_to,
-        due_date=datetime.fromisoformat(input.due_date) if input.due_date else None
+        description=input.description if hasattr(input, 'description') else None,
+        assigned_to=input.assigned_to if hasattr(input, 'assigned_to') else None,
+        role=input.role if hasattr(input, 'role') else None,
+        priority=input.priority if hasattr(input, 'priority') else "medium",
+        start_date=start_date,
+        duration_days=input.duration_days if hasattr(input, 'duration_days') else None,
+        due_date=due_date
     )
     
     task_dict = task.model_dump()
     task_dict["created_at"] = task_dict["created_at"].isoformat()
+    task_dict["start_date"] = task_dict["start_date"].isoformat()
     if task_dict.get("due_date"):
         task_dict["due_date"] = task_dict["due_date"].isoformat()
     await db.tasks.insert_one(task_dict)
     
-    # Notify assigned employee
-    notif = Notification(
-        user_id=input.assigned_to,
-        title="Tugas Baru",
-        message=f"Anda mendapat tugas: {input.title}",
-        type="info"
-    )
-    notif_dict = notif.model_dump()
-    notif_dict["created_at"] = notif_dict["created_at"].isoformat()
-    await db.notifications.insert_one(notif_dict)
+    # Notify assigned employee if assigned_to is provided
+    if input.assigned_to:
+        notif = Notification(
+            user_id=input.assigned_to,
+            title="Tugas Baru",
+            message=f"Anda mendapat tugas: {input.title}",
+            type="info"
+        )
+        notif_dict = notif.model_dump()
+        notif_dict["created_at"] = notif_dict["created_at"].isoformat()
+        await db.notifications.insert_one(notif_dict)
     
     return {"message": "Task created", "id": task.id}
 
