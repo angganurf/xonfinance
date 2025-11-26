@@ -198,6 +198,17 @@ class Modeling3D(BaseModel):
     created_at: datetime = Field(default_factory=lambda: now_wib())
     updated_at: datetime = Field(default_factory=lambda: now_wib())
 
+class ProjectComment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    user_id: str
+    user_name: str
+    user_email: str
+    message: str
+    mentions: Optional[List[str]] = []  # List of user IDs mentioned
+    created_at: datetime = Field(default_factory=lambda: now_wib())
+
 class Notification(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
