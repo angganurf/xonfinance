@@ -85,11 +85,11 @@ const PlanningProjects = () => {
       };
 
       if (editingProject) {
-        await api.patch(`/projects/${editingProject.id}`, data);
-        toast.success('Proyek berhasil diupdate');
+        await api.patch(`/planning-projects/${editingProject.id}`, data);
+        toast.success('Proyek perencanaan berhasil diupdate');
       } else {
-        await api.post('/projects', data);
-        toast.success('Proyek berhasil dibuat');
+        await api.post('/planning-projects', data);
+        toast.success('Proyek perencanaan berhasil dibuat');
       }
       
       setOpen(false);
