@@ -244,7 +244,12 @@ const AccountingProjects = () => {
           {projects.map((project) => {
             const progress = projectsProgress.find(p => p.project_id === project.id);
             return (
-            <Card key={project.id} className="hover:shadow-lg transition-shadow relative" data-testid={`project-card-${project.id}`}>
+            <Card 
+              key={project.id} 
+              className="hover:shadow-lg transition-shadow relative cursor-pointer" 
+              data-testid={`project-card-${project.id}`}
+              onClick={() => navigate(`/admin/projects/${project.id}`)}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 flex-1">
