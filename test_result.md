@@ -245,6 +245,21 @@ backend:
         agent: "testing"
         comment: "VERIFIED: RAB Item Creation Fix working correctly. All 6 test scenarios passed (100% success rate): 1) ✅ Admin login successful, 2) ✅ Existing RAB found for testing, 3) ✅ CREATE RAB ITEM without project_id successful (Keramik Granit 60x60 cm, 150000 x 50 m2 = 7,500,000), 4) ✅ CREATE RAB ITEM with project_id successful for backward compatibility (Tukang Pasang Keramik, 50000 x 50 m2 = 2,500,000), 5) ✅ Both items created and total calculations correct, 6) ✅ Invalid RAB ID handled gracefully. Fix applied: Made project_id optional in both RABItemInput and RABItem models, backend auto-fetches project_id from RAB when not provided. Frontend can now add RAB items successfully without validation errors."
 
+  - task: "Debug Project Visibility in Planning Dashboard"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "user"
+        comment: "Debug request: 'Project baru tidak muncul di Planning Dashboard setelah dibuat'. User reports that after creating a new project, it shows success toast but doesn't appear in the planning dashboard list."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Project visibility in Planning Dashboard working correctly. All 12 test scenarios passed (100% success rate): 1) ✅ Admin login successful, 2) ✅ Planning overview retrieved (found 7 existing projects), 3) ✅ New project created successfully (Test Project Visibility, ID: e0b1106b-160b-41b8-93d9-8f29530a0378), 4) ✅ Planning overview count increased from 7 to 8, 5) ✅ New project appears in planning overview list, 6) ✅ Project created with correct phase='perencanaan', 7) ✅ Project found in GET /api/projects?phase=perencanaan query, 8) ✅ No timing/caching issues detected (verified after 1s delay). CONCLUSION: No bug exists - system working as designed. Projects created by admin users correctly appear immediately in Planning Dashboard with proper phase detection."
+
 frontend:
   - task: "Button dan Dialog 'Buat Project Baru' di Planning Dashboard"
     implemented: true
