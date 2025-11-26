@@ -72,7 +72,7 @@ const AdminInventory = () => {
   
   const loadPriceComparison = async () => {
     try {
-      const res = await api.get('/inventory/price-comparison');
+      const res = await api.get(`/inventory/price-comparison?project_type=${activeTab}`);
       setPriceComparison(res.data);
     } catch (error) {
       toast.error('Gagal memuat data perbandingan harga');
