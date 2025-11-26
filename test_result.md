@@ -173,53 +173,101 @@ backend:
         comment: "Created endpoint to clear all data from database except users and backups. Returns deleted counts for each collection."
 
 frontend:
-  - task: "Implementasi sub-tabs (Stok / Daftar Bahan) di dalam tab Interior dan Arsitektur"
+  - task: "Halaman AdminSettings dengan UI Backup & Restore"
     implemented: true
     working: "NA"
-    file: "pages/admin/Inventory.js"
+    file: "pages/admin/Settings.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Added subTab state and UI sub-tabs toggle (Stok / Daftar Bahan). When user switches main tab (Interior/Arsitektur), subTab resets to 'stok'. Sub-tabs are styled with bg-white for active and hover effects. Both Interior and Arsitektur now have 2 sub-menus each."
+        comment: "Created AdminSettings page with sections: Backup & Restore (purple card), Export Data (blue card), Import Data (green card), and Clear All Data (red card). Each section has appropriate warnings and info boxes."
   
-  - task: "Tampilan tabel Daftar Bahan dengan perbandingan harga"
+  - task: "Fitur Create Backup dengan timestamp"
     implemented: true
     working: "NA"
-    file: "pages/admin/Inventory.js"
+    file: "pages/admin/Settings.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Created price comparison table showing: Nama Bahan, Satuan, Jumlah Supplier (badge), Harga Terendah (green), Harga Tertinggi (red), and Detail button. Empty state included with helpful message. Info box explains the feature for each project type."
+        comment: "Implemented 'Buat Backup Baru' button that calls POST /admin/backup. Shows loading state during backup creation. Displays toast notification on success. Reloads backup list after successful creation."
   
-  - task: "Dialog detail perbandingan harga per supplier"
+  - task: "Daftar backup dengan detail dan aksi"
     implemented: true
     working: "NA"
-    file: "pages/admin/Inventory.js"
+    file: "pages/admin/Settings.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Created price comparison detail dialog showing: item info (satuan, total supplier, selisih harga), supplier table (nama toko, harga terakhir, harga rata-rata, jumlah transaksi, label termurah/termahal). Green highlight for lowest price row. Helper text explains calculation method."
+        comment: "Created backup list showing: timestamp (formatted in Indonesian), creator email, backup ID, and collection counts as badges. Each backup has Restore and Delete buttons. Empty state with helpful message when no backups exist."
   
-  - task: "Filter data perbandingan harga berdasarkan project_type"
+  - task: "Dialog konfirmasi Restore dengan detail backup"
     implemented: true
     working: "NA"
-    file: "pages/admin/Inventory.js"
+    file: "pages/admin/Settings.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Modified loadPriceComparison to send project_type parameter (activeTab value: interior/arsitektur) to backend. This ensures Interior shows only Interior project materials, and Arsitektur shows only Arsitektur project materials."
+        comment: "Created restore dialog that shows backup details (time, creator, ID) and warning about data replacement. Users preserved warning included. Confirmation button calls POST /admin/restore/{backup_id}. Page reloads after successful restore."
+  
+  - task: "Fitur Export dan Import Data"
+    implemented: true
+    working: "NA"
+    file: "pages/admin/Settings.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented export functionality to download all data (projects, transactions, users, inventory, rabs) as JSON file with timestamp filename. Import allows uploading JSON file and recreating data. File validation included."
+  
+  - task: "Fitur Delete Backup"
+    implemented: true
+    working: "NA"
+    file: "pages/admin/Settings.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented delete backup button for each backup in list. Calls DELETE /admin/backups/{backup_id}. Shows toast on success and reloads backup list."
+  
+  - task: "Fitur Hapus Semua Data dengan confirmation"
+    implemented: true
+    working: "NA"
+    file: "pages/admin/Settings.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented clear all data with AlertDialog confirmation. Warning messages about irreversibility. Notes that users and backups are preserved. Calls POST /admin/clear-all-data on confirmation."
+  
+  - task: "Route /admin/settings dan menu link"
+    implemented: true
+    working: "NA"
+    file: "App.js, Layout.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added route /admin/settings in App.js with AdminSettings component. Added menu link 'Backup & Data' (💾) in Layout.js under Pengaturan group for admin users."
 
 metadata:
   created_by: "main_agent"
