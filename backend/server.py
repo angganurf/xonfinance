@@ -1276,13 +1276,31 @@ async def delete_transaction(transaction_id: str, user: User = Depends(get_curre
 # ============= INVENTORY ENDPOINTS =============
 
 @api_router.get("/inventory/item-names")
-async def get_inventory_item_names(category: Optional[str] = None, project_id: Optional[str] = None, user: User = Depends(get_current_user)):
-    """Get unique item names from inventory for autocomplete"""
+async def get_inventory_item_names(
+    category: Optional[str] = None, 
+    project_id: Optional[str] = None,
+    project_type: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
+    """
+    Get unique item names from inventory for autocomplete
+    - Filter by category (bahan/alat)
+    - Filter by project_type (interior/arsitektur) - shared across projects of same type
+    - project_id is deprecated, use project_type instead
+    """
     query = {}
     if category:
         query["category"] = category
-    if project_id:
-        query["project_id"] = project_id
+    
+    # Use project_type for filtering (shared across projects of same type)
+    # If project_id provided, get its type and filter by that
+    if project_type:
+        query["project_type"] = project_type
+    elif project_id:
+        # Get project type from project_id for backward compatibility
+        project = await db.projects.find_one({"id": project_id}, {"_id": 0, "type": 1})
+        if project:
+            query["project_type"] = project.get("type", "arsitektur")
     
     # Get distinct item names
     item_names = await db.inventory.distinct("item_name", query)
