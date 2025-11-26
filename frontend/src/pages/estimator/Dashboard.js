@@ -41,14 +41,15 @@ const EstimatorDashboard = () => {
     const projectName = searchParams.get('projectName');
     const projectType = searchParams.get('projectType');
     const projectId = searchParams.get('projectId');
+    const location = searchParams.get('location');
     
     if (createRAB === 'true' && projectName) {
-      // Auto-fill form data
+      // Decode and auto-fill form data
       setFormData({
-        project_name: projectName,
+        project_name: decodeURIComponent(projectName),
         project_type: projectType || 'interior',
         client_name: '',
-        location: ''
+        location: location ? decodeURIComponent(location) : ''
       });
       
       // Open dialog
@@ -59,6 +60,7 @@ const EstimatorDashboard = () => {
       searchParams.delete('projectName');
       searchParams.delete('projectType');
       searchParams.delete('projectId');
+      searchParams.delete('location');
       setSearchParams(searchParams, { replace: true });
     }
   }, []);
