@@ -1,0 +1,45 @@
+{
+  "test_type": "rab_item_comprehensive",
+  "timestamp": "2025-11-26T14:52:07.460097",
+  "total_tests": 6,
+  "passed_tests": 6,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T14:52:07.228941"
+    },
+    {
+      "test_name": "Get Existing RAB",
+      "success": true,
+      "details": "Using RAB ID: 3fbfb38b-ed8b-4d08-a890-4ea131dc47b1",
+      "timestamp": "2025-11-26T14:52:07.269565"
+    },
+    {
+      "test_name": "Scenario 1 - Without project_id",
+      "success": true,
+      "details": "Success: True, Item ID: e0cc82e2-4774-41d5-b61b-9a1371c42c22",
+      "timestamp": "2025-11-26T14:52:07.311819"
+    },
+    {
+      "test_name": "Scenario 2 - With project_id",
+      "success": true,
+      "details": "Success: True, Item ID: 3819c77c-ca55-4d8c-9648-64792ae77145, Project ID: 80431b11-706e-475a-bfe4-5da6f984b095",
+      "timestamp": "2025-11-26T14:52:07.380316"
+    },
+    {
+      "test_name": "Verify Items Created",
+      "success": true,
+      "details": "Total items: 5, Keramik found: True, Tukang found: True, Calculations correct: True, Keramik total: 7500000.0 (expected: 7500000), Tukang total: 2500000.0 (expected: 2500000)",
+      "timestamp": "2025-11-26T14:52:07.417609"
+    },
+    {
+      "test_name": "Invalid RAB ID Handling",
+      "success": true,
+      "details": "Response: {'message': 'RAB item created', 'id': '4bd855d3-93c0-425e-853f-28e3b62672c3'}, Handled gracefully: True",
+      "timestamp": "2025-11-26T14:52:07.459745"
+    }
+  ]
+}
