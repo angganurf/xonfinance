@@ -1,0 +1,81 @@
+{
+  "test_type": "debug",
+  "timestamp": "2025-11-26T15:10:37.073076",
+  "total_tests": 12,
+  "passed_tests": 12,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T15:10:35.579014"
+    },
+    {
+      "test_name": "Admin Login for Debug",
+      "success": true,
+      "details": "Admin logged in successfully",
+      "timestamp": "2025-11-26T15:10:35.836907"
+    },
+    {
+      "test_name": "Get Planning Overview (Before)",
+      "success": true,
+      "details": "Found 7 projects: ['Debug Planning Dashboard Test', 'Renovasi Rumah Pak Budi', 'Pembangunan Gedung Kantor', 'Desain Interior Cafe', 'Interior Project A 20251126_144132', 'Interior Project B 20251126_144132', 'Arsitektur Project 20251126_144132']",
+      "timestamp": "2025-11-26T15:10:35.873472"
+    },
+    {
+      "test_name": "Create Test Project",
+      "success": true,
+      "details": "Created project with ID: e0b1106b-160b-41b8-93d9-8f29530a0378",
+      "timestamp": "2025-11-26T15:10:35.954346"
+    },
+    {
+      "test_name": "Get Planning Overview (After)",
+      "success": true,
+      "details": "Found 8 projects: ['Debug Planning Dashboard Test', 'Renovasi Rumah Pak Budi', 'Pembangunan Gedung Kantor', 'Desain Interior Cafe', 'Interior Project A 20251126_144132', 'Interior Project B 20251126_144132', 'Arsitektur Project 20251126_144132', 'Test Project Visibility']",
+      "timestamp": "2025-11-26T15:10:35.997681"
+    },
+    {
+      "test_name": "Verify Count Increased",
+      "success": true,
+      "details": "Before: 7, After: 8",
+      "timestamp": "2025-11-26T15:10:35.997710"
+    },
+    {
+      "test_name": "Verify New Project in List",
+      "success": true,
+      "details": "New project in overview: True",
+      "timestamp": "2025-11-26T15:10:35.997718"
+    },
+    {
+      "test_name": "Get Projects by Phase",
+      "success": true,
+      "details": "Found 8 perencanaan projects",
+      "timestamp": "2025-11-26T15:10:36.032414"
+    },
+    {
+      "test_name": "Verify Project Phase",
+      "success": true,
+      "details": "Project phase: perencanaan",
+      "timestamp": "2025-11-26T15:10:36.032440"
+    },
+    {
+      "test_name": "Verify Project in Phase Query",
+      "success": true,
+      "details": "New project found in phase query: True",
+      "timestamp": "2025-11-26T15:10:36.032447"
+    },
+    {
+      "test_name": "Get Planning Overview (Delayed)",
+      "success": true,
+      "details": "After 1s delay - Found 8 projects, New project present: True",
+      "timestamp": "2025-11-26T15:10:37.072706"
+    },
+    {
+      "test_name": "Planning Dashboard Visibility Debug",
+      "success": true,
+      "details": "\u2705 All checks passed - project visibility working correctly",
+      "timestamp": "2025-11-26T15:10:37.072738"
+    }
+  ]
+}
