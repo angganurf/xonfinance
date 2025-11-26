@@ -18,6 +18,7 @@ const AccountingTransactions = () => {
   const [sortedTransactions, setSortedTransactions] = useState([]);
   const [projects, setProjects] = useState([]);
   const [itemNames, setItemNames] = useState([]);
+  const [supplierNames, setSupplierNames] = useState([]);
   const [open, setOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [clearAllDialog, setClearAllDialog] = useState(false);
