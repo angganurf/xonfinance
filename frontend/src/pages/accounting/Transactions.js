@@ -588,9 +588,12 @@ const AccountingTransactions = () => {
                     const date = new Date(trans.transaction_date);
                     const formattedDate = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                     const formattedTime = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    const hasItems = trans.items && trans.items.length > 0;
+                    const isExpanded = expandedRows.has(trans.id);
                     
                     return (
-                      <tr key={trans.id} className="border-b hover:bg-slate-50" data-testid={`transaction-row-${trans.id}`}>
+                      <React.Fragment key={trans.id}>
+                      <tr className="border-b hover:bg-slate-50" data-testid={`transaction-row-${trans.id}`}>
                         <td className="p-3">
                           <div className="text-sm">
                             <div className="font-medium">{formattedDate}</div>
