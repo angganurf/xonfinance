@@ -257,7 +257,12 @@ const PlanningProjects = () => {
                       <Building2 className="h-6 w-6 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{project.name}</CardTitle>
+                        <span className="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-700 rounded-full">
+                          PERENCANAAN
+                        </span>
+                      </div>
                       <p className="text-sm text-slate-500">{project.type}</p>
                     </div>
                   </div>
