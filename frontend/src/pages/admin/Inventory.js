@@ -296,7 +296,78 @@ const AdminInventory = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {activeTab === 'interior' ? (
+            {activeTab === 'daftar_bahan' ? (
+              /* Daftar Bahan Tab - Price Comparison */
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>💡 Perbandingan Harga Bahan</strong>
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Tabel ini menampilkan perbandingan harga bahan dari berbagai supplier berdasarkan data transaksi.
+                  </p>
+                </div>
+                
+                {priceComparison.length === 0 ? (
+                  <div className="py-12 text-center text-slate-500">
+                    <Package className="mx-auto h-16 w-16 mb-4 text-slate-300" />
+                    <p className="text-lg font-medium">Belum ada data perbandingan harga</p>
+                    <p className="text-sm mt-2">Tambahkan transaksi bahan dengan mengisi "Nama Toko" untuk melihat perbandingan harga</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="border-b bg-slate-50">
+                        <tr className="text-left text-sm text-slate-600">
+                          <th className="py-3 px-4 font-semibold">Nama Bahan</th>
+                          <th className="py-3 px-4 font-semibold">Satuan</th>
+                          <th className="py-3 px-4 font-semibold text-center">Jumlah Supplier</th>
+                          <th className="py-3 px-4 font-semibold text-right">Harga Terendah</th>
+                          <th className="py-3 px-4 font-semibold text-right">Harga Tertinggi</th>
+                          <th className="py-3 px-4 font-semibold text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {priceComparison.map((item, index) => {
+                          const lowestPrice = item.suppliers.length > 0 ? item.suppliers[0].latest_price : 0;
+                          const highestPrice = item.suppliers.length > 0 ? item.suppliers[item.suppliers.length - 1].latest_price : 0;
+                          
+                          return (
+                            <tr key={index} className="border-b hover:bg-slate-50">
+                              <td className="py-3 px-4 font-medium">{item.item_name}</td>
+                              <td className="py-3 px-4">{item.unit}</td>
+                              <td className="py-3 px-4 text-center">
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                  {item.suppliers.length} supplier
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-right text-green-600 font-semibold">
+                                {formatCurrency(lowestPrice)}
+                              </td>
+                              <td className="py-3 px-4 text-right text-red-600 font-semibold">
+                                {formatCurrency(highestPrice)}
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedItemPriceComparison(item);
+                                    setPriceComparisonDialog(true);
+                                  }}
+                                >
+                                  <Eye className="mr-2 h-4 w-4" /> Detail
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === 'interior' ? (
               /* Interior Tab - Single Table */
               <div className="overflow-x-auto">
               <table className="w-full">
