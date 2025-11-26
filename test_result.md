@@ -296,7 +296,7 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Implementasi fitur "Daftar Bahan" dengan Perbandingan Harga selesai:
+      Implementasi fitur Pengaturan Admin (Backup & Restore) selesai:
       
       BACKEND (server.py):
       1. ✅ Modified endpoint GET /api/inventory/price-comparison:
