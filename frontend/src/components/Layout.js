@@ -70,10 +70,6 @@ export const Layout = ({ children }) => {
   };
 
   const getMenuItems = () => {
-    const commonItems = [
-      { label: 'Settings', path: '/settings', icon: '⚙️' }
-    ];
-    
     // Get all roles (support multiple roles)
     const userRoles = user?.roles && user.roles.length > 0 
       ? user.roles 
@@ -102,7 +98,7 @@ export const Layout = ({ children }) => {
       combinedItems.push(
         { label: 'Home', path: '/accounting', icon: '🏠' },
         { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
-        { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
+        { label: 'Inventory', path: '/accounting/inventory', icon: '📦' },
         { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
       );
     }
@@ -136,14 +132,6 @@ export const Layout = ({ children }) => {
         { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
       );
     }
-    
-    // Add separator before common items if there are combined items
-    if (combinedItems.length > 0) {
-      combinedItems.push({ label: '---', path: '#', icon: '' });
-    }
-    
-    // Add common items
-    combinedItems.push(...commonItems);
     
     // If no roles matched, return default with common items only
     if (combinedItems.length === 1) {
