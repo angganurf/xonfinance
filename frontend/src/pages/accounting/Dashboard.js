@@ -160,6 +160,69 @@ const AccountingDashboard = () => {
           </CardContent>
         </Card>
 
+        {/* Period-based Expenses Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Daily Expenses */}
+          <Card className="shadow-md hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold text-slate-700">
+                Transaksi Hari Ini
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-slate-200 rounded w-2/3"></div>
+                </div>
+              ) : (
+                <p className="text-2xl font-bold text-blue-600">
+                  Rp {dailyExpenses.toLocaleString('id-ID')}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Weekly Expenses */}
+          <Card className="shadow-md hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold text-slate-700">
+                Transaksi 7 Hari Terakhir
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-slate-200 rounded w-2/3"></div>
+                </div>
+              ) : (
+                <p className="text-2xl font-bold text-green-600">
+                  Rp {weeklyExpenses.toLocaleString('id-ID')}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Monthly Expenses */}
+          <Card className="shadow-md hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold text-slate-700">
+                Transaksi 30 Hari Terakhir
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-8 bg-slate-200 rounded w-2/3"></div>
+                </div>
+              ) : (
+                <p className="text-2xl font-bold text-orange-600">
+                  Rp {monthlyExpenses.toLocaleString('id-ID')}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Project List with Expenses */}
         <div>
           <div className="flex items-center justify-between mb-4">
