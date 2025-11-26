@@ -549,7 +549,7 @@ const PlanningTeamDashboard = () => {
       <Dialog open={createDialog} onOpenChange={setCreateDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tambah Pekerjaan Desain (Project Perencanaan)</DialogTitle>
+            <DialogTitle>Tambah Pekerjaan Perencanaan</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateProject} className="space-y-4">
             {/* RAB Selection */}
