@@ -395,7 +395,18 @@ const EstimatorDashboard = () => {
       </div>
 
       {/* Create RAB Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+          // Reset form when dialog is closed
+          setFormData({
+            project_name: '',
+            project_type: 'interior',
+            client_name: '',
+            location: ''
+          });
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Buat RAB Baru</DialogTitle>
@@ -409,6 +420,11 @@ const EstimatorDashboard = () => {
                 placeholder="Contoh: Renovasi Rumah Bapak Andi"
                 required
               />
+              {formData.project_name && (
+                <p className="text-xs text-blue-600 mt-1">
+                  ✓ Nama proyek otomatis terisi dari Planning Dashboard
+                </p>
+              )}
             </div>
 
             <div>
