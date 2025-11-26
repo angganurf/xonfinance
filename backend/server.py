@@ -537,8 +537,32 @@ async def create_project(input: ProjectInput, user: User = Depends(get_current_u
     return {"message": "Project created", "id": project.id}
 
 @api_router.get("/projects")
-async def get_projects(user: User = Depends(get_current_user)):
-    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+async def get_projects(phase: Optional[str] = None, user: User = Depends(get_current_user)):
+    """
+    Get projects filtered by phase and user role
+    - project_planning_team: only see 'perencanaan' projects
+    - other roles (accounting, supervisor, etc): only see 'pelaksanaan' projects
+    - admin: see all projects
+    """
+    query = {}
+    
+    # Get user roles
+    user_roles = user.roles if isinstance(user.roles, list) else [user.roles] if user.roles else []
+    
+    # Filter by phase based on role
+    if 'admin' not in user_roles:
+        if 'project_planning_team' in user_roles:
+            # Planning team only sees perencanaan projects
+            query["phase"] = "perencanaan"
+        else:
+            # Other roles only see pelaksanaan projects
+            query["phase"] = "pelaksanaan"
+    
+    # Allow manual phase filter if provided
+    if phase:
+        query["phase"] = phase
+    
+    projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
     for p in projects:
         if isinstance(p.get("created_at"), str):
             p["created_at"] = datetime.fromisoformat(p["created_at"])
