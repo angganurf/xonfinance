@@ -521,13 +521,19 @@ const AccountingTransactions = () => {
                         <div className="border-t border-blue-300 pt-3 mt-3">
                           <Label className="text-sm font-medium text-blue-900">Nama Toko/Supplier (Opsional)</Label>
                           <Input
+                            list="supplier-names"
                             value={supplierName}
                             onChange={(e) => setSupplierName(e.target.value)}
-                            placeholder="Contoh: Toko Bangunan Jaya, CV Maju Makmur"
+                            placeholder="Ketik atau pilih nama toko yang sudah ada"
                             className="mt-2 bg-white"
                           />
+                          <datalist id="supplier-names">
+                            {supplierNames.map((name, i) => (
+                              <option key={i} value={name} />
+                            ))}
+                          </datalist>
                           <p className="text-xs text-blue-700 mt-1">
-                            * Akan membantu tracking stok per toko di halaman Inventory
+                            * Akan membantu tracking & perbandingan harga per toko
                           </p>
                         </div>
                       </div>
