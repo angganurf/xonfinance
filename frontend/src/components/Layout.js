@@ -133,11 +133,13 @@ export const Layout = ({ children }) => {
       );
     }
     
-    // If no roles matched, return default with common items only
-    if (combinedItems.length === 1) {
+    // If no roles matched, return default
+    if (combinedItems.length === 0) {
       return {
         type: 'simple',
-        items: commonItems
+        items: [
+          { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
+        ]
       };
     }
     
