@@ -448,8 +448,11 @@ const EstimatorDashboard = () => {
               <Input
                 value={formData.client_name}
                 onChange={(e) => setFormData({...formData, client_name: e.target.value})}
-                placeholder="Nama klien/pemilik"
+                placeholder="Nama klien/pemilik (isi manual)"
               />
+              <p className="text-xs text-slate-500 mt-1">
+                Silakan isi nama klien secara manual
+              </p>
             </div>
 
             <div>
@@ -459,6 +462,11 @@ const EstimatorDashboard = () => {
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
                 placeholder="Lokasi proyek"
               />
+              {formData.location && (
+                <p className="text-xs text-blue-600 mt-1">
+                  ✓ Lokasi otomatis terisi dari Planning Dashboard
+                </p>
+              )}
             </div>
 
             <DialogFooter>
