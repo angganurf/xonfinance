@@ -36,7 +36,7 @@ const AccountingTransactions = () => {
   
   const [formData, setFormData] = useState({
     project_id: '',
-    category: 'kas_masuk',
+    category: hideKasMasuk ? 'bahan' : 'kas_masuk',
     description: '',
     amount: '',
     quantity: '',
