@@ -195,8 +195,11 @@ export const Layout = ({ children }) => {
       };
     }
     
+    // Check if any item has children (grouped menu)
+    const hasGroupedItems = combinedItems.some(item => item.children);
+    
     return {
-      type: 'simple',
+      type: hasGroupedItems ? 'grouped' : 'simple',
       items: combinedItems
     };
   };
