@@ -2639,6 +2639,139 @@ class XONArchitectAPITester:
         
         return success
 
+    def test_create_planning_test_projects(self):
+        """Create 3 test projects for Planning Dashboard as requested"""
+        print("\n🏗️ Creating 3 Test Projects for Planning Dashboard")
+        print("=" * 60)
+        
+        # Admin login
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Cannot create test projects.")
+            return False
+        
+        # Project data as specified in the request
+        test_projects = [
+            {
+                "name": "Renovasi Rumah Pak Budi",
+                "type": "interior",
+                "location": "Jakarta Selatan",
+                "project_value": 150000000,
+                "description": "Renovasi interior rumah 2 lantai"
+            },
+            {
+                "name": "Pembangunan Gedung Kantor",
+                "type": "arsitektur",
+                "location": "Bandung",
+                "project_value": 500000000,
+                "description": "Gedung kantor 5 lantai"
+            },
+            {
+                "name": "Desain Interior Cafe",
+                "type": "interior",
+                "location": "Surabaya",
+                "project_value": 75000000,
+                "description": "Interior cafe modern minimalis"
+            }
+        ]
+        
+        created_projects = []
+        
+        # Create each project
+        for i, project_data in enumerate(test_projects, 1):
+            print(f"\n📋 Creating Project {i}: {project_data['name']}")
+            
+            success, data = self.make_request('POST', '/projects', project_data, 200)
+            
+            if success and 'id' in data:
+                project_id = data['id']
+                created_projects.append({
+                    'id': project_id,
+                    'name': project_data['name'],
+                    'type': project_data['type']
+                })
+                
+                # Verify project was created with correct phase
+                success_get, project_details = self.make_request('GET', f'/projects/{project_id}')
+                if success_get:
+                    phase = project_details.get('phase')
+                    if phase == 'perencanaan':
+                        self.log_test(f"Create Project {i} - {project_data['name']}", True, 
+                                    f"ID: {project_id}, Phase: {phase}")
+                    else:
+                        self.log_test(f"Create Project {i} - {project_data['name']}", False, 
+                                    f"ID: {project_id}, Expected phase: perencanaan, Got: {phase}")
+                else:
+                    self.log_test(f"Create Project {i} - {project_data['name']}", False, 
+                                f"Failed to verify project details after creation")
+            else:
+                self.log_test(f"Create Project {i} - {project_data['name']}", False, 
+                            f"Failed to create project: {data}")
+        
+        # Verify all projects appear in planning overview
+        print(f"\n📊 Verifying Planning Overview")
+        success, overview_data = self.make_request('GET', '/planning/overview')
+        
+        if success and isinstance(overview_data, list):
+            # Check if all our created projects appear in overview
+            overview_project_names = []
+            for item in overview_data:
+                if 'project' in item and 'name' in item['project']:
+                    overview_project_names.append(item['project']['name'])
+            
+            created_project_names = [p['name'] for p in created_projects]
+            all_projects_in_overview = all(name in overview_project_names for name in created_project_names)
+            
+            # Check design_progress is 0 for all projects
+            all_have_zero_progress = True
+            for item in overview_data:
+                if 'project' in item and item['project']['name'] in created_project_names:
+                    design_progress = item.get('design_progress', -1)
+                    if design_progress != 0:
+                        all_have_zero_progress = False
+                        break
+            
+            self.log_test("Verify Planning Overview", 
+                        all_projects_in_overview and all_have_zero_progress,
+                        f"Projects in overview: {len(overview_project_names)}, All test projects found: {all_projects_in_overview}, All have design_progress=0: {all_have_zero_progress}")
+        else:
+            self.log_test("Verify Planning Overview", False, f"Failed to get planning overview: {overview_data}")
+        
+        # Print summary
+        print(f"\n📋 SUMMARY:")
+        print(f"Total projects created: {len(created_projects)}")
+        print(f"Project names in planning overview:")
+        if success and isinstance(overview_data, list):
+            for item in overview_data:
+                if 'project' in item and 'name' in item['project']:
+                    project_name = item['project']['name']
+                    design_progress = item.get('design_progress', 0)
+                    print(f"  - {project_name} (design_progress: {design_progress})")
+        
+        print(f"\n✅ Planning Dashboard will now show these {len(created_projects)} projects when user refreshes")
+        
+        return len(created_projects) == 3
+
+    def run_planning_test_projects_creation(self):
+        """Run the specific test for creating planning test projects"""
+        print("🏗️ Starting Planning Test Projects Creation")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run the test project creation
+        success = self.test_create_planning_test_projects()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Planning Test Projects Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return success
+
 def main():
     tester = XONArchitectAPITester()
     
