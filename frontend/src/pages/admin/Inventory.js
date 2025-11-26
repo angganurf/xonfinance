@@ -317,15 +317,15 @@ const AdminInventory = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {activeTab === 'daftar_bahan' ? (
-              /* Daftar Bahan Tab - Price Comparison */
+            {subTab === 'daftar_bahan' ? (
+              /* Daftar Bahan Sub-Tab - Price Comparison */
               <div className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <p className="text-sm text-blue-800">
-                    <strong>💡 Perbandingan Harga Bahan</strong>
+                    <strong>💡 Perbandingan Harga Bahan {activeTab === 'interior' ? 'Interior' : 'Arsitektur'}</strong>
                   </p>
                   <p className="text-xs text-blue-700 mt-1">
-                    Tabel ini menampilkan perbandingan harga bahan dari berbagai supplier berdasarkan data transaksi.
+                    Tabel ini menampilkan perbandingan harga bahan dari berbagai supplier berdasarkan data transaksi proyek {activeTab}.
                   </p>
                 </div>
                 
@@ -333,7 +333,7 @@ const AdminInventory = () => {
                   <div className="py-12 text-center text-slate-500">
                     <Package className="mx-auto h-16 w-16 mb-4 text-slate-300" />
                     <p className="text-lg font-medium">Belum ada data perbandingan harga</p>
-                    <p className="text-sm mt-2">Tambahkan transaksi bahan dengan mengisi "Nama Toko" untuk melihat perbandingan harga</p>
+                    <p className="text-sm mt-2">Tambahkan transaksi bahan pada proyek {activeTab} dengan mengisi "Nama Toko" untuk melihat perbandingan harga</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
