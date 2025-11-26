@@ -97,19 +97,17 @@
 #====================================================================================================
 
 user_problem_statement: |
-  User meminta implementasi fitur Pengaturan Admin (Backup & Restore):
-  1. Menambahkan halaman pengaturan admin mirip dengan settings accounting
-  2. Fitur Export Data (download semua data dalam format JSON)
-  3. Fitur Import Data (upload file JSON untuk restore)
-  4. Fitur Hapus Semua Data (clear database kecuali users & backups)
-  5. Fitur Backup Database dengan timestamp:
-     - Menyimpan snapshot database ke collection backups
-     - Menampilkan daftar backup dengan waktu, pembuat, dan jumlah data
-  6. Fitur Restore Database:
-     - Memilih backup dari daftar
-     - Restore data ke state sebelumnya (kecuali users untuk keamanan)
-     - Confirmation dialog sebelum restore
-  7. Fitur Delete Backup untuk menghapus backup yang tidak diperlukan
+  User meminta implementasi dua fitur baru:
+  1. Fitur "Buat Project Baru" di Dashboard Planning Team:
+     - Menambahkan button "Buat Project Baru" dengan icon Plus
+     - Dialog form untuk input: Nama Proyek, Tipe Proyek (Interior/Arsitektur), Lokasi, Nilai Proyek, Deskripsi
+     - Form submission ke endpoint POST /api/projects
+     - Project yang dibuat akan otomatis dalam fase "perencanaan"
+  
+  2. Bug Fix: Error "Gagal menambahkan task" di Drafter Dashboard:
+     - TaskInput model tidak sesuai dengan data yang dikirim frontend
+     - Perlu update TaskInput model untuk support: duration_days, role, priority, status
+     - Membuat project_id dan assigned_to menjadi optional
 
 backend:
   - task: "Endpoint POST /api/admin/backup untuk create backup database"
