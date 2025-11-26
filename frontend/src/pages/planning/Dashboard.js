@@ -153,14 +153,14 @@ const PlanningTeamDashboard = () => {
 
     try {
       await Promise.all(
-        selectedProjects.map(projectId => api.delete(`/projects/${projectId}`))
+        selectedProjects.map(projectId => api.delete(`/planning-projects/${projectId}`))
       );
       
       toast.success(`${selectedProjects.length} pekerjaan berhasil dihapus!`);
       setSelectedProjects([]);
       loadOverview();
     } catch (error) {
-      console.error('Error deleting projects:', error);
+      console.error('Error deleting planning projects:', error);
       toast.error('Gagal menghapus beberapa pekerjaan');
     }
   };
