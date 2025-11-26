@@ -2748,12 +2748,18 @@ async def get_project_comments(project_id: str, user: User = Depends(get_current
 @api_router.post("/projects/{project_id}/comments")
 async def create_project_comment(
     project_id: str,
-    message: str,
+    message: Optional[str] = "",
     mentions: Optional[List[str]] = None,
+    images: List[UploadFile] = File(default=[]),
     user: User = Depends(get_current_user)
 ):
-    """Create a new comment on a project"""
+    """Create a new comment on a project with optional image attachments"""
     import re
+    import aiofiles
+    
+    # Validate that at least message or images are provided
+    if not message.strip() and not images:
+        raise HTTPException(status_code=400, detail="Message or images must be provided")
     
     # Extract mentions from message if not provided
     if mentions is None:
@@ -2773,13 +2779,43 @@ async def create_project_comment(
                 if mentioned_user:
                     mentions.append(mentioned_user["id"])
     
+    # Handle image uploads
+    image_urls = []
+    if images:
+        # Create uploads directory if it doesn't exist
+        upload_dir = Path("/app/backend/uploads/comments")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        for image in images:
+            # Validate file size (max 5MB)
+            contents = await image.read()
+            if len(contents) > 5 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail=f"File {image.filename} is too large (max 5MB)")
+            
+            # Validate file type
+            if not image.content_type.startswith('image/'):
+                raise HTTPException(status_code=400, detail=f"File {image.filename} is not an image")
+            
+            # Generate unique filename
+            file_extension = Path(image.filename).suffix
+            unique_filename = f"{uuid.uuid4()}{file_extension}"
+            file_path = upload_dir / unique_filename
+            
+            # Save file
+            async with aiofiles.open(file_path, 'wb') as f:
+                await f.write(contents)
+            
+            # Store relative URL path
+            image_urls.append(f"/api/uploads/comments/{unique_filename}")
+    
     comment = ProjectComment(
         project_id=project_id,
         user_id=user.id,
         user_name=user.name,
         user_email=user.email,
         message=message,
-        mentions=mentions or []
+        mentions=mentions or [],
+        images=image_urls
     )
     
     comment_dict = comment.model_dump()
@@ -2798,7 +2834,7 @@ async def create_project_comment(
             notif = Notification(
                 user_id=mentioned_user_id,
                 title="Anda disebutkan dalam diskusi",
-                message=f"{user.name} menyebutkan Anda di proyek '{project_name}': {message[:100]}...",
+                message=f"{user.name} menyebutkan Anda di proyek '{project_name}': {message[:100] if message else 'Mengirim gambar'}...",
                 type="info"
             )
             notif_dict = notif.model_dump()
