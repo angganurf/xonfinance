@@ -39,8 +39,12 @@ const AdminInventory = () => {
   });
 
   useEffect(() => {
-    loadInventory();
-    loadProjects();
+    if (activeTab === 'daftar_bahan') {
+      loadPriceComparison();
+    } else {
+      loadInventory();
+      loadProjects();
+    }
   }, [categoryFilter, activeTab]);
   
   useEffect(() => {
