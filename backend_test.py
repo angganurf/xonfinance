@@ -3082,6 +3082,147 @@ class XONArchitectAPITester:
         
         return self.tests_passed == self.tests_run
 
+    def test_planning_dashboard_project_visibility_debug(self):
+        """Debug: Project baru tidak muncul di Planning Dashboard setelah dibuat"""
+        print("\n🔍 DEBUG: Testing project visibility in Planning Dashboard")
+        
+        # Step 1: Login as admin
+        login_data = {
+            "email": "admin",
+            "password": "admin"
+        }
+        
+        success, data = self.make_request('POST', '/auth/login', login_data, 200)
+        if not success or 'session_token' not in data:
+            self.log_test("Admin Login for Debug", False, "Failed to login as admin")
+            return False
+        
+        self.session_token = data['session_token']
+        self.user_id = data['user']['id']
+        self.log_test("Admin Login for Debug", True, f"Admin logged in successfully")
+        
+        # Step 2: Check current projects in planning overview
+        success, overview_before = self.make_request('GET', '/planning/overview')
+        if not success:
+            self.log_test("Get Planning Overview (Before)", False, "Failed to get planning overview")
+            return False
+        
+        projects_count_before = len(overview_before) if isinstance(overview_before, list) else 0
+        project_names_before = [p.get('project', {}).get('name', 'Unknown') for p in overview_before] if isinstance(overview_before, list) else []
+        
+        self.log_test("Get Planning Overview (Before)", True, f"Found {projects_count_before} projects: {project_names_before}")
+        
+        # Step 3: Create NEW project with specific test data
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        project_data = {
+            "name": "Test Project Visibility",
+            "type": "interior",
+            "location": "Test Location",
+            "project_value": 100000000,
+            "description": "Testing visibility issue"
+        }
+        
+        success, create_response = self.make_request('POST', '/projects', project_data, 200)
+        if not success or 'id' not in create_response:
+            self.log_test("Create Test Project", False, f"Failed to create project: {create_response}")
+            return False
+        
+        new_project_id = create_response['id']
+        self.log_test("Create Test Project", True, f"Created project with ID: {new_project_id}")
+        
+        # Step 4: Immediately check planning overview again
+        success, overview_after = self.make_request('GET', '/planning/overview')
+        if not success:
+            self.log_test("Get Planning Overview (After)", False, "Failed to get planning overview after creation")
+            return False
+        
+        projects_count_after = len(overview_after) if isinstance(overview_after, list) else 0
+        project_names_after = [p.get('project', {}).get('name', 'Unknown') for p in overview_after] if isinstance(overview_after, list) else []
+        
+        # Verify count increased by 1
+        count_increased = projects_count_after == (projects_count_before + 1)
+        
+        # Verify new project appears in list
+        new_project_in_list = "Test Project Visibility" in project_names_after
+        
+        self.log_test("Get Planning Overview (After)", True, f"Found {projects_count_after} projects: {project_names_after}")
+        self.log_test("Verify Count Increased", count_increased, f"Before: {projects_count_before}, After: {projects_count_after}")
+        self.log_test("Verify New Project in List", new_project_in_list, f"New project in overview: {new_project_in_list}")
+        
+        # Step 5: Verify with direct project query
+        success, projects_perencanaan = self.make_request('GET', '/projects?phase=perencanaan')
+        if not success:
+            self.log_test("Get Projects by Phase", False, "Failed to get projects by phase")
+            return False
+        
+        # Find our new project in the phase-filtered results
+        new_project_in_phase = False
+        new_project_phase = None
+        for project in projects_perencanaan:
+            if project.get('id') == new_project_id:
+                new_project_in_phase = True
+                new_project_phase = project.get('phase')
+                break
+        
+        phase_correct = new_project_phase == "perencanaan"
+        
+        self.log_test("Get Projects by Phase", True, f"Found {len(projects_perencanaan)} perencanaan projects")
+        self.log_test("Verify Project Phase", phase_correct, f"Project phase: {new_project_phase}")
+        self.log_test("Verify Project in Phase Query", new_project_in_phase, f"New project found in phase query: {new_project_in_phase}")
+        
+        # Debug: Check if there are any timing issues
+        import time
+        time.sleep(1)  # Wait 1 second
+        
+        success, overview_delayed = self.make_request('GET', '/planning/overview')
+        if success:
+            projects_count_delayed = len(overview_delayed) if isinstance(overview_delayed, list) else 0
+            project_names_delayed = [p.get('project', {}).get('name', 'Unknown') for p in overview_delayed] if isinstance(overview_delayed, list) else []
+            new_project_in_delayed = "Test Project Visibility" in project_names_delayed
+            
+            self.log_test("Get Planning Overview (Delayed)", True, f"After 1s delay - Found {projects_count_delayed} projects, New project present: {new_project_in_delayed}")
+        
+        # Overall success criteria
+        overall_success = count_increased and new_project_in_list and new_project_in_phase and phase_correct
+        
+        if overall_success:
+            self.log_test("Planning Dashboard Visibility Debug", True, "✅ All checks passed - project visibility working correctly")
+        else:
+            issues = []
+            if not count_increased:
+                issues.append("Count did not increase")
+            if not new_project_in_list:
+                issues.append("Project not in overview list")
+            if not new_project_in_phase:
+                issues.append("Project not found in phase query")
+            if not phase_correct:
+                issues.append(f"Incorrect phase: {new_project_phase}")
+            
+            self.log_test("Planning Dashboard Visibility Debug", False, f"❌ Issues found: {', '.join(issues)}")
+        
+        return overall_success
+
+    def run_planning_debug_tests(self):
+        """Run planning dashboard debug tests"""
+        print("\n🔍 Starting Planning Dashboard Debug Tests")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run debug tests
+        self.test_planning_dashboard_project_visibility_debug()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Planning Debug Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = XONArchitectAPITester()
     
