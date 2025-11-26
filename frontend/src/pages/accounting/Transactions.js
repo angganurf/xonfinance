@@ -88,6 +88,16 @@ const AccountingTransactions = () => {
     }
   };
   
+  const loadSuppliers = async () => {
+    try {
+      const res = await api.get('/inventory/suppliers');
+      setSupplierNames(res.data.suppliers || []);
+    } catch (error) {
+      console.error('Error loading suppliers:', error);
+      setSupplierNames([]);
+    }
+  };
+  
   const sortTransactions = () => {
     const sorted = [...transactions].sort((a, b) => {
       let aValue = a[sortConfig.key];
