@@ -252,6 +252,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/planning/settings"
+            element={
+              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+                <PlanningSettings />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Drafter Routes */}
           <Route
