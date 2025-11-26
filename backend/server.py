@@ -2908,6 +2908,98 @@ async def search_users(q: str = "", user: User = Depends(get_current_user)):
     users = await db.users.find(query, {"_id": 0, "id": 1, "name": 1, "email": 1}).limit(10).to_list(10)
     return users
 
+# ============= TASKS =============
+
+@api_router.get("/projects/{project_id}/tasks")
+async def get_project_tasks(project_id: str, user: User = Depends(get_current_user)):
+    """Get all tasks for a project"""
+    tasks = await db.tasks.find(
+        {"project_id": project_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(1000)
+    
+    for task in tasks:
+        if task.get("created_at") and not isinstance(task["created_at"], str):
+            task["created_at"] = task["created_at"].isoformat()
+        if task.get("completed_at") and not isinstance(task["completed_at"], str):
+            task["completed_at"] = task["completed_at"].isoformat()
+    
+    return tasks
+
+@api_router.post("/projects/{project_id}/tasks")
+async def create_project_task(
+    project_id: str,
+    title: str,
+    user: User = Depends(get_current_user)
+):
+    """Create a new task for a project"""
+    if not title.strip():
+        raise HTTPException(status_code=400, detail="Task title is required")
+    
+    task = Task(
+        project_id=project_id,
+        title=title.strip(),
+        created_by=user.id
+    )
+    
+    task_dict = task.model_dump()
+    task_dict["created_at"] = task_dict["created_at"].isoformat()
+    if task_dict.get("completed_at"):
+        task_dict["completed_at"] = task_dict["completed_at"].isoformat()
+    
+    insert_dict = task_dict.copy()
+    await db.tasks.insert_one(insert_dict)
+    
+    return {"message": "Task created", "id": task.id}
+
+@api_router.patch("/projects/{project_id}/tasks/{task_id}")
+async def update_project_task(
+    project_id: str,
+    task_id: str,
+    completed: Optional[bool] = None,
+    title: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
+    """Update a task (toggle completion or update title)"""
+    task = await db.tasks.find_one({"id": task_id, "project_id": project_id})
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    update_data = {}
+    if completed is not None:
+        update_data["completed"] = completed
+        if completed:
+            update_data["completed_at"] = now_wib().isoformat()
+        else:
+            update_data["completed_at"] = None
+    
+    if title is not None and title.strip():
+        update_data["title"] = title.strip()
+    
+    if update_data:
+        await db.tasks.update_one(
+            {"id": task_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Task updated"}
+
+@api_router.delete("/projects/{project_id}/tasks/{task_id}")
+async def delete_project_task(
+    project_id: str,
+    task_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Delete a task"""
+    task = await db.tasks.find_one({"id": task_id, "project_id": project_id})
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    await db.tasks.delete_one({"id": task_id})
+    return {"message": "Task deleted"}
+
 # Include router
 app.include_router(api_router)
 
