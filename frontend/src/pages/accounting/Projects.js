@@ -263,12 +263,23 @@ const AccountingProjects = () => {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" data-testid={`project-menu-${project.id}`}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        data-testid={`project-menu-${project.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => navigate(`/accounting/projects/${project.id}`)} data-testid={`view-project-${project.id}`}>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/admin/projects/${project.id}`);
+                        }} 
+                        data-testid={`view-project-${project.id}`}
+                      >
                         <Eye className="mr-2 h-4 w-4" /> Lihat Detail
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleOpenDialog(project)} data-testid={`edit-project-${project.id}`}>
