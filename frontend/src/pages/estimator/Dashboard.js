@@ -15,6 +15,7 @@ import api from '../../utils/api';
 
 const EstimatorDashboard = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [rabs, setRabs] = useState([]);
   const [filteredRabs, setFilteredRabs] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -34,6 +35,32 @@ const EstimatorDashboard = () => {
 
   useEffect(() => {
     loadRABs();
+    
+    // Check if we need to auto-open create RAB dialog from Planning Dashboard
+    const createRAB = searchParams.get('createRAB');
+    const projectName = searchParams.get('projectName');
+    const projectType = searchParams.get('projectType');
+    const projectId = searchParams.get('projectId');
+    
+    if (createRAB === 'true' && projectName) {
+      // Auto-fill form data
+      setFormData({
+        project_name: projectName,
+        project_type: projectType || 'interior',
+        client_name: '',
+        location: ''
+      });
+      
+      // Open dialog
+      setOpen(true);
+      
+      // Clean up URL params
+      searchParams.delete('createRAB');
+      searchParams.delete('projectName');
+      searchParams.delete('projectType');
+      searchParams.delete('projectId');
+      setSearchParams(searchParams, { replace: true });
+    }
   }, []);
 
   useEffect(() => {
