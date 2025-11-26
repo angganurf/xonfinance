@@ -64,7 +64,24 @@ class UserSession(BaseModel):
     expires_at: datetime
     created_at: datetime = Field(default_factory=lambda: now_wib())
 
+class PlanningProject(BaseModel):
+    """Project in planning phase - stored in planning_projects collection"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    type: str  # interior/arsitektur
+    description: Optional[str] = None
+    location: Optional[str] = None
+    project_value: Optional[float] = 0.0
+    status: str = "planning"  # planning, approved, rejected
+    design_progress: Optional[int] = 0
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: now_wib())
+    approved_at: Optional[datetime] = None
+    execution_project_id: Optional[str] = None  # ID of project in execution phase
+
 class Project(BaseModel):
+    """Project in execution phase - stored in projects collection"""
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -73,10 +90,10 @@ class Project(BaseModel):
     contract_date: Optional[datetime] = None
     duration: Optional[int] = None  # days
     location: Optional[str] = None
-    project_value: Optional[float] = 0.0  # nilai pekerjaan
+    project_value: Optional[float] = 0.0
     status: str = "active"  # active, waiting, completed
-    phase: str = "perencanaan"  # perencanaan, pelaksanaan
-    design_progress: Optional[int] = 0  # progress desain 0-100%
+    design_progress: Optional[int] = 0
+    planning_project_id: Optional[str] = None  # Reference to planning project
     created_by: str
     created_at: datetime = Field(default_factory=lambda: now_wib())
 
