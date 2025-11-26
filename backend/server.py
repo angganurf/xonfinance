@@ -967,6 +967,67 @@ async def update_transaction(transaction_id: str, updates: dict, user: User = De
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"message": "Transaction updated"}
 
+@api_router.put("/transactions/{transaction_id}/item-status")
+async def update_transaction_item_status(
+    transaction_id: str, 
+    item_index: int,
+    new_status: str,
+    user: User = Depends(get_current_user)
+):
+    """Update status of a specific item in transaction and sync with inventory"""
+    # Get transaction
+    transaction = await db.transactions.find_one({"id": transaction_id}, {"_id": 0})
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    if not transaction.get("items") or item_index >= len(transaction["items"]):
+        raise HTTPException(status_code=400, detail="Item index out of range")
+    
+    item = transaction["items"][item_index]
+    old_status = item.get("status", "receiving")
+    
+    # Update transaction item status
+    await db.transactions.update_one(
+        {"id": transaction_id},
+        {"$set": {f"items.{item_index}.status": new_status}}
+    )
+    
+    # Sync with inventory
+    inventory_item = await db.inventory.find_one({
+        "item_name": item["description"],
+        "category": transaction["category"],
+        "project_id": transaction["project_id"]
+    })
+    
+    if inventory_item:
+        quantity = item["quantity"]
+        
+        # Calculate new quantities based on status change
+        if old_status == "receiving" and new_status == "out_warehouse":
+            # Move from in_warehouse to out_warehouse
+            new_in_warehouse = inventory_item.get("quantity_in_warehouse", 0) - quantity
+            new_out_warehouse = inventory_item.get("quantity_out_warehouse", 0) + quantity
+        elif old_status == "out_warehouse" and new_status == "receiving":
+            # Move from out_warehouse to in_warehouse
+            new_in_warehouse = inventory_item.get("quantity_in_warehouse", 0) + quantity
+            new_out_warehouse = inventory_item.get("quantity_out_warehouse", 0) - quantity
+        else:
+            # No change needed
+            return {"message": "Status updated"}
+        
+        # Update inventory
+        await db.inventory.update_one(
+            {"id": inventory_item["id"]},
+            {"$set": {
+                "quantity_in_warehouse": max(0, new_in_warehouse),
+                "quantity_out_warehouse": max(0, new_out_warehouse),
+                "quantity": new_in_warehouse + new_out_warehouse,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    
+    return {"message": "Item status updated and inventory synced"}
+
 @api_router.delete("/transactions/{transaction_id}")
 async def delete_transaction(transaction_id: str, user: User = Depends(get_current_user)):
     # Delete related inventory items
