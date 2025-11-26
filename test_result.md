@@ -109,65 +109,17 @@ user_problem_statement: |
      - Label termurah/termahal
 
 backend:
-  - task: "Update logic inventory untuk support status transaksi (receiving/out_warehouse)"
+  - task: "Modifikasi endpoint GET /api/inventory/price-comparison untuk support filter project_type"
     implemented: true
-    working: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Modified create_transaction logic to handle 'receiving' (add stock) and 'out_warehouse' (reduce stock). Added validation to prevent negative inventory. Auto-update status to 'Habis' when quantity reaches 0."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Status transaksi logic working perfectly. ✅ Receiving transactions add stock to inventory (5 + 3 = 8 m³ Pasir Cor). ✅ Out warehouse transactions reduce stock (8 - 3 = 5, then 5 - 5 = 0). ✅ Auto-update status to 'Habis' when quantity reaches 0. ✅ Works for both bahan (items array) and alat (single item) categories."
-  
-  - task: "Validasi stok tidak boleh negatif saat Out Warehouse"
-    implemented: true
-    working: true
-    file: "server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Added validation: when status is 'out_warehouse', check if sufficient stock available. Return HTTP 400 error with detail message if stock insufficient or item not found in inventory."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Validation working correctly. ✅ Returns HTTP 400 with message 'Stok tidak cukup untuk Pasir Cor. Stok tersedia: 0.0, diminta: 10.0' when trying to out_warehouse more than available stock. ✅ Returns HTTP 400 with message 'Item Besi Beton tidak ditemukan di inventory. Tidak bisa melakukan Out Warehouse.' when trying to out_warehouse non-existent item."
-  
-  - task: "Modifikasi endpoint POST /transactions untuk auto-create inventory"
-    implemented: true
-    working: true
-    file: "server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Modified create_transaction endpoint to automatically create/update inventory items when category is 'bahan' or 'alat'. Handles both items array and single item cases."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Auto-create inventory logic working perfectly. ✅ Creates inventory from 'bahan' transactions with items array. ✅ Creates inventory from 'alat' transactions with single item. ✅ Updates existing inventory quantity when same item added again (30 sak total from 20+10). ✅ Only creates inventory for 'bahan' and 'alat' categories, ignores others like 'upah'."
-  
-  - task: "Status inventory lebih lengkap berdasarkan kategori"
-    implemented: true
-    working: true
-    file: "server.py, Inventory.js"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Updated inventory status options. Bahan: Tersedia, Order, Habis. Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. Status colors updated in frontend."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Status inventory system working correctly. ✅ Auto-update to 'Habis' when quantity reaches 0 (tested with Pasir Cor). ✅ Status remains 'Tersedia' when quantity > 0 (tested with Gerinda Tangan). ✅ Backend properly handles status transitions based on inventory operations."
+        comment: "Added parameter project_type to price-comparison endpoint. Query projects by type, get project_ids, filter transactions to only include those from projects with matching type. This ensures Interior and Arsitektur have separate price comparison data."
 
 frontend:
   - task: "Tambah dropdown status transaksi untuk kategori Bahan dan Alat"
