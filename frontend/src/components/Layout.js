@@ -98,7 +98,7 @@ export const Layout = ({ children }) => {
       combinedItems.push(
         { label: 'Home', path: '/accounting', icon: '🏠' },
         { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
-        { label: 'Inventory', path: '/accounting/inventory', icon: '📦' },
+        { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
         { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
       );
     }
