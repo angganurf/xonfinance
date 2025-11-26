@@ -196,6 +196,7 @@ class ShopDrawing(BaseModel):
     description: Optional[str] = None
     files: Optional[List[str]] = []  # File URLs or base64
     status: str = "draft"  # draft, review, approved, rejected
+    progress: int = 0  # 0-100%
     version: int = 1
     created_by: str
     created_at: datetime = Field(default_factory=lambda: now_wib())
