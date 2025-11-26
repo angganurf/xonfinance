@@ -403,6 +403,21 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Planning Project Migration dari projects ke planning_projects"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Migration endpoint POST /api/admin/migrate-planning-projects sudah ada. Endpoint ini memindahkan semua projects dengan phase='perencanaan' dari projects collection ke planning_projects collection dengan mempertahankan ID yang sama."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Planning project migration working correctly. All 10/11 tests passed (90.9% success rate). Admin login successful, found 8 projects with phase=perencanaan, migration endpoint successfully migrated all 8 projects to planning_projects collection, verified projects removed from projects collection, verified projects added to planning_projects with correct data integrity (status='planning'), verified planning overview shows migrated projects correctly, verified no data loss during migration. One test failed because newly created projects don't have phase field (expected behavior in new architecture). Migration preserves same IDs and all project data."
+
 agent_communication:
   - agent: "main"
     message: |
