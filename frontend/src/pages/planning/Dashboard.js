@@ -80,7 +80,9 @@ const PlanningTeamDashboard = () => {
     e.preventDefault();
     
     try {
+      console.log('[Planning Dashboard] Creating project:', formData);
       const res = await api.post('/projects', formData);
+      console.log('[Planning Dashboard] Project created:', res.data);
       toast.success('Project perencanaan berhasil dibuat!');
       setCreateDialog(false);
       setFormData({
@@ -91,9 +93,11 @@ const PlanningTeamDashboard = () => {
         project_value: 0
       });
       setSelectedRAB(null);
-      loadOverview();
+      console.log('[Planning Dashboard] Reloading overview...');
+      await loadOverview();
+      console.log('[Planning Dashboard] Overview reloaded successfully');
     } catch (error) {
-      console.error('Error creating project:', error);
+      console.error('[Planning Dashboard] Error creating project:', error);
       toast.error('Gagal membuat project');
     }
   };
