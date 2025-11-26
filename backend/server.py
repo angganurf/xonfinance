@@ -2343,6 +2343,100 @@ async def clear_all_data(user: User = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear data: {str(e)}")
 
+# ============= PROJECT COMMENTS =============
+
+@api_router.get("/projects/{project_id}/comments")
+async def get_project_comments(project_id: str, user: User = Depends(get_current_user)):
+    """Get all comments for a project"""
+    comments = await db.project_comments.find(
+        {"project_id": project_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(1000)
+    
+    # Convert datetime to ISO string
+    for comment in comments:
+        comment["created_at"] = comment["created_at"].isoformat()
+    
+    return comments
+
+@api_router.post("/projects/{project_id}/comments")
+async def create_project_comment(
+    project_id: str,
+    message: str,
+    mentions: Optional[List[str]] = None,
+    user: User = Depends(get_current_user)
+):
+    """Create a new comment on a project"""
+    import re
+    
+    # Extract mentions from message if not provided
+    if mentions is None:
+        mentions = []
+        # Find @mentions in message (e.g., @user@example.com or @username)
+        mention_pattern = r'@(\S+)'
+        found_mentions = re.findall(mention_pattern, message)
+        
+        # Get user IDs for mentioned emails/names
+        if found_mentions:
+            for mention in found_mentions:
+                # Try to find user by email or name
+                mentioned_user = await db.users.find_one(
+                    {"$or": [{"email": mention}, {"name": mention}]},
+                    {"_id": 0, "id": 1, "email": 1, "name": 1}
+                )
+                if mentioned_user:
+                    mentions.append(mentioned_user["id"])
+    
+    comment = ProjectComment(
+        project_id=project_id,
+        user_id=user.id,
+        user_name=user.name,
+        user_email=user.email,
+        message=message,
+        mentions=mentions
+    )
+    
+    comment_dict = comment.model_dump()
+    comment_dict["created_at"] = comment_dict["created_at"].isoformat()
+    await db.project_comments.insert_one(comment_dict)
+    
+    # Create notifications for mentioned users
+    if mentions:
+        project = await db.projects.find_one({"id": project_id}, {"_id": 0, "name": 1})
+        project_name = project["name"] if project else "Unknown Project"
+        
+        for mentioned_user_id in mentions:
+            notif = Notification(
+                user_id=mentioned_user_id,
+                title="Anda disebutkan dalam diskusi",
+                message=f"{user.name} menyebutkan Anda di proyek '{project_name}': {message[:100]}...",
+                type="info"
+            )
+            notif_dict = notif.model_dump()
+            notif_dict["created_at"] = notif_dict["created_at"].isoformat()
+            await db.notifications.insert_one(notif_dict)
+    
+    return {"message": "Comment created", "id": comment.id, "comment": comment_dict}
+
+@api_router.delete("/projects/{project_id}/comments/{comment_id}")
+async def delete_project_comment(
+    project_id: str,
+    comment_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Delete a comment (only by comment author or admin)"""
+    comment = await db.project_comments.find_one({"id": comment_id, "project_id": project_id})
+    
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    # Only comment author or admin can delete
+    if comment["user_id"] != user.id and user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    
+    await db.project_comments.delete_one({"id": comment_id})
+    return {"message": "Comment deleted"}
+
 # Include router
 app.include_router(api_router)
 
