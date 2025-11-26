@@ -75,7 +75,50 @@ export const Layout = ({ children }) => {
       ? user.roles 
       : (user?.role ? [user.role] : []);
     
-    // If user is admin, show admin interface
+    // Check current path to determine context
+    const currentPath = window.location.pathname;
+    const isAccountingContext = currentPath.startsWith('/accounting');
+    const isPlanningContext = currentPath.startsWith('/planning');
+    const isSupervisorContext = currentPath.startsWith('/supervisor');
+    
+    // If admin is in accounting context, show accounting menu
+    if (userRoles.includes('admin') && isAccountingContext) {
+      return {
+        type: 'flat',
+        items: [
+          { label: 'Home', path: '/accounting', icon: '🏠' },
+          { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
+          { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
+          { label: 'Kembali ke Admin', path: '/admin', icon: '🔙' }
+        ]
+      };
+    }
+    
+    // If admin is in planning context, show planning menu
+    if (userRoles.includes('admin') && isPlanningContext) {
+      return {
+        type: 'flat',
+        items: [
+          { label: 'Home', path: '/planning', icon: '🏠' },
+          { label: 'RAB', path: '/planning/rab', icon: '📋' },
+          { label: 'Time Schedule', path: '/planning/schedule', icon: '📅' },
+          { label: 'Kembali ke Admin', path: '/admin', icon: '🔙' }
+        ]
+      };
+    }
+    
+    // If admin is in supervisor context, show supervisor menu
+    if (userRoles.includes('admin') && isSupervisorContext) {
+      return {
+        type: 'flat',
+        items: [
+          { label: 'Home', path: '/supervisor', icon: '🏠' },
+          { label: 'Kembali ke Admin', path: '/admin', icon: '🔙' }
+        ]
+      };
+    }
+    
+    // Default admin interface
     if (userRoles.includes('admin')) {
       return {
         type: 'flat',
