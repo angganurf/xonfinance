@@ -85,7 +85,8 @@ export const Layout = ({ children }) => {
         type: 'flat',
         items: [
           { label: 'Home', path: '/admin', icon: '🏠' },
-          { label: 'Daftar Proyek', path: '/admin/projects', icon: '📁' },
+          { label: 'Proyek Perencanaan', path: '/admin/planning-projects', icon: '📋' },
+          { label: 'Proyek Pelaksanaan', path: '/admin/projects', icon: '📁' },
           { label: 'Transaksi', path: '/admin/transactions', icon: '💳' },
           { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
           { label: 'Pengaturan', path: '/admin/settings', icon: '⚙️' }
