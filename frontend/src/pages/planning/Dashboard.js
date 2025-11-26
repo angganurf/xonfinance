@@ -383,9 +383,15 @@ const PlanningTeamDashboard = () => {
                     <CardContent className="pt-6">
                       <div className="space-y-4">
                         {/* Header */}
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold text-slate-800">{item.project.name}</h3>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={selectedProjects.includes(item.project.id)}
+                              onCheckedChange={(checked) => handleSelectProject(item.project.id, checked)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <h3 className="text-lg font-bold text-slate-800">{item.project.name}</h3>
                             <div className="flex items-center gap-2 mt-1">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 item.project.type === 'interior' 
