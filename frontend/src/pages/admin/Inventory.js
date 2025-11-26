@@ -770,6 +770,114 @@ const AdminInventory = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Price Comparison Dialog */}
+        <Dialog open={priceComparisonDialog} onOpenChange={setPriceComparisonDialog}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                💰 Perbandingan Harga: {selectedItemPriceComparison?.item_name}
+              </DialogTitle>
+            </DialogHeader>
+            
+            {selectedItemPriceComparison && (
+              <div className="space-y-4">
+                {/* Item Info */}
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-600">Satuan</p>
+                      <p className="text-lg font-semibold">{selectedItemPriceComparison.unit}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600">Total Supplier</p>
+                      <p className="text-lg font-semibold text-blue-600">
+                        {selectedItemPriceComparison.suppliers.length} supplier
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600">Selisih Harga</p>
+                      <p className="text-lg font-semibold text-orange-600">
+                        {selectedItemPriceComparison.suppliers.length > 0 && 
+                          formatCurrency(
+                            selectedItemPriceComparison.suppliers[selectedItemPriceComparison.suppliers.length - 1].latest_price - 
+                            selectedItemPriceComparison.suppliers[0].latest_price
+                          )
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Suppliers Table */}
+                <div>
+                  <h3 className="font-semibold text-slate-800 mb-3">Daftar Harga Per Supplier:</h3>
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-slate-100">
+                        <tr className="text-left text-sm">
+                          <th className="px-4 py-3 font-semibold">Nama Toko/Supplier</th>
+                          <th className="px-4 py-3 font-semibold text-right">Harga Terakhir</th>
+                          <th className="px-4 py-3 font-semibold text-right">Harga Rata-rata</th>
+                          <th className="px-4 py-3 font-semibold text-center">Jumlah Transaksi</th>
+                          <th className="px-4 py-3 font-semibold text-center">Label</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedItemPriceComparison.suppliers.map((supplier, index) => {
+                          const isLowest = index === 0;
+                          const isHighest = index === selectedItemPriceComparison.suppliers.length - 1;
+                          
+                          return (
+                            <tr key={index} className={`border-t hover:bg-slate-50 ${isLowest ? 'bg-green-50' : ''}`}>
+                              <td className="px-4 py-3 font-medium">{supplier.supplier}</td>
+                              <td className="px-4 py-3 text-right font-bold">
+                                {formatCurrency(supplier.latest_price)}
+                              </td>
+                              <td className="px-4 py-3 text-right text-slate-600">
+                                {formatCurrency(supplier.average_price)}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <span className="bg-slate-200 text-slate-700 px-2 py-1 rounded text-xs">
+                                  {supplier.transaction_count}x
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {isLowest && (
+                                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    ✓ Termurah
+                                  </span>
+                                )}
+                                {isHighest && selectedItemPriceComparison.suppliers.length > 1 && (
+                                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    Termahal
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs text-blue-800">
+                      💡 <strong>Catatan:</strong> Harga terakhir adalah harga dari transaksi terbaru. 
+                      Harga rata-rata dihitung dari semua transaksi dengan supplier tersebut.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button onClick={() => setPriceComparisonDialog(false)}>
+                Tutup
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
