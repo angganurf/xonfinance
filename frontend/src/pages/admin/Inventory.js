@@ -69,6 +69,16 @@ const AdminInventory = () => {
     }
   };
   
+  const loadPriceComparison = async () => {
+    try {
+      const res = await api.get('/inventory/price-comparison');
+      setPriceComparison(res.data);
+    } catch (error) {
+      toast.error('Gagal memuat data perbandingan harga');
+      console.error('Error loading price comparison:', error);
+    }
+  };
+  
   const filterInventory = () => {
     let filtered = [...inventory];
     
