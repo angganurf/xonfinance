@@ -1,0 +1,63 @@
+{
+  "test_type": "price_comparison",
+  "timestamp": "2025-11-26T05:15:26.970999",
+  "total_tests": 9,
+  "passed_tests": 6,
+  "success_rate": 66.66666666666666,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T05:15:24.169032"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T05:15:24.429218"
+    },
+    {
+      "test_name": "Price Comparison No Filter",
+      "success": true,
+      "details": "Items found: 13, Has Interior: True, Has Arsitektur: True, Format valid: True",
+      "timestamp": "2025-11-26T05:15:26.734485"
+    },
+    {
+      "test_name": "Price Comparison Filter Interior",
+      "success": false,
+      "details": "Items: 7, Only Interior: False, No Arsitektur: True, Multiple suppliers for Cat: True, Prices sorted: True",
+      "timestamp": "2025-11-26T05:15:26.775794"
+    },
+    {
+      "test_name": "Price Comparison Filter Arsitektur",
+      "success": false,
+      "details": "Items: 6, Only Arsitektur: False, No Interior: True, Multiple suppliers for Besi 16: True",
+      "timestamp": "2025-11-26T05:15:26.819543"
+    },
+    {
+      "test_name": "Price Comparison Combined Filters",
+      "success": true,
+      "details": "Count: 1, Item: Besi 16 Ulir, Unit: Batang, Suppliers: 2, Data valid: True",
+      "timestamp": "2025-11-26T05:15:26.860133"
+    },
+    {
+      "test_name": "Price Comparison Data Validation",
+      "success": true,
+      "details": "Items validated: 13, Issues: 0",
+      "timestamp": "2025-11-26T05:15:26.896089"
+    },
+    {
+      "test_name": "Price Comparison Invalid Project Type",
+      "success": false,
+      "details": "Returned 13 items for invalid project type",
+      "timestamp": "2025-11-26T05:15:26.934912"
+    },
+    {
+      "test_name": "Price Comparison Nonexistent Item",
+      "success": true,
+      "details": "Returned 0 items for non-existent item",
+      "timestamp": "2025-11-26T05:15:26.970784"
+    }
+  ]
+}
