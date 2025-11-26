@@ -564,7 +564,124 @@ async def logout(request: Request, response: Response):
     response.delete_cookie(key="session_token", path="/")
     return {"message": "Logged out successfully"}
 
-# ============= PROJECT ENDPOINTS =============
+# ============= PLANNING PROJECT ENDPOINTS =============
+
+@api_router.get("/planning-projects")
+async def get_planning_projects(user: User = Depends(get_current_user)):
+    """Get all planning projects"""
+    projects = await db.planning_projects.find({}, {"_id": 0}).to_list(1000)
+    return projects
+
+@api_router.get("/planning-projects/{project_id}")
+async def get_planning_project(project_id: str, user: User = Depends(get_current_user)):
+    """Get specific planning project"""
+    project = await db.planning_projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Planning project not found")
+    return project
+
+@api_router.post("/planning-projects")
+async def create_planning_project(input: ProjectInput, user: User = Depends(get_current_user)):
+    """Create new planning project"""
+    project = PlanningProject(
+        name=input.name,
+        type=input.type,
+        description=input.description,
+        location=input.location,
+        project_value=input.project_value,
+        created_by=user.email
+    )
+    
+    project_dict = project.model_dump()
+    project_dict["created_at"] = project_dict["created_at"].isoformat()
+    if project_dict.get("approved_at"):
+        project_dict["approved_at"] = project_dict["approved_at"].isoformat()
+    
+    await db.planning_projects.insert_one(project_dict)
+    
+    return {"message": "Planning project created", "id": project.id}
+
+@api_router.patch("/planning-projects/{project_id}/design-progress")
+async def update_planning_project_progress(
+    project_id: str,
+    progress: int,
+    user: User = Depends(get_current_user)
+):
+    """Update design progress for planning project"""
+    if progress < 0 or progress > 100:
+        raise HTTPException(status_code=400, detail="Progress must be between 0 and 100")
+    
+    result = await db.planning_projects.update_one(
+        {"id": project_id},
+        {"$set": {"design_progress": progress}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Planning project not found")
+    
+    return {"message": "Progress updated", "progress": progress}
+
+@api_router.post("/planning-projects/{project_id}/approve")
+async def approve_planning_project(
+    project_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Approve planning project and create execution project"""
+    # Get planning project
+    planning_project = await db.planning_projects.find_one({"id": project_id}, {"_id": 0})
+    if not planning_project:
+        raise HTTPException(status_code=404, detail="Planning project not found")
+    
+    if planning_project["status"] == "approved":
+        raise HTTPException(status_code=400, detail="Project already approved")
+    
+    # Create execution project
+    execution_project = Project(
+        name=planning_project["name"],
+        type=planning_project["type"],
+        description=planning_project.get("description"),
+        location=planning_project.get("location"),
+        project_value=planning_project.get("project_value", 0),
+        design_progress=planning_project.get("design_progress", 0),
+        planning_project_id=project_id,
+        created_by=user.email
+    )
+    
+    exec_dict = execution_project.model_dump()
+    exec_dict["created_at"] = exec_dict["created_at"].isoformat()
+    if exec_dict.get("contract_date"):
+        exec_dict["contract_date"] = exec_dict["contract_date"].isoformat()
+    
+    await db.projects.insert_one(exec_dict)
+    
+    # Update planning project status
+    await db.planning_projects.update_one(
+        {"id": project_id},
+        {
+            "$set": {
+                "status": "approved",
+                "approved_at": now_wib().isoformat(),
+                "execution_project_id": execution_project.id
+            }
+        }
+    )
+    
+    return {
+        "message": "Planning project approved and execution project created",
+        "planning_project_id": project_id,
+        "execution_project_id": execution_project.id
+    }
+
+@api_router.delete("/planning-projects/{project_id}")
+async def delete_planning_project(project_id: str, user: User = Depends(get_current_user)):
+    """Delete planning project"""
+    result = await db.planning_projects.delete_one({"id": project_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Planning project not found")
+    
+    return {"message": "Planning project deleted"}
+
+# ============= PROJECT ENDPOINTS (EXECUTION) =============
 
 @api_router.post("/projects")
 async def create_project(input: ProjectInput, user: User = Depends(get_current_user)):
