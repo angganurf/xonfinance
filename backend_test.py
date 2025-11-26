@@ -1675,6 +1675,188 @@ class XONArchitectAPITester:
         
         return self.tests_passed == self.tests_run
 
+    # ============= PLANNING DASHBOARD DEBUG TESTS =============
+    
+    def test_debug_planning_dashboard_project_visibility(self):
+        """Debug: Project baru tidak muncul di Planning Dashboard setelah dibuat"""
+        print("\n🔍 Starting Planning Dashboard Debug Tests")
+        print("=" * 60)
+        
+        # Step 1: Login as admin
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Cannot proceed with debug tests.")
+            return False
+        
+        # Step 2: Get current planning projects count
+        print("\n📊 Step 2: Get current planning projects count")
+        success, planning_data_before = self.make_request('GET', '/planning/overview')
+        if not success:
+            self.log_test("Get Planning Overview (Before)", False, f"Failed to get planning overview: {planning_data_before}")
+            return False
+        
+        projects_before_count = len(planning_data_before) if isinstance(planning_data_before, list) else 0
+        print(f"📋 Projects in planning overview before: {projects_before_count}")
+        self.log_test("Get Planning Overview (Before)", True, f"Found {projects_before_count} projects in planning overview")
+        
+        # Step 3: Create new project with specific data
+        print("\n🏗️ Step 3: Create new project")
+        project_data = {
+            "name": "Test Project Debug Issue",
+            "type": "arsitektur",
+            "location": "Bandung",
+            "project_value": 200000000,
+            "description": "Testing project creation issue"
+        }
+        
+        success, create_response = self.make_request('POST', '/projects', project_data, 200)
+        if not success:
+            self.log_test("Create Debug Project", False, f"Failed to create project: {create_response}")
+            return False
+        
+        project_id = create_response.get('id')
+        if not project_id:
+            self.log_test("Create Debug Project", False, "No project ID returned")
+            return False
+        
+        print(f"✅ Project created with ID: {project_id}")
+        self.log_test("Create Debug Project", True, f"Project created with ID: {project_id}")
+        
+        # Step 4: Verify project creation response
+        print("\n✅ Step 4: Verify project creation response")
+        has_id = bool(project_id)
+        response_status_ok = success
+        verification_details = f"Has ID: {has_id}, Response OK: {response_status_ok}"
+        self.log_test("Verify Project Creation Response", has_id and response_status_ok, verification_details)
+        
+        # Step 5: Get planning projects again
+        print("\n📊 Step 5: Get planning projects again")
+        success, planning_data_after = self.make_request('GET', '/planning/overview')
+        if not success:
+            self.log_test("Get Planning Overview (After)", False, f"Failed to get planning overview: {planning_data_after}")
+            return False
+        
+        projects_after_count = len(planning_data_after) if isinstance(planning_data_after, list) else 0
+        count_increased = projects_after_count > projects_before_count
+        
+        print(f"📋 Projects in planning overview after: {projects_after_count}")
+        print(f"📈 Count increased: {count_increased} (Before: {projects_before_count}, After: {projects_after_count})")
+        
+        # Check if new project appears in planning overview
+        new_project_in_overview = False
+        project_phase_in_overview = None
+        if isinstance(planning_data_after, list):
+            for item in planning_data_after:
+                project_info = item.get('project', {})
+                if project_info.get('id') == project_id:
+                    new_project_in_overview = True
+                    project_phase_in_overview = project_info.get('phase')
+                    break
+        
+        overview_details = f"Count increased: {count_increased}, New project in overview: {new_project_in_overview}, Phase: {project_phase_in_overview}"
+        self.log_test("Get Planning Overview (After)", count_increased and new_project_in_overview, overview_details)
+        
+        # Step 6: Test GET /api/projects with query params
+        print("\n🔍 Step 6: Test GET /api/projects with query params")
+        
+        # Test GET /api/projects (all projects)
+        success, all_projects = self.make_request('GET', '/projects')
+        all_projects_count = len(all_projects) if isinstance(all_projects, list) and success else 0
+        
+        new_project_in_all = False
+        project_phase_in_all = None
+        if isinstance(all_projects, list) and success:
+            for project in all_projects:
+                if project.get('id') == project_id:
+                    new_project_in_all = True
+                    project_phase_in_all = project.get('phase')
+                    break
+        
+        print(f"📋 All projects count: {all_projects_count}")
+        print(f"🔍 New project in all projects: {new_project_in_all}, Phase: {project_phase_in_all}")
+        self.log_test("Get All Projects", success and new_project_in_all, f"Found in all projects: {new_project_in_all}, Phase: {project_phase_in_all}")
+        
+        # Test GET /api/projects?phase=perencanaan
+        success, perencanaan_projects = self.make_request('GET', '/projects?phase=perencanaan')
+        perencanaan_count = len(perencanaan_projects) if isinstance(perencanaan_projects, list) and success else 0
+        
+        new_project_in_perencanaan = False
+        if isinstance(perencanaan_projects, list) and success:
+            for project in perencanaan_projects:
+                if project.get('id') == project_id:
+                    new_project_in_perencanaan = True
+                    break
+        
+        print(f"📋 Perencanaan projects count: {perencanaan_count}")
+        print(f"🔍 New project in perencanaan filter: {new_project_in_perencanaan}")
+        self.log_test("Get Perencanaan Projects", success, f"Perencanaan projects: {perencanaan_count}, New project in perencanaan: {new_project_in_perencanaan}")
+        
+        # Step 7: Analyze the issue
+        print("\n🔍 Step 7: Issue Analysis")
+        
+        # Check if project was created with wrong phase
+        expected_phase = "perencanaan"  # Admin should create perencanaan projects
+        phase_correct = project_phase_in_all == expected_phase
+        
+        # Check if planning/overview filtering correctly
+        planning_overview_working = new_project_in_overview if phase_correct else True  # If phase is wrong, overview might be correct
+        
+        # Summary of findings
+        print(f"\n📋 DEBUG SUMMARY:")
+        print(f"   Project created: ✅")
+        print(f"   Project ID: {project_id}")
+        print(f"   Project phase: {project_phase_in_all} (expected: {expected_phase})")
+        print(f"   Phase correct: {'✅' if phase_correct else '❌'}")
+        print(f"   Appears in all projects: {'✅' if new_project_in_all else '❌'}")
+        print(f"   Appears in perencanaan filter: {'✅' if new_project_in_perencanaan else '❌'}")
+        print(f"   Appears in planning overview: {'✅' if new_project_in_overview else '❌'}")
+        print(f"   Planning overview count increased: {'✅' if count_increased else '❌'}")
+        
+        # Determine the root cause
+        if not phase_correct:
+            issue_found = "Project created with wrong phase"
+            print(f"🔍 ROOT CAUSE: {issue_found}")
+            print(f"   Expected phase: {expected_phase}")
+            print(f"   Actual phase: {project_phase_in_all}")
+            print(f"   Admin users should create projects with phase='perencanaan'")
+        elif not new_project_in_overview:
+            issue_found = "Planning overview filtering issue"
+            print(f"🔍 ROOT CAUSE: {issue_found}")
+            print(f"   Project has correct phase but doesn't appear in planning overview")
+        elif not count_increased:
+            issue_found = "Planning overview not updating"
+            print(f"🔍 ROOT CAUSE: {issue_found}")
+            print(f"   Project appears but count didn't increase")
+        else:
+            issue_found = "No issue found - everything working correctly"
+            print(f"✅ RESULT: {issue_found}")
+        
+        # Overall test result
+        overall_success = phase_correct and new_project_in_overview and count_increased
+        self.log_test("Planning Dashboard Debug - Overall", overall_success, f"Issue: {issue_found}")
+        
+        return overall_success
+
+    def run_planning_dashboard_debug_tests(self):
+        """Run planning dashboard debug tests specifically"""
+        print("🔍 Starting Planning Dashboard Debug Tests")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Run the debug test
+        result = self.test_debug_planning_dashboard_project_visibility()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Planning Dashboard Debug Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return result
+
     # ============= PLANNING TEAM & DRAFTER TESTS =============
     
     def test_admin_login_with_planning_role(self):
