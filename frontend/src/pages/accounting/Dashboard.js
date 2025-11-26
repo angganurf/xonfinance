@@ -31,13 +31,14 @@ const AccountingDashboard = () => {
       const projects = projectsRes.data;
       
       // Filter only expense transactions for bahan, upah, alat
+      // Categories: 'bahan' (material), 'upah' (labor), 'alat' (equipment)
+      const expenseCategories = ['bahan', 'upah', 'alat'];
       const expenseTransactions = transactions.filter(t => 
-        t.type === 'expense' && 
-        ['material', 'labor', 'equipment'].includes(t.category)
+        expenseCategories.includes(t.category)
       );
       
       // Calculate total expenses (transaksi keluar saja)
-      const total = expenseTransactions.reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      const total = expenseTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
       setTotalExpenses(total);
       
       // Calculate expenses per project
@@ -46,14 +47,14 @@ const AccountingDashboard = () => {
       expenseTransactions.forEach(trans => {
         if (!projectExpensesMap[trans.project_id]) {
           projectExpensesMap[trans.project_id] = {
-            material: 0,
-            labor: 0,
-            equipment: 0,
+            bahan: 0,
+            upah: 0,
+            alat: 0,
             total: 0
           };
         }
         
-        const amount = trans.total_amount || 0;
+        const amount = trans.amount || 0;
         projectExpensesMap[trans.project_id][trans.category] += amount;
         projectExpensesMap[trans.project_id].total += amount;
       });
