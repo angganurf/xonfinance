@@ -100,10 +100,9 @@ export const Layout = ({ children }) => {
     // Add menu items based on each role user has
     if (userRoles.includes('accounting')) {
       combinedItems.push(
-        { label: 'Dashboard Accounting', path: '/accounting', icon: '📊' },
-        { label: 'Proyek', path: '/accounting/projects', icon: '📁' },
-        { label: 'Transaksi', path: '/accounting/transactions', icon: '💳' },
-        { label: 'Laporan', path: '/accounting/reports', icon: '📈' }
+        { label: 'Home', path: '/accounting', icon: '🏠' },
+        { label: 'Inventory', path: '/admin/inventory', icon: '📦' },
+        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
       );
     }
     
@@ -115,9 +114,8 @@ export const Layout = ({ children }) => {
     
     if (userRoles.includes('site_supervisor')) {
       combinedItems.push(
-        { label: 'Dashboard Supervisor', path: '/supervisor', icon: '📊' },
-        { label: 'Time Schedule', path: '/supervisor/schedule', icon: '📅' },
-        { label: 'Proyek Supervisor', path: '/supervisor/projects', icon: '📁' }
+        { label: 'Home', path: '/supervisor', icon: '🏠' },
+        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
       );
     }
     
@@ -130,16 +128,12 @@ export const Layout = ({ children }) => {
     }
     
     if (userRoles.includes('project_planning_team')) {
-      combinedItems.push({
-        label: 'Project Planning Team',
-        icon: '📐',
-        group: 'planning',
-        children: [
-          { label: 'Dashboard', path: '/planning', icon: '📊' },
-          { label: 'Estimator', path: '/estimator', icon: '💼' },
-          { label: 'Drafter', path: '/drafter', icon: '📝' }
-        ]
-      });
+      combinedItems.push(
+        { label: 'Home', path: '/planning', icon: '🏠' },
+        { label: 'RAB', path: '/planning/rab', icon: '📋' },
+        { label: 'Time Schedule', path: '/planning/schedule', icon: '📅' },
+        { label: 'Pengaturan', path: '/settings', icon: '⚙️' }
+      );
     }
     
     // Add separator before common items if there are combined items
