@@ -299,38 +299,64 @@ agent_communication:
       Implementasi fitur Pengaturan Admin (Backup & Restore) selesai:
       
       BACKEND (server.py):
-      1. ✅ Modified endpoint GET /api/inventory/price-comparison:
-         - Added parameter project_type (optional)
-         - Filter transactions by project_type (interior/arsitektur)
-         - Query projects by type first, get project IDs
-         - Only include transactions from matching projects
-         - Return price comparison data filtered by project type
+      1. ✅ Created endpoint POST /api/admin/backup:
+         - Saves snapshot of all collections to backups collection
+         - Includes timestamp (WIB), created_by (user email), and collection counts
+         - Returns backup ID and metadata
+      2. ✅ Created endpoint GET /api/admin/backups:
+         - Lists all backups sorted by timestamp (newest first)
+         - Excludes actual data to keep response small
+         - Returns metadata: id, timestamp, created_by, collections_count
+      3. ✅ Created endpoint POST /api/admin/restore/{backup_id}:
+         - Clears existing data (except users and backups)
+         - Restores data from selected backup
+         - Preserves users collection for security
+         - Returns restored counts
+      4. ✅ Created endpoint DELETE /api/admin/backups/{backup_id}:
+         - Deletes specific backup by ID
+         - Returns 404 if not found
+      5. ✅ Created endpoint POST /api/admin/clear-all-data:
+         - Clears all collections except users and backups
+         - Returns deleted counts for each collection
       
-      FRONTEND (Inventory.js):
-      1. ✅ Removed standalone "Daftar Bahan" tab
-      2. ✅ Added sub-tabs system in Interior and Arsitektur:
-         - Sub-tab "📦 Stok" - menampilkan inventory table (existing)
-         - Sub-tab "💰 Daftar Bahan" - menampilkan price comparison table (new)
-      3. ✅ Implemented price comparison table:
-         - Columns: Nama Bahan, Satuan, Jumlah Supplier, Harga Terendah (green), Harga Tertinggi (red), Aksi
-         - Info box explaining feature for each project type
-         - Empty state with helpful message
-      4. ✅ Implemented price comparison detail dialog:
-         - Shows item info: satuan, total supplier, selisih harga
-         - Table with: Nama Toko, Harga Terakhir, Harga Rata-rata, Jumlah Transaksi, Label
-         - Green highlight for lowest price supplier
-         - Labels: "✓ Termurah" and "Termahal"
-         - Helper text explaining price calculations
-      5. ✅ Filter by project_type:
-         - Interior > Daftar Bahan: shows only interior project materials
-         - Arsitektur > Daftar Bahan: shows only arsitektur project materials
+      FRONTEND (pages/admin/Settings.js):
+      1. ✅ Created AdminSettings page with 4 main sections:
+         - Backup & Restore Database (purple card)
+         - Export Data (blue card)
+         - Import Data (green card)
+         - Hapus Semua Data (red card)
+      2. ✅ Backup section features:
+         - "Buat Backup Baru" button with loading state
+         - Daftar backup showing: timestamp, creator, ID, collection counts
+         - Each backup has Restore (🔄) and Delete (🗑️) buttons
+         - Empty state when no backups exist
+      3. ✅ Restore dialog:
+         - Shows backup details (time, creator, ID)
+         - Warning about data replacement
+         - Note about users preservation
+         - Confirmation before restore
+      4. ✅ Export & Import:
+         - Export downloads all data as JSON with timestamp filename
+         - Import accepts JSON file with validation
+         - Warning about potential duplicates
+      5. ✅ Clear all data:
+         - AlertDialog with strong warnings
+         - Note about users & backups preservation
+         - Confirmation required
+      6. ✅ Added route /admin/settings in App.js
+      7. ✅ Added menu "Backup & Data" (💾) in Layout.js
       
       Testing diperlukan:
-      1. Backend: Test price-comparison endpoint dengan parameter project_type
-      2. Frontend: Test sub-tabs navigation (Stok ↔ Daftar Bahan)
-      3. Frontend: Test price comparison table display dan filtering
-      4. Frontend: Test detail dialog dengan multiple suppliers
-      5. E2E: Verify data separation between Interior and Arsitektur
+      1. Backend: Test backup creation and data structure
+      2. Backend: Test list backups endpoint
+      3. Backend: Test restore from backup
+      4. Backend: Test delete backup
+      5. Backend: Test clear all data
+      6. Frontend: Test backup creation flow
+      7. Frontend: Test restore flow with confirmation
+      8. Frontend: Test delete backup
+      9. Frontend: Test export/import functionality
+      10. E2E: Create backup → Clear data → Restore backup → Verify data restored
       
       Test credentials:
       - Admin: email="admin", password="admin"
