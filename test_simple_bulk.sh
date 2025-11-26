@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BACKEND_URL="https://xon-management.preview.emergentagent.com/api"
+BACKEND_URL="https://architect-app.preview.emergentagent.com/api"
 
 # Login as admin
 LOGIN=$(curl -s -X POST "$BACKEND_URL/auth/login" \

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BACKEND_URL="https://xon-management.preview.emergentagent.com/api"
+BACKEND_URL="https://architect-app.preview.emergentagent.com/api"
 
 echo "=== Testing Backend API ==="
 echo ""
