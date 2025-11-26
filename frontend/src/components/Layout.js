@@ -198,12 +198,12 @@ export const Layout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50" data-testid="layout-container">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 pb-20 lg:pb-0" data-testid="layout-container">
+      {/* Sidebar - Hidden on mobile */}
       <aside
         className={`fixed top-0 left-0 z-40 h-screen transition-transform ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } w-64 bg-gradient-to-b from-slate-900 to-slate-800 border-r border-slate-700 shadow-2xl`}
+        } w-64 bg-gradient-to-b from-slate-900 to-slate-800 border-r border-slate-700 shadow-2xl hidden lg:block`}
         data-testid="sidebar"
       >
         <div className="h-full px-4 py-6 overflow-y-auto">
