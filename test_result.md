@@ -97,14 +97,16 @@
 #====================================================================================================
 
 user_problem_statement: |
-  User meminta:
-  1. Tambah status transaksi untuk kategori Bahan dan Alat:
-     - Receiving and Putaway (barang masuk, tambah stok)
-     - Out Warehouse (barang keluar, kurangi stok)
-  2. Update status inventory yang lebih lengkap:
-     - Bahan: Tersedia, Order, Habis
-     - Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam
-  3. Auto-update inventory berdasarkan status transaksi (tambah/kurangi stok)
+  User meminta implementasi fitur "Daftar Bahan" dengan perbandingan harga:
+  1. Menambahkan sub-menu "Daftar Bahan" di dalam tab Interior dan Arsitektur
+  2. Menampilkan perbandingan harga bahan dari berbagai supplier
+  3. Filter data berdasarkan project_type (Interior vs Arsitektur)
+  4. Menampilkan detail: nama bahan, satuan, jumlah supplier, harga terendah, harga tertinggi
+  5. Dialog detail untuk melihat breakdown harga per supplier dengan:
+     - Harga terakhir (latest price)
+     - Harga rata-rata (average price)
+     - Jumlah transaksi
+     - Label termurah/termahal
 
 backend:
   - task: "Update logic inventory untuk support status transaksi (receiving/out_warehouse)"
