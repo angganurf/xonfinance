@@ -192,23 +192,44 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Implementasi fitur Status Transaksi & Update Status Inventory selesai:
+      Implementasi fitur "Daftar Bahan" dengan Perbandingan Harga selesai:
       
-      BACKEND:
-      1. ✅ Modified create_transaction logic untuk support status:
-         - 'receiving' (Receiving and Putaway) → Tambah stok inventory
-         - 'out_warehouse' (Out Warehouse) → Kurangi stok inventory
-      2. ✅ Added validation: prevent negative inventory
-         - Return HTTP 400 jika stok tidak cukup
-         - Return HTTP 400 jika item tidak ditemukan saat out warehouse
-      3. ✅ Auto-update status inventory ke 'Habis' jika quantity = 0
-      4. ✅ Support untuk bahan (items array) dan alat (single item)
+      BACKEND (server.py):
+      1. ✅ Modified endpoint GET /api/inventory/price-comparison:
+         - Added parameter project_type (optional)
+         - Filter transactions by project_type (interior/arsitektur)
+         - Query projects by type first, get project IDs
+         - Only include transactions from matching projects
+         - Return price comparison data filtered by project type
       
-      FRONTEND:
-      1. ✅ Added status dropdown di form Tambah Transaksi untuk kategori Bahan/Alat:
-         - "Receiving and Putaway (Barang Masuk)"
-         - "Out Warehouse (Barang Keluar)"
-         - Helper text: "akan menambah/mengurangi stok inventory"
+      FRONTEND (Inventory.js):
+      1. ✅ Removed standalone "Daftar Bahan" tab
+      2. ✅ Added sub-tabs system in Interior and Arsitektur:
+         - Sub-tab "📦 Stok" - menampilkan inventory table (existing)
+         - Sub-tab "💰 Daftar Bahan" - menampilkan price comparison table (new)
+      3. ✅ Implemented price comparison table:
+         - Columns: Nama Bahan, Satuan, Jumlah Supplier, Harga Terendah (green), Harga Tertinggi (red), Aksi
+         - Info box explaining feature for each project type
+         - Empty state with helpful message
+      4. ✅ Implemented price comparison detail dialog:
+         - Shows item info: satuan, total supplier, selisih harga
+         - Table with: Nama Toko, Harga Terakhir, Harga Rata-rata, Jumlah Transaksi, Label
+         - Green highlight for lowest price supplier
+         - Labels: "✓ Termurah" and "Termahal"
+         - Helper text explaining price calculations
+      5. ✅ Filter by project_type:
+         - Interior > Daftar Bahan: shows only interior project materials
+         - Arsitektur > Daftar Bahan: shows only arsitektur project materials
+      
+      Testing diperlukan:
+      1. Backend: Test price-comparison endpoint dengan parameter project_type
+      2. Frontend: Test sub-tabs navigation (Stok ↔ Daftar Bahan)
+      3. Frontend: Test price comparison table display dan filtering
+      4. Frontend: Test detail dialog dengan multiple suppliers
+      5. E2E: Verify data separation between Interior and Arsitektur
+      
+      Test credentials:
+      - Admin: email="admin", password="admin"
       2. ✅ Updated status options di halaman Inventory berdasarkan kategori:
          - Bahan: Tersedia, Order (Pengambilan), Habis
          - Alat: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam
