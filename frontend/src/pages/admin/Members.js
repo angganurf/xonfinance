@@ -238,6 +238,7 @@ const Members = () => {
       accounting: 'bg-blue-100 text-blue-700',
       estimator: 'bg-green-100 text-green-700',
       site_supervisor: 'bg-orange-100 text-orange-700',
+      project_planning_team: 'bg-purple-100 text-purple-700',
       employee: 'bg-purple-100 text-purple-700'
     };
     return colors[role] || 'bg-gray-100 text-gray-700';
