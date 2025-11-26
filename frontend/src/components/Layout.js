@@ -153,15 +153,9 @@ export const Layout = ({ children }) => {
     }
     
     if (userRoles.includes('estimator')) {
-      combinedItems.push({
-        label: 'Estimator',
-        icon: '📐',
-        group: 'estimator',
-        children: [
-          { label: 'Dashboard', path: '/estimator', icon: '📊' },
-          { label: 'RAB', path: '/estimator/rab', icon: '📋' }
-        ]
-      });
+      combinedItems.push(
+        { label: 'Estimator', path: '/estimator', icon: '📐' }
+      );
     }
     
     if (userRoles.includes('site_supervisor')) {
