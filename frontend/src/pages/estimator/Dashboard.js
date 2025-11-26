@@ -414,6 +414,15 @@ const EstimatorDashboard = () => {
             <DialogTitle>Buat RAB Baru</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateRAB} className="space-y-4">
+            {formData.project_name && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800 font-medium">📋 Data dari Planning Dashboard</p>
+                <p className="text-xs text-blue-600 mt-1">
+                  Data proyek sudah terisi otomatis. Silakan isi Nama Klien secara manual.
+                </p>
+              </div>
+            )}
+            
             <div>
               <Label>Nama Proyek *</Label>
               <Input
@@ -422,11 +431,6 @@ const EstimatorDashboard = () => {
                 placeholder="Contoh: Renovasi Rumah Bapak Andi"
                 required
               />
-              {formData.project_name && (
-                <p className="text-xs text-blue-600 mt-1">
-                  ✓ Nama proyek otomatis terisi dari Planning Dashboard
-                </p>
-              )}
             </div>
 
             <div>
