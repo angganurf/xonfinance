@@ -157,15 +157,18 @@ backend:
   
   - task: "Endpoint POST /api/admin/restore/{backup_id} untuk restore database"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created restore endpoint that clears existing data and restores from selected backup. Skips users collection for security (to prevent admin lockout). Returns restored counts for each collection."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: POST /api/admin/restore/{backup_id} working correctly. Successfully restored backup with ID eeaea509-9f20-41fa-b71f-d8d067756e0b. Returned correct restored counts: projects(10), transactions(25), inventory(31), rabs(1), users(Skipped). Security feature working - users collection preserved to prevent admin lockout."
   
   - task: "Endpoint DELETE /api/admin/backups/{backup_id} untuk hapus backup"
     implemented: true
