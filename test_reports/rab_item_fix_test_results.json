@@ -1,51 +1,51 @@
 {
   "test_type": "rab_item_fix",
-  "timestamp": "2025-11-26T14:50:18.634163",
+  "timestamp": "2025-11-26T14:51:11.307405",
   "total_tests": 7,
-  "passed_tests": 5,
-  "success_rate": 71.42857142857143,
+  "passed_tests": 7,
+  "success_rate": 100.0,
   "test_results": [
     {
       "test_name": "API Health Check",
       "success": true,
       "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
-      "timestamp": "2025-11-26T14:50:18.108909"
+      "timestamp": "2025-11-26T14:51:10.825328"
     },
     {
       "test_name": "RAB Item Fix - Admin Login",
       "success": true,
       "details": "Admin token received: True",
-      "timestamp": "2025-11-26T14:50:18.408697"
+      "timestamp": "2025-11-26T14:51:11.082472"
     },
     {
       "test_name": "RAB Item Fix - Get Existing RAB",
       "success": true,
       "details": "Using existing RAB ID: 3fbfb38b-ed8b-4d08-a890-4ea131dc47b1",
-      "timestamp": "2025-11-26T14:50:18.449795"
+      "timestamp": "2025-11-26T14:51:11.117483"
     },
     {
       "test_name": "RAB Item Fix - Create Without Project ID",
-      "success": false,
-      "details": "RAB Item ID: N/A, Expected: Success without project_id",
-      "timestamp": "2025-11-26T14:50:18.488996"
+      "success": true,
+      "details": "RAB Item ID: a439f6b7-70f6-4ce5-9d2e-5ce4c6f2adc3, Expected: Success without project_id",
+      "timestamp": "2025-11-26T14:51:11.162623"
     },
     {
       "test_name": "RAB Item Fix - Create With Project ID",
       "success": true,
-      "details": "RAB Item ID: 3f964d78-4664-4aa7-8d8a-5e3bb4e63467, Expected: Success with project_id",
-      "timestamp": "2025-11-26T14:50:18.562370"
+      "details": "RAB Item ID: 7141d1ce-c299-4f6a-a1e4-78a39f92f61d, Expected: Success with project_id",
+      "timestamp": "2025-11-26T14:51:11.234468"
     },
     {
       "test_name": "RAB Item Fix - Verify Items Created",
-      "success": false,
-      "details": "Items found: 1, Keramik found: False, Tukang found: True, Totals correct: False",
-      "timestamp": "2025-11-26T14:50:18.597521"
+      "success": true,
+      "details": "Items found: 3, Keramik found: True, Tukang found: True, Totals correct: True",
+      "timestamp": "2025-11-26T14:51:11.269205"
     },
     {
       "test_name": "RAB Item Fix - Invalid RAB ID",
       "success": true,
-      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}, Handled gracefully: True",
-      "timestamp": "2025-11-26T14:50:18.633915"
+      "details": "Response: {'message': 'RAB item created', 'id': 'd6ea4dab-44e3-4427-b95e-c0effa423ca7'}, Handled gracefully: True",
+      "timestamp": "2025-11-26T14:51:11.307079"
     }
   ]
 }
