@@ -427,6 +427,18 @@ test_plan:
         agent: "testing"
         comment: "VERIFIED: Planning project migration working correctly. All 10/11 tests passed (90.9% success rate). Admin login successful, found 8 projects with phase=perencanaan, migration endpoint successfully migrated all 8 projects to planning_projects collection, verified projects removed from projects collection, verified projects added to planning_projects with correct data integrity (status='planning'), verified planning overview shows migrated projects correctly, verified no data loss during migration. One test failed because newly created projects don't have phase field (expected behavior in new architecture). Migration preserves same IDs and all project data."
 
+  - task: "Route-aware sidebar menu untuk Accounting role"
+    implemented: false
+    working: false
+    file: "components/Layout.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE FOUND: Admin users always get admin sidebar menu regardless of route. When accessing /accounting routes, sidebar should show accounting-specific menu items (Home→/accounting, Transaksi→/accounting/transactions, Inventory→/accounting/inventory, Pengaturan→/settings) but currently shows admin routes. Layout.js getMenuItems() function needs to be route-aware to check current pathname and show appropriate menu context. Route /accounting/inventory is accessible and working correctly, but sidebar navigation is incorrect."
+
 agent_communication:
   - agent: "testing"
     message: |
