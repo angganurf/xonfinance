@@ -2114,6 +2114,9 @@ def main():
         elif sys.argv[1] == "planning_drafter":
             success = tester.run_planning_drafter_only_tests()
             test_type = "planning_drafter"
+        elif sys.argv[1] == "rab_creation":
+            success = tester.run_rab_creation_flow_test()
+            test_type = "rab_creation"
         else:
             success = tester.run_all_tests()
             test_type = "all"
