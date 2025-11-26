@@ -1687,6 +1687,9 @@ def main():
         elif sys.argv[1] == "status_transaksi":
             success = tester.run_status_transaksi_only_tests()
             test_type = "status_transaksi"
+        elif sys.argv[1] == "price_comparison":
+            success = tester.run_price_comparison_only_tests()
+            test_type = "price_comparison"
         else:
             success = tester.run_all_tests()
             test_type = "all"
