@@ -584,9 +584,9 @@ async def delete_project(project_id: str, user: User = Depends(get_current_user)
 async def create_rab(input: RABInput, user: User = Depends(get_current_user)):
     rab = RAB(
         project_name=input.project_name,
-        project_type=input.get("project_type", "interior"),
-        client_name=input.get("client_name"),
-        location=input.get("location"),
+        project_type=input.project_type or "interior",
+        client_name=input.client_name,
+        location=input.location,
         created_by=user.email,
         status="draft"
     )
