@@ -43,12 +43,29 @@ const PlanningProjects = () => {
 
   const loadProjects = async () => {
     try {
-      const [projectsRes, progressRes] = await Promise.all([
-        api.get('/planning-projects'),
-        api.get('/financial/projects-progress')
-      ]);
-      setProjects(projectsRes.data);
-      setProjectsProgress(progressRes.data);
+      const projectsRes = await api.get('/planning-projects');
+      
+      // Get planning progress for each project
+      const projectsWithProgress = await Promise.all(
+        projectsRes.data.map(async (project) => {
+          try {
+            const overviewRes = await api.get(`/planning-projects/${project.id}/overview`);
+            return {
+              ...project,
+              overall_progress: overviewRes.data.overall_progress || 0,
+              tasks: overviewRes.data.tasks || []
+            };
+          } catch (error) {
+            return {
+              ...project,
+              overall_progress: 0,
+              tasks: []
+            };
+          }
+        })
+      );
+      
+      setProjects(projectsWithProgress);
       setSelectedProjects([]);
     } catch (error) {
       toast.error('Gagal memuat proyek perencanaan');
