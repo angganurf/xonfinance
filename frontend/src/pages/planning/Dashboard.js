@@ -327,8 +327,8 @@ const PlanningTeamDashboard = () => {
                           />
                         </div>
 
-                        {/* RAB & Schedule Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t">
+                        {/* RAB, Shop Drawing & Schedule Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t">
                           {/* RAB Info */}
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -367,6 +367,43 @@ const PlanningTeamDashboard = () => {
                             </div>
                           </div>
 
+                          {/* Shop Drawing Info */}
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                              <Pencil className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-xs text-slate-600 font-medium">Gambar Kerja</p>
+                              {item.shop_drawing ? (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  <span className="text-xs text-green-600 font-medium">Sudah dibuat</span>
+                                  <Button
+                                    size="sm"
+                                    variant="link"
+                                    className="h-auto p-0 text-xs"
+                                    onClick={() => navigate(`/drafter/shop-drawing/${item.shop_drawing.id}`)}
+                                  >
+                                    Lihat →
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <AlertCircle className="h-4 w-4 text-orange-500" />
+                                  <span className="text-xs text-orange-600">Belum dibuat</span>
+                                  <Button
+                                    size="sm"
+                                    variant="link"
+                                    className="h-auto p-0 text-xs"
+                                    onClick={() => navigate(`/drafter/shop-drawing/create?project=${item.project.id}`)}
+                                  >
+                                    Buat Shop Drawing →
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
                           {/* Schedule Info */}
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
@@ -391,6 +428,14 @@ const PlanningTeamDashboard = () => {
                                 <div className="flex items-center gap-2 mt-1">
                                   <AlertCircle className="h-4 w-4 text-orange-500" />
                                   <span className="text-xs text-orange-600">Belum dibuat</span>
+                                  <Button
+                                    size="sm"
+                                    variant="link"
+                                    className="h-auto p-0 text-xs"
+                                    onClick={() => navigate(`/supervisor/schedule?project=${item.project.id}`)}
+                                  >
+                                    Buat Schedule →
+                                  </Button>
                                 </div>
                               )}
                             </div>
