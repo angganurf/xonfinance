@@ -184,7 +184,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Modifikasi endpoint GET /api/inventory/price-comparison untuk support filter project_type"
     - "Implementasi sub-tabs (Stok / Daftar Bahan) di dalam tab Interior dan Arsitektur"
     - "Tampilan tabel Daftar Bahan dengan perbandingan harga"
     - "Dialog detail perbandingan harga per supplier"
