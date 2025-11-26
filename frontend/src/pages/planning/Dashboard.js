@@ -190,7 +190,17 @@ const PlanningTeamDashboard = () => {
               </span>
             </div>
           </div>
-          <Button onClick={() => setCreateDialog(true)} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={() => {
+            setCreateDialog(true);
+            setSelectedRAB(null);
+            setFormData({
+              name: '',
+              type: 'interior',
+              description: '',
+              location: '',
+              project_value: 0
+            });
+          }} className="bg-green-600 hover:bg-green-700">
             <Plus className="mr-2 h-4 w-4" /> Buat Project Baru
           </Button>
         </div>
