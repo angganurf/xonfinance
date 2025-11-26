@@ -158,12 +158,20 @@ function App() {
             path="/estimator"
             element={
               <ProtectedRoute allowedRoles={['estimator', 'admin']}>
-                <EstimatorDashboard />
+                <RABList />
               </ProtectedRoute>
             }
           />
           <Route
             path="/estimator/rab"
+            element={
+              <ProtectedRoute allowedRoles={['estimator', 'admin']}>
+                <RABList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/estimator/rab/:rabId"
             element={
               <ProtectedRoute allowedRoles={['estimator', 'admin']}>
                 <EstimatorRAB />
