@@ -95,14 +95,6 @@ export const Layout = ({ children }) => {
             ]
           },
           {
-            label: 'Estimator',
-            icon: '📐',
-            group: 'estimator',
-            children: [
-              { label: 'RAB', path: '/admin/rab', icon: '📋' }
-            ]
-          },
-          {
             label: 'Supervisor',
             icon: '👷',
             group: 'supervisor',
