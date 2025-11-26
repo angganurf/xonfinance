@@ -679,7 +679,7 @@ async def update_design_progress(project_id: str, data: dict, user: User = Depen
 
 @api_router.get("/planning/overview")
 async def get_planning_overview(user: User = Depends(get_current_user)):
-    """Get planning team overview: projects, RAB, shop drawings, schedules - Only perencanaan phase"""
+    """Get planning team overview: projects, RAB, modeling 3D, shop drawings, schedules - Only perencanaan phase"""
     # Get only perencanaan projects
     projects = await db.projects.find({"phase": "perencanaan"}, {"_id": 0}).to_list(1000)
     
@@ -689,6 +689,12 @@ async def get_planning_overview(user: User = Depends(get_current_user)):
     for rab in rabs:
         if rab.get("project_id"):
             rab_by_project[rab["project_id"]] = rab
+    
+    # Get modeling 3D info
+    modeling3ds = await db.modeling_3d.find({}, {"_id": 0}).to_list(1000)
+    modeling3d_by_project = {}
+    for m3d in modeling3ds:
+        modeling3d_by_project[m3d["project_id"]] = m3d
     
     # Get shop drawing info
     shop_drawings = await db.shop_drawings.find({}, {"_id": 0}).to_list(1000)
@@ -706,12 +712,14 @@ async def get_planning_overview(user: User = Depends(get_current_user)):
     result = []
     for project in projects:
         rab_info = rab_by_project.get(project["id"])
+        modeling3d_info = modeling3d_by_project.get(project["id"])
         shop_drawing_info = shop_drawing_by_project.get(project["id"])
         schedule_info = schedule_by_project.get(project["id"])
         
         result.append({
             "project": project,
             "rab": rab_info,
+            "modeling_3d": modeling3d_info,
             "shop_drawing": shop_drawing_info,
             "schedule": schedule_info,
             "design_progress": project.get("design_progress", 0)
