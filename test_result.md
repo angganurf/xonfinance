@@ -111,15 +111,18 @@ user_problem_statement: |
 backend:
   - task: "Modifikasi endpoint GET /api/inventory/price-comparison untuk support filter project_type"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added parameter project_type to price-comparison endpoint. Query projects by type, get project_ids, filter transactions to only include those from projects with matching type. This ensures Interior and Arsitektur have separate price comparison data."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Price comparison endpoint working perfectly. All test cases passed (9/9 - 100% success rate). Fixed minor filtering logic issue for invalid project types. Endpoint correctly filters by project_type (interior/arsitektur), supports combined filters (item_name + project_type), returns proper response format with suppliers sorted by price, and handles edge cases appropriately. Response format matches specification exactly."
 
 frontend:
   - task: "Implementasi sub-tabs (Stok / Daftar Bahan) di dalam tab Interior dan Arsitektur"
