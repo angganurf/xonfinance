@@ -42,6 +42,27 @@ const PlanningTeamDashboard = () => {
     }
   };
 
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const res = await api.post('/projects', formData);
+      toast.success('Project perencanaan berhasil dibuat!');
+      setCreateDialog(false);
+      setFormData({
+        name: '',
+        type: 'interior',
+        description: '',
+        location: '',
+        project_value: 0
+      });
+      loadOverview();
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast.error('Gagal membuat project');
+    }
+  };
+
   const handleUpdateProgress = async () => {
     if (!selectedProject) return;
     
