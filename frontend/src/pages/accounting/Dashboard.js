@@ -10,6 +10,9 @@ import { toast } from 'sonner';
 const AccountingDashboard = () => {
   const navigate = useNavigate();
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [dailyExpenses, setDailyExpenses] = useState(0);
+  const [weeklyExpenses, setWeeklyExpenses] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [projectExpenses, setProjectExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +43,34 @@ const AccountingDashboard = () => {
       // Calculate total expenses (transaksi keluar saja)
       const total = expenseTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
       setTotalExpenses(total);
+      
+      // Calculate daily, weekly, monthly expenses
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const monthAgo = new Date(today);
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      
+      const dailyTotal = expenseTransactions.reduce((sum, t) => {
+        const transDate = new Date(t.transaction_date);
+        const transDay = new Date(transDate.getFullYear(), transDate.getMonth(), transDate.getDate());
+        return transDay.getTime() === today.getTime() ? sum + (t.amount || 0) : sum;
+      }, 0);
+      
+      const weeklyTotal = expenseTransactions.reduce((sum, t) => {
+        const transDate = new Date(t.transaction_date);
+        return transDate >= weekAgo ? sum + (t.amount || 0) : sum;
+      }, 0);
+      
+      const monthlyTotal = expenseTransactions.reduce((sum, t) => {
+        const transDate = new Date(t.transaction_date);
+        return transDate >= monthAgo ? sum + (t.amount || 0) : sum;
+      }, 0);
+      
+      setDailyExpenses(dailyTotal);
+      setWeeklyExpenses(weeklyTotal);
+      setMonthlyExpenses(monthlyTotal);
       
       // Calculate expenses per project
       const projectExpensesMap = {};
