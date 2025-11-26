@@ -180,6 +180,20 @@ class Inventory(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class WarehouseTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    inventory_id: str
+    item_name: str
+    quantity: float
+    unit: str
+    project_id: str
+    project_name: str
+    usage_type: str  # production, return, adjustment
+    notes: Optional[str] = None
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============= INPUT MODELS =============
 
 class RegisterInput(BaseModel):
