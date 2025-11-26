@@ -230,8 +230,10 @@ class ProjectInput(BaseModel):
     project_value: Optional[float] = 0.0
 
 class RABInput(BaseModel):
-    project_id: str
     project_name: str
+    project_type: Optional[str] = "interior"
+    client_name: Optional[str] = None
+    location: Optional[str] = None
 
 class RABItemInput(BaseModel):
     rab_id: str
