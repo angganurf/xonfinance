@@ -153,6 +153,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/accounting-admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAccountingAdmin />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Accounting Routes */}
           <Route
