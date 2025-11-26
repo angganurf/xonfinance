@@ -122,50 +122,53 @@ backend:
         comment: "Added parameter project_type to price-comparison endpoint. Query projects by type, get project_ids, filter transactions to only include those from projects with matching type. This ensures Interior and Arsitektur have separate price comparison data."
 
 frontend:
-  - task: "Tambah dropdown status transaksi untuk kategori Bahan dan Alat"
+  - task: "Implementasi sub-tabs (Stok / Daftar Bahan) di dalam tab Interior dan Arsitektur"
     implemented: true
-    working: true
-    file: "Transactions.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Added status dropdown in transaction form when category is 'bahan' or 'alat'. Options: 'Receiving and Putaway' (barang masuk) and 'Out Warehouse' (barang keluar). Added helper text showing 'akan menambah/mengurangi stok inventory'."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Status dropdown functionality working perfectly. ✅ Status dropdown appears ONLY for Bahan and Alat categories. ✅ Status dropdown does NOT appear for Upah and Operasional. ✅ Status dropdown has required asterisk (*). ✅ Both status options available: 'Receiving and Putaway (Barang Masuk)' and 'Out Warehouse (Barang Keluar)'. ✅ Helper text shows correct messages: Receiving: '✓ Akan menambah stok inventory', Out Warehouse: '⚠ Akan mengurangi stok inventory'. ✅ Status dropdown logic works identically for both Bahan and Alat categories. All requirements from review request verified successfully with comprehensive Playwright testing."
-  
-  - task: "Update status options di halaman Inventory berdasarkan kategori"
-    implemented: true
-    working: true
+    working: "NA"
     file: "pages/admin/Inventory.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Updated status select in edit form. Bahan category shows: Tersedia, Order, Habis. Alat category shows: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. Added helper text and updated status color mapping."
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Inventory status editing working correctly. ✅ Different status options for Bahan vs Alat categories implemented. ✅ Bahan status options: Tersedia, Order (Pengambilan), Habis. ✅ Alat status options: Tersedia, Bagus, Rusak, Perlu di Retur, Dipinjam. ✅ Status badge colors display correctly with proper color mapping. ✅ Status editing functionality accessible through dropdown menu and working properly. Frontend inventory status management is production ready."
+        comment: "Added subTab state and UI sub-tabs toggle (Stok / Daftar Bahan). When user switches main tab (Interior/Arsitektur), subTab resets to 'stok'. Sub-tabs are styled with bg-white for active and hover effects. Both Interior and Arsitektur now have 2 sub-menus each."
   
-  - task: "Tambahkan route /admin/inventory"
+  - task: "Tampilan tabel Daftar Bahan dengan perbandingan harga"
     implemented: true
-    working: true
-    file: "App.js"
+    working: "NA"
+    file: "pages/admin/Inventory.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Added route /admin/inventory protected with admin role, imported AdminInventory component"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Route /admin/inventory working perfectly. ✅ Navigation from sidebar 'Stok Barang' link successfully redirects to /admin/inventory. ✅ Page loads correctly with all inventory functionality. ✅ Admin role protection working - only accessible to admin users. ✅ AdminInventory component properly imported and rendering."
+        comment: "Created price comparison table showing: Nama Bahan, Satuan, Jumlah Supplier (badge), Harga Terendah (green), Harga Tertinggi (red), and Detail button. Empty state included with helpful message. Info box explains the feature for each project type."
+  
+  - task: "Dialog detail perbandingan harga per supplier"
+    implemented: true
+    working: "NA"
+    file: "pages/admin/Inventory.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created price comparison detail dialog showing: item info (satuan, total supplier, selisih harga), supplier table (nama toko, harga terakhir, harga rata-rata, jumlah transaksi, label termurah/termahal). Green highlight for lowest price row. Helper text explains calculation method."
+  
+  - task: "Filter data perbandingan harga berdasarkan project_type"
+    implemented: true
+    working: "NA"
+    file: "pages/admin/Inventory.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modified loadPriceComparison to send project_type parameter (activeTab value: interior/arsitektur) to backend. This ensures Interior shows only Interior project materials, and Arsitektur shows only Arsitektur project materials."
 
 metadata:
   created_by: "main_agent"
