@@ -1,0 +1,39 @@
+{
+  "test_type": "admin_backup",
+  "timestamp": "2025-11-26T08:37:39.384257",
+  "total_tests": 5,
+  "passed_tests": 4,
+  "success_rate": 80.0,
+  "test_results": [
+    {
+      "test_name": "API Health Check",
+      "success": true,
+      "details": "Response: {'message': 'XON Architect API', 'status': 'online'}",
+      "timestamp": "2025-11-26T08:37:38.758846"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Admin token received: True",
+      "timestamp": "2025-11-26T08:37:39.021626"
+    },
+    {
+      "test_name": "Delete Admin Backup",
+      "success": true,
+      "details": "Backup eeaea509-9f20-41fa-b71f-d8d067756e0b deleted successfully, verified: True",
+      "timestamp": "2025-11-26T08:37:39.147879"
+    },
+    {
+      "test_name": "Delete Non-existent Backup (404)",
+      "success": true,
+      "details": "Expected 404 for non-existent backup, got: {'detail': 'Backup not found'}",
+      "timestamp": "2025-11-26T08:37:39.188833"
+    },
+    {
+      "test_name": "Clear All Data",
+      "success": false,
+      "details": "Response missing deleted_counts: {'message': 'All data cleared successfully', 'deleted_count': {'projects': 14, 'transactions': 25, 'inventory': 31, 'rabs': 1, 'rab_items': 0, 'schedules': 0, 'tasks': 0}}",
+      "timestamp": "2025-11-26T08:37:39.384036"
+    }
+  ]
+}
