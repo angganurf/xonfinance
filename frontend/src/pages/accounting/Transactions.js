@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import { useAuth } from '../../contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -14,6 +16,12 @@ import { Plus, Edit, Trash2, MoreVertical, Trash, X, ArrowUpDown } from 'lucide-
 import api from '../../utils/api';
 
 const AccountingTransactions = () => {
+  const location = useLocation();
+  const { user } = useAuth();
+  const isAccountingRoute = location.pathname.startsWith('/accounting');
+  
+  // Check if user is in accounting context (not admin viewing accounting transactions)
+  const hideKasMasuk = isAccountingRoute;
   const [transactions, setTransactions] = useState([]);
   const [sortedTransactions, setSortedTransactions] = useState([]);
   const [projects, setProjects] = useState([]);
