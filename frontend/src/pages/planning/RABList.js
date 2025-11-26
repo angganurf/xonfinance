@@ -3,10 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 import { Badge } from '../../components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Textarea } from '../../components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import api from '../../utils/api';
-import { FileText, Eye, ChevronDown, ChevronRight, DollarSign, Package } from 'lucide-react';
+import { FileText, Eye, ChevronDown, ChevronRight, DollarSign, Package, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const RABList = () => {
@@ -15,21 +20,31 @@ const RABList = () => {
   const [rabsWithItems, setRabsWithItems] = useState([]);
   const [expandedRabs, setExpandedRabs] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState([]);
+  const [addDialog, setAddDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    project_id: '',
+    name: '',
+    description: '',
+    notes: ''
+  });
 
   useEffect(() => {
-    loadRABs();
+    loadData();
   }, []);
 
-  const loadRABs = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const [rabsRes, itemsRes] = await Promise.all([
+      const [rabsRes, itemsRes, projectsRes] = await Promise.all([
         api.get('/rabs'),
-        api.get('/rab-items')
+        api.get('/rab-items'),
+        api.get('/planning-projects')
       ]);
       
       const rabsData = rabsRes.data;
       const itemsData = itemsRes.data;
+      setProjects(projectsRes.data);
       
       // Group items by RAB ID and calculate totals
       const rabsWithDetails = rabsData.map(rab => {
@@ -66,6 +81,56 @@ const RABList = () => {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.project_id) {
+      toast.error('Pilih proyek terlebih dahulu');
+      return;
+    }
+    
+    try {
+      // Get project details
+      const project = projects.find(p => p.id === formData.project_id);
+      if (!project) {
+        toast.error('Proyek tidak ditemukan');
+        return;
+      }
+      
+      const rabData = {
+        project_id: formData.project_id,
+        project_name: project.name,
+        project_type: project.type,
+        client_name: project.client_name || '',
+        location: project.location || '',
+        name: formData.name || `RAB - ${project.name}`,
+        description: formData.description || '',
+        notes: formData.notes || '',
+        status: 'draft'
+      };
+      
+      const response = await api.post('/rabs', rabData);
+      toast.success('RAB berhasil dibuat');
+      setAddDialog(false);
+      setFormData({
+        project_id: '',
+        name: '',
+        description: '',
+        notes: ''
+      });
+      
+      // Navigate to RAB editor
+      if (response.data && response.data.id) {
+        navigate(`/estimator/rab/${response.data.id}`);
+      } else {
+        loadData();
+      }
+    } catch (error) {
+      console.error('Error creating RAB:', error);
+      toast.error('Gagal membuat RAB');
+    }
+  };
+
   const toggleExpand = (rabId) => {
     setExpandedRabs(prev => {
       const newSet = new Set(prev);
@@ -97,10 +162,74 @@ const RABList = () => {
             <h2 className="text-3xl font-bold text-slate-800 mb-2">Daftar RAB</h2>
             <p className="text-slate-600">Rencana Anggaran Biaya proyek perencanaan</p>
           </div>
-          <Button onClick={() => navigate('/estimator/dashboard')} variant="outline">
-            <FileText className="mr-2 h-4 w-4" />
-            Buka Estimator
-          </Button>
+          <Dialog open={addDialog} onOpenChange={setAddDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Tambah RAB
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Tambah RAB Baru</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label>Proyek *</Label>
+                  <Select value={formData.project_id} onValueChange={(v) => setFormData({...formData, project_id: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih proyek perencanaan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map(project => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name} ({project.type})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label>Nama RAB (Opsional)</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="Kosongkan untuk auto-generate dari nama proyek"
+                  />
+                </div>
+                
+                <div>
+                  <Label>Deskripsi (Opsional)</Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    placeholder="Deskripsi RAB"
+                    rows={3}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Catatan (Opsional)</Label>
+                  <Textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                    placeholder="Catatan tambahan"
+                    rows={2}
+                  />
+                </div>
+                
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setAddDialog(false)}>
+                    Batal
+                  </Button>
+                  <Button type="submit">
+                    Buat RAB
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {loading ? (
@@ -119,10 +248,11 @@ const RABList = () => {
               <FileText className="h-16 w-16 text-slate-300 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-slate-800 mb-2">Belum Ada RAB</h3>
               <p className="text-slate-600 mb-4">
-                Belum ada RAB yang dibuat. RAB akan otomatis terbuat saat proyek perencanaan dibuat.
+                Belum ada RAB yang dibuat. Klik tombol "Tambah RAB" untuk membuat RAB baru.
               </p>
-              <Button onClick={() => navigate('/estimator/dashboard')}>
-                Buka Estimator Dashboard
+              <Button onClick={() => setAddDialog(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Tambah RAB Pertama
               </Button>
             </CardContent>
           </Card>
@@ -244,7 +374,16 @@ const RABList = () => {
                             </div>
                           </>
                         ) : (
-                          <p className="text-center text-slate-500 py-4">Belum ada item pekerjaan</p>
+                          <div className="text-center py-8">
+                            <p className="text-slate-500 mb-3">Belum ada item pekerjaan</p>
+                            <Button 
+                              size="sm"
+                              onClick={() => navigate(`/estimator/rab/${rab.id}`)}
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Tambah Item
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </CardContent>
