@@ -620,25 +620,69 @@ async def update_rab(rab_id: str, input: RABUpdateInput, user: User = Depends(ge
         raise HTTPException(status_code=404, detail="RAB not found")
     return {"message": "RAB updated"}
 
-@api_router.post("/rabs/{rab_id}/approve")
-async def approve_rab(rab_id: str, user: User = Depends(get_current_user)):
+@api_router.patch("/rabs/{rab_id}/status")
+async def update_rab_status(rab_id: str, data: dict, user: User = Depends(get_current_user)):
+    """Update RAB status and create project if approved"""
     rab = await db.rabs.find_one({"id": rab_id}, {"_id": 0})
     if not rab:
         raise HTTPException(status_code=404, detail="RAB not found")
     
-    # Update RAB status
-    await db.rabs.update_one(
-        {"id": rab_id},
-        {"$set": {"status": "approved", "approved_at": now_wib().isoformat()}}
-    )
+    new_status = data.get("status")
+    if new_status not in ["draft", "bidding_process", "approved", "rejected"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
     
-    # Update project status to active
-    await db.projects.update_one(
-        {"id": rab["project_id"]},
-        {"$set": {"status": "active"}}
-    )
+    updates = {"status": new_status}
     
-    return {"message": "RAB approved and project activated"}
+    # If approved, create project automatically
+    if new_status == "approved":
+        # Calculate total from RAB items
+        rab_items = await db.rab_items.find({"rab_id": rab_id}, {"_id": 0}).to_list(1000)
+        subtotal = sum(item.get("total", 0) for item in rab_items)
+        discount = rab.get("discount", 0)
+        tax_percent = rab.get("tax", 11)
+        
+        after_discount = subtotal - discount
+        tax_amount = after_discount * (tax_percent / 100)
+        grand_total = after_discount + tax_amount
+        
+        # Create project
+        project = Project(
+            name=rab["project_name"],
+            type=rab.get("project_type", "interior"),
+            description=f"Project from RAB: {rab['project_name']}",
+            location=rab.get("location"),
+            project_value=grand_total,
+            status="active",
+            created_by=user.email
+        )
+        
+        project_dict = project.model_dump()
+        project_dict["created_at"] = project_dict["created_at"].isoformat()
+        if project_dict.get("contract_date"):
+            project_dict["contract_date"] = project_dict["contract_date"].isoformat()
+        
+        await db.projects.insert_one(project_dict)
+        
+        # Update RAB with project_id and approved timestamp
+        updates["project_id"] = project.id
+        updates["approved_at"] = now_wib().isoformat()
+    
+    # If rejected, store reason
+    if new_status == "rejected":
+        updates["rejected_reason"] = data.get("rejected_reason", "")
+    
+    # Update RAB
+    await db.rabs.update_one({"id": rab_id}, {"$set": updates})
+    
+    if new_status == "approved":
+        return {"message": "RAB approved and project created", "project_id": project.id}
+    
+    return {"message": f"RAB status updated to {new_status}"}
+
+@api_router.post("/rabs/{rab_id}/approve")
+async def approve_rab(rab_id: str, user: User = Depends(get_current_user)):
+    """Legacy endpoint - redirects to update_rab_status"""
+    return await update_rab_status(rab_id, {"status": "approved"}, user)
 
 @api_router.delete("/rabs/{rab_id}")
 async def delete_rab(rab_id: str, user: User = Depends(get_current_user)):
