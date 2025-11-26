@@ -376,7 +376,7 @@ const PlanningTeamDashboard = () => {
                           {/* Modeling 3D Info */}
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                              <Cube className="h-5 w-5 text-purple-600" />
+                              <Box className="h-5 w-5 text-purple-600" />
                             </div>
                             <div className="flex-1">
                               <p className="text-xs text-slate-600 font-medium">Modeling 3D</p>
