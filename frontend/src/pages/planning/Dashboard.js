@@ -392,17 +392,18 @@ const PlanningTeamDashboard = () => {
                             />
                             <div className="flex-1">
                               <h3 className="text-lg font-bold text-slate-800">{item.project.name}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                item.project.type === 'interior' 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-purple-100 text-purple-800'
-                              }`}>
-                                {item.project.type === 'interior' ? 'Interior' : 'Arsitektur'}
-                              </span>
-                              <span className="text-sm text-slate-600">
-                                {item.project.location || 'Lokasi tidak tersedia'}
-                              </span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  item.project.type === 'interior' 
+                                    ? 'bg-blue-100 text-blue-800' 
+                                    : 'bg-purple-100 text-purple-800'
+                                }`}>
+                                  {item.project.type === 'interior' ? 'Interior' : 'Arsitektur'}
+                                </span>
+                                <span className="text-sm text-slate-600">
+                                  {item.project.location || 'Lokasi tidak tersedia'}
+                                </span>
+                              </div>
                             </div>
                           </div>
                           <div className="text-right">
