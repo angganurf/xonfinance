@@ -68,6 +68,9 @@ export const Login = () => {
       case 'site_supervisor':
         navigate('/supervisor');
         break;
+      case 'project_planning_team':
+        navigate('/planning');
+        break;
       case 'employee':
         navigate('/employee');
         break;
