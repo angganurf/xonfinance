@@ -2772,6 +2772,316 @@ class XONArchitectAPITester:
         
         return success
 
+    # ============= INVENTORY ITEM-NAMES FILTER TESTS =============
+    
+    def setup_inventory_item_names_test_data(self):
+        """Setup test data for inventory item-names filter tests"""
+        print("\n🔧 Setting up inventory item-names filter test data...")
+        
+        # Create Interior Project A
+        interior_project_a_data = {
+            "name": f"Interior Project A {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "type": "interior",
+            "description": "Test interior project A for item-names filter",
+            "contract_date": "2024-01-15",
+            "duration": 30,
+            "location": "Jakarta"
+        }
+        
+        success, data = self.make_request('POST', '/projects', interior_project_a_data, 200)
+        if success and 'id' in data:
+            self.interior_project_a_id = data['id']
+            print(f"✅ Created Interior Project A: {self.interior_project_a_id}")
+        else:
+            print("❌ Failed to create Interior Project A")
+            return False
+        
+        # Create Interior Project B
+        interior_project_b_data = {
+            "name": f"Interior Project B {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "type": "interior",
+            "description": "Test interior project B for item-names filter",
+            "contract_date": "2024-01-15",
+            "duration": 30,
+            "location": "Bandung"
+        }
+        
+        success, data = self.make_request('POST', '/projects', interior_project_b_data, 200)
+        if success and 'id' in data:
+            self.interior_project_b_id = data['id']
+            print(f"✅ Created Interior Project B: {self.interior_project_b_id}")
+        else:
+            print("❌ Failed to create Interior Project B")
+            return False
+        
+        # Create Arsitektur Project
+        arsitektur_project_data = {
+            "name": f"Arsitektur Project {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "type": "arsitektur",
+            "description": "Test arsitektur project for item-names filter",
+            "contract_date": "2024-01-15",
+            "duration": 45,
+            "location": "Surabaya"
+        }
+        
+        success, data = self.make_request('POST', '/projects', arsitektur_project_data, 200)
+        if success and 'id' in data:
+            self.arsitektur_project_id = data['id']
+            print(f"✅ Created Arsitektur Project: {self.arsitektur_project_id}")
+        else:
+            print("❌ Failed to create Arsitektur Project")
+            return False
+        
+        # Create transaction for Interior Project A with "Keramik Granit 60x60"
+        transaction_interior_a = {
+            "project_id": self.interior_project_a_id,
+            "category": "bahan",
+            "description": "Pembelian keramik untuk project interior A",
+            "amount": 2000000,
+            "items": [
+                {
+                    "description": "Keramik Granit 60x60",
+                    "quantity": 50,
+                    "unit": "m²",
+                    "unit_price": 40000,
+                    "total": 2000000,
+                    "supplier": "Keramik Store A"
+                }
+            ],
+            "transaction_date": "2025-01-15"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_interior_a, 200)
+        if success:
+            print("✅ Created transaction for Interior Project A (Keramik Granit 60x60)")
+        else:
+            print("❌ Failed to create transaction for Interior Project A")
+            return False
+        
+        # Create transaction for Interior Project B with "Cat Tembok Avitex"
+        transaction_interior_b = {
+            "project_id": self.interior_project_b_id,
+            "category": "bahan",
+            "description": "Pembelian cat untuk project interior B",
+            "amount": 500000,
+            "items": [
+                {
+                    "description": "Cat Tembok Avitex",
+                    "quantity": 10,
+                    "unit": "Liter",
+                    "unit_price": 50000,
+                    "total": 500000,
+                    "supplier": "Cat Store B"
+                }
+            ],
+            "transaction_date": "2025-01-15"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_interior_b, 200)
+        if success:
+            print("✅ Created transaction for Interior Project B (Cat Tembok Avitex)")
+        else:
+            print("❌ Failed to create transaction for Interior Project B")
+            return False
+        
+        # Create transaction for Arsitektur Project with different materials
+        transaction_arsitektur = {
+            "project_id": self.arsitektur_project_id,
+            "category": "bahan",
+            "description": "Pembelian bahan untuk project arsitektur",
+            "amount": 1500000,
+            "items": [
+                {
+                    "description": "Besi Beton 12mm",
+                    "quantity": 100,
+                    "unit": "Batang",
+                    "unit_price": 15000,
+                    "total": 1500000,
+                    "supplier": "Steel Supplier"
+                }
+            ],
+            "transaction_date": "2025-01-15"
+        }
+        
+        success, data = self.make_request('POST', '/transactions', transaction_arsitektur, 200)
+        if success:
+            print("✅ Created transaction for Arsitektur Project (Besi Beton 12mm)")
+        else:
+            print("❌ Failed to create transaction for Arsitektur Project")
+            return False
+        
+        print("✅ All inventory item-names test data created successfully")
+        return True
+
+    def test_inventory_item_names_no_filter(self):
+        """Test GET /api/inventory/item-names without filters"""
+        success, data = self.make_request('GET', '/inventory/item-names?category=bahan')
+        
+        if success and isinstance(data, dict) and 'item_names' in data:
+            item_names = data['item_names']
+            
+            # Should include items from both interior and arsitektur projects
+            has_keramik = "Keramik Granit 60x60" in item_names
+            has_cat = "Cat Tembok Avitex" in item_names
+            has_besi = "Besi Beton 12mm" in item_names
+            
+            all_items_present = has_keramik and has_cat and has_besi
+            details = f"Items found: {len(item_names)}, Has Keramik: {has_keramik}, Has Cat: {has_cat}, Has Besi: {has_besi}"
+            self.log_test("Inventory Item Names No Filter", all_items_present, details)
+            return all_items_present
+        else:
+            self.log_test("Inventory Item Names No Filter", False, f"Failed to get data or invalid format: {data}")
+            return False
+
+    def test_inventory_item_names_filter_interior(self):
+        """Test GET /api/inventory/item-names with project_type=interior filter"""
+        success, data = self.make_request('GET', '/inventory/item-names?category=bahan&project_type=interior')
+        
+        if success and isinstance(data, dict) and 'item_names' in data:
+            item_names = data['item_names']
+            
+            # Should include BOTH interior items from different projects
+            has_keramik = "Keramik Granit 60x60" in item_names
+            has_cat = "Cat Tembok Avitex" in item_names
+            
+            # Should NOT include arsitektur items
+            has_besi = "Besi Beton 12mm" in item_names
+            
+            correct_filtering = has_keramik and has_cat and not has_besi
+            details = f"Items found: {len(item_names)}, Has Keramik: {has_keramik}, Has Cat: {has_cat}, Has Besi (should be false): {has_besi}, Items: {item_names}"
+            self.log_test("Inventory Item Names Filter Interior", correct_filtering, details)
+            return correct_filtering
+        else:
+            self.log_test("Inventory Item Names Filter Interior", False, f"Failed to get data or invalid format: {data}")
+            return False
+
+    def test_inventory_item_names_filter_arsitektur(self):
+        """Test GET /api/inventory/item-names with project_type=arsitektur filter"""
+        success, data = self.make_request('GET', '/inventory/item-names?category=bahan&project_type=arsitektur')
+        
+        if success and isinstance(data, dict) and 'item_names' in data:
+            item_names = data['item_names']
+            
+            # Should include arsitektur items
+            has_besi = "Besi Beton 12mm" in item_names
+            
+            # Should NOT include interior items
+            has_keramik = "Keramik Granit 60x60" in item_names
+            has_cat = "Cat Tembok Avitex" in item_names
+            
+            correct_filtering = has_besi and not has_keramik and not has_cat
+            details = f"Items found: {len(item_names)}, Has Besi: {has_besi}, Has Keramik (should be false): {has_keramik}, Has Cat (should be false): {has_cat}, Items: {item_names}"
+            self.log_test("Inventory Item Names Filter Arsitektur", correct_filtering, details)
+            return correct_filtering
+        else:
+            self.log_test("Inventory Item Names Filter Arsitektur", False, f"Failed to get data or invalid format: {data}")
+            return False
+
+    def test_inventory_item_names_backward_compatibility_project_id(self):
+        """Test backward compatibility with project_id parameter"""
+        # Use interior project A ID - should return all interior items (not just from that project)
+        success, data = self.make_request('GET', f'/inventory/item-names?category=bahan&project_id={self.interior_project_a_id}')
+        
+        if success and isinstance(data, dict) and 'item_names' in data:
+            item_names = data['item_names']
+            
+            # Should include BOTH interior items (backward compatibility means it should filter by project_type)
+            has_keramik = "Keramik Granit 60x60" in item_names
+            has_cat = "Cat Tembok Avitex" in item_names
+            
+            # Should NOT include arsitektur items
+            has_besi = "Besi Beton 12mm" in item_names
+            
+            backward_compatibility_works = has_keramik and has_cat and not has_besi
+            details = f"Items found: {len(item_names)}, Has Keramik: {has_keramik}, Has Cat: {has_cat}, Has Besi (should be false): {has_besi}, Items: {item_names}"
+            self.log_test("Inventory Item Names Backward Compatibility", backward_compatibility_works, details)
+            return backward_compatibility_works
+        else:
+            self.log_test("Inventory Item Names Backward Compatibility", False, f"Failed to get data or invalid format: {data}")
+            return False
+
+    def test_inventory_item_names_shared_across_projects_same_type(self):
+        """Test that items are shared across projects of the same type"""
+        # This test verifies the main requirement: items from different projects but same type appear together
+        
+        # Get interior items
+        success, data = self.make_request('GET', '/inventory/item-names?category=bahan&project_type=interior')
+        
+        if success and isinstance(data, dict) and 'item_names' in data:
+            interior_items = data['item_names']
+            
+            # Should have items from BOTH interior projects
+            has_project_a_item = "Keramik Granit 60x60" in interior_items  # From Interior Project A
+            has_project_b_item = "Cat Tembok Avitex" in interior_items      # From Interior Project B
+            
+            # Verify they appear together in the same response
+            items_shared_across_projects = has_project_a_item and has_project_b_item
+            
+            details = f"Interior items: {interior_items}, Has Project A item: {has_project_a_item}, Has Project B item: {has_project_b_item}"
+            self.log_test("Items Shared Across Projects Same Type", items_shared_across_projects, details)
+            return items_shared_across_projects
+        else:
+            self.log_test("Items Shared Across Projects Same Type", False, f"Failed to get interior items: {data}")
+            return False
+
+    def run_inventory_item_names_filter_tests(self):
+        """Run inventory item-names filter tests"""
+        print("\n📦 Starting Inventory Item-Names Filter Tests")
+        print("=" * 60)
+        
+        # Setup test data
+        if not self.setup_inventory_item_names_test_data():
+            print("❌ Failed to setup test data. Stopping tests.")
+            return False
+        
+        # Test 1: No filter (should return all items)
+        print("\n🔍 Test 1: No Filter")
+        self.test_inventory_item_names_no_filter()
+        
+        # Test 2: Filter by project_type=interior
+        print("\n🔍 Test 2: Filter by project_type=interior")
+        self.test_inventory_item_names_filter_interior()
+        
+        # Test 3: Filter by project_type=arsitektur
+        print("\n🔍 Test 3: Filter by project_type=arsitektur")
+        self.test_inventory_item_names_filter_arsitektur()
+        
+        # Test 4: Backward compatibility with project_id
+        print("\n🔍 Test 4: Backward Compatibility with project_id")
+        self.test_inventory_item_names_backward_compatibility_project_id()
+        
+        # Test 5: Items shared across projects of same type (main requirement)
+        print("\n🔍 Test 5: Items Shared Across Projects Same Type")
+        self.test_inventory_item_names_shared_across_projects_same_type()
+        
+        return True
+
+    def run_inventory_item_names_filter_only_tests(self):
+        """Run only inventory item-names filter tests as requested"""
+        print("📦 Starting Inventory Item-Names Filter Tests")
+        print("=" * 60)
+        
+        # Test API health first
+        if not self.test_health_check():
+            print("❌ API is not responding. Stopping tests.")
+            return False
+        
+        # Admin login for tests
+        if not self.test_admin_login():
+            print("❌ Admin login failed. Stopping tests.")
+            return False
+        
+        # Run inventory item-names filter tests
+        self.run_inventory_item_names_filter_tests()
+        
+        # Print summary
+        print("\n" + "=" * 60)
+        print(f"📊 Inventory Item-Names Filter Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        success_rate = (self.tests_passed / self.tests_run * 100) if self.tests_run > 0 else 0
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = XONArchitectAPITester()
     
@@ -2801,6 +3111,9 @@ def main():
         elif sys.argv[1] == "planning_test_projects":
             success = tester.run_planning_test_projects_creation()
             test_type = "planning_test_projects"
+        elif sys.argv[1] == "inventory_item_names_filter":
+            success = tester.run_inventory_item_names_filter_only_tests()
+            test_type = "inventory_item_names_filter"
         else:
             success = tester.run_all_tests()
             test_type = "all"
