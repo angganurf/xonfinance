@@ -18,7 +18,6 @@ import api from '../../utils/api';
 const PlanningProjects = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
-  const [projectsProgress, setProjectsProgress] = useState([]);
   const [selectedProjects, setSelectedProjects] = useState([]);
   const [bulkStatusDialog, setBulkStatusDialog] = useState(false);
   const [bulkDeleteDialog, setBulkDeleteDialog] = useState(false);
