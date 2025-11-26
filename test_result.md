@@ -325,7 +325,7 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Implementasi fitur Pengaturan Admin (Backup & Restore) selesai:
+      Implementasi fitur "Buat Project Baru" dan Bug Fix "Create Task" selesai:
       
       BACKEND (server.py):
       1. ✅ Created endpoint POST /api/admin/backup:
