@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class AuthenticationTester:
-    def __init__(self, base_url="https://architect-app.preview.emergentagent.com"):
+    def __init__(self, base_url="https://rab-manager.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
