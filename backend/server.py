@@ -274,11 +274,15 @@ class TimeScheduleInput(BaseModel):
     start_week: int
 
 class TaskInput(BaseModel):
-    project_id: str
+    project_id: Optional[str] = None
     title: str
     description: Optional[str] = None
-    assigned_to: str
+    assigned_to: Optional[str] = None
+    role: Optional[str] = None
+    priority: Optional[str] = "medium"
+    duration_days: Optional[int] = None
     due_date: Optional[str] = None
+    status: Optional[str] = "pending"
 
 class WorkReportInput(BaseModel):
     task_id: str
