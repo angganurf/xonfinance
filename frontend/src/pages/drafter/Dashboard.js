@@ -258,11 +258,27 @@ const DrafterDashboard = () => {
                       {task.description && (
                         <p className="text-sm text-slate-600 mt-1">{task.description}</p>
                       )}
-                      {task.due_date && (
-                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> Due: {formatDate(task.due_date)}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-4 mt-2 text-xs">
+                        {task.start_date && (
+                          <span className="text-slate-500 flex items-center gap-1">
+                            📅 Mulai: {formatDate(task.start_date)}
+                          </span>
+                        )}
+                        {task.duration_days && (
+                          <span className="text-blue-600 font-medium flex items-center gap-1">
+                            ⏱️ {task.duration_days} hari
+                          </span>
+                        )}
+                        {task.due_date && (
+                          <span className={`font-medium flex items-center gap-1 ${
+                            new Date(task.due_date) < new Date() && task.status !== 'completed'
+                              ? 'text-red-600'
+                              : 'text-green-600'
+                          }`}>
+                            <Clock className="h-3 w-3" /> Deadline: {formatDate(task.due_date)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     <Button
