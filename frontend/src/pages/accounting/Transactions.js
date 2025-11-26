@@ -419,7 +419,7 @@ const AccountingTransactions = () => {
                     <Select value={formData.category} onValueChange={(v) => setFormData({...formData, category: v})}>
                       <SelectTrigger data-testid="transaction-category-select"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="kas_masuk">Kas Masuk</SelectItem>
+                        {!hideKasMasuk && <SelectItem value="kas_masuk">Kas Masuk</SelectItem>}
                         <SelectItem value="hutang">Hutang (Pinjaman/Tempo)</SelectItem>
                         <SelectItem value="aset">Aset (Kendaraan/Mesin)</SelectItem>
                         <SelectItem value="bahan">Bahan</SelectItem>
