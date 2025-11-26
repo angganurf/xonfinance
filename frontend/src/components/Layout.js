@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell, LogOut, Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Bell, LogOut, Menu, X, ChevronDown, ChevronRight, Settings } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import MobileNav from './MobileNav';
