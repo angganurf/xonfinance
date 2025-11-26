@@ -226,6 +226,7 @@ class ProjectComment(BaseModel):
     user_email: str
     message: str
     mentions: Optional[List[str]] = []  # List of user IDs mentioned
+    images: Optional[List[str]] = []  # List of image URLs/paths
     created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class Notification(BaseModel):
