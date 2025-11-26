@@ -26,6 +26,8 @@ const AdminInventory = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [breakdownDialog, setBreakdownDialog] = useState(false);
   const [breakdownData, setBreakdownData] = useState(null);
+  const [priceComparisonDialog, setPriceComparisonDialog] = useState(false);
+  const [selectedItemPriceComparison, setSelectedItemPriceComparison] = useState(null);
   
   const [formData, setFormData] = useState({
     item_name: '',
