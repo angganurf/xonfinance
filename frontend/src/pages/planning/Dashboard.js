@@ -110,8 +110,8 @@ const PlanningTeamDashboard = () => {
     if (!selectedProject) return;
     
     try {
-      await api.patch(`/projects/${selectedProject.project.id}/design-progress`, {
-        progress: parseInt(newProgress)
+      await api.patch(`/planning-projects/${selectedProject.project.id}/design-progress`, null, {
+        params: { progress: parseInt(newProgress) }
       });
       
       toast.success('Progress desain berhasil diupdate!');
