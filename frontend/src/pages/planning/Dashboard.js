@@ -463,47 +463,23 @@ const PlanningTeamDashboard = () => {
                                 <FileText className="h-4 w-4 text-blue-600" />
                                 <span className="text-xs sm:text-sm font-semibold text-slate-800">RAB</span>
                               </div>
-                              <span className="text-sm sm:text-base font-bold text-blue-600">
-                                {tempProgress[`${item.project.id}-rab`] !== undefined ? tempProgress[`${item.project.id}-rab`] : (item.rab_progress || 0)}%
-                              </span>
+                              <span className="text-sm sm:text-base font-bold text-blue-600">{item.rab_progress || 0}%</span>
                             </div>
                             <div 
-                              className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400"
-                              onClick={(e) => handleProgressDrag(e, item.project.id, 'rab', item.rab_progress || 0)}
-                              title="Klik di bar untuk set progress"
+                              className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
+                              onClick={(e) => handleProgressBarClick(e, item.project.id, 'rab', 'RAB', item.rab_progress || 0)}
+                              title="Klik di bar untuk update progress"
                             >
                               <div 
-                                className={`h-full ${getProgressColor(tempProgress[`${item.project.id}-rab`] !== undefined ? tempProgress[`${item.project.id}-rab`] : (item.rab_progress || 0))} transition-all duration-300 flex items-center justify-end pr-2`}
-                                style={{ width: `${tempProgress[`${item.project.id}-rab`] !== undefined ? tempProgress[`${item.project.id}-rab`] : (item.rab_progress || 0)}%` }}
+                                className={`h-full ${getProgressColor(item.rab_progress || 0)} transition-all duration-300 flex items-center justify-end pr-2`}
+                                style={{ width: `${item.rab_progress || 0}%` }}
                               >
-                                {((tempProgress[`${item.project.id}-rab`] !== undefined ? tempProgress[`${item.project.id}-rab`] : (item.rab_progress || 0)) > 10) && (
-                                  <span className="text-white text-xs font-bold">
-                                    {tempProgress[`${item.project.id}-rab`] !== undefined ? tempProgress[`${item.project.id}-rab`] : (item.rab_progress || 0)}%
-                                  </span>
+                                {(item.rab_progress || 0) > 10 && (
+                                  <span className="text-white text-xs font-bold">{item.rab_progress || 0}%</span>
                                 )}
                               </div>
                             </div>
-                            {showUpdateButton[`${item.project.id}-rab`] ? (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleConfirmUpdate(item.project.id, 'rab', 'RAB')}
-                                  className="flex-1 bg-green-600 hover:bg-green-700 text-xs"
-                                >
-                                  Update ke {tempProgress[`${item.project.id}-rab`]}%
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleCancelUpdate(item.project.id, 'rab')}
-                                  className="text-xs"
-                                >
-                                  Batal
-                                </Button>
-                              </div>
-                            ) : (
-                              <p className="text-xs text-slate-500 text-center italic">Klik di bar untuk ubah progress</p>
-                            )}
+                            <p className="text-xs text-slate-500 text-center italic">Klik di bar untuk update progress</p>
                           </div>
 
                           {/* Modeling 3D Progress */}
