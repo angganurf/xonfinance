@@ -1505,20 +1505,24 @@ async def create_rab_item(input: RABItemInput, user: User = Depends(get_current_
         else:
             project_id = None  # RAB might not have project_id yet
     
-    total = input.unit_price * input.quantity
     rab_item = RABItem(
         rab_id=input.rab_id,
         project_id=project_id,
         category=input.category,
+        item_number=input.item_number,
         description=input.description,
-        unit_price=input.unit_price,
-        quantity=input.quantity,
         unit=input.unit,
-        total=total
+        volume=input.volume,
+        unit_price=input.unit_price,
+        total_price=input.total_price
     )
     
     rab_dict = rab_item.model_dump()
     rab_dict["created_at"] = rab_dict["created_at"].isoformat()
+    
+    # Add is_category flag
+    rab_dict["is_category"] = input.is_category
+    
     await db.rab_items.insert_one(rab_dict)
     
     return {"message": "RAB item created", "id": rab_item.id}
