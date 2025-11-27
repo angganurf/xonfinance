@@ -522,6 +522,29 @@ const ProjectDetail = () => {
             </Card>
           )}
 
+          {/* Nilai Proyek */}
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-blue-700">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+                Nilai Proyek
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-center">
+                <p className="text-2xl sm:text-3xl font-bold text-blue-700">
+                  {formatCurrency(project.project_value || 0)}
+                </p>
+                <p className="text-xs sm:text-sm text-blue-600 mt-1">
+                  Total Kontrak
+                </p>
+              </div>
+              <div className="text-center pt-2 border-t border-blue-200">
+                <p className="text-xs text-blue-600">Budget Awal Proyek</p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* PnL Proyek */}
           <Card>
             <CardHeader>
