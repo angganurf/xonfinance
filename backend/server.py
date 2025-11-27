@@ -776,9 +776,10 @@ async def update_task_progress(
     project_id: str,
     task_type: str,
     progress: int,
+    report: str = "",
     user: User = Depends(get_current_user)
 ):
-    """Update progress for specific task (rab, modeling_3d, shop_drawing, schedule)"""
+    """Update progress for specific task (rab, modeling_3d, shop_drawing, schedule) with progress report"""
     if progress < 0 or progress > 100:
         raise HTTPException(status_code=400, detail="Progress must be between 0 and 100")
     
