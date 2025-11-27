@@ -861,6 +861,7 @@ async def update_task_progress(
                 "id": str(uuid.uuid4()),
                 "project_id": project_id,
                 "progress": progress,
+                "last_report": report,
                 "created_at": now_wib().isoformat()
             })
     
@@ -870,17 +871,26 @@ async def update_task_progress(
         if existing:
             await db.schedule_metadata.update_one(
                 {"project_id": project_id},
-                {"$set": {"progress": progress}}
+                {"$set": {
+                    "progress": progress,
+                    "last_report": report,
+                    "updated_at": now_wib().isoformat()
+                }}
             )
         else:
             await db.schedule_metadata.insert_one({
                 "id": str(uuid.uuid4()),
                 "project_id": project_id,
                 "progress": progress,
+                "last_report": report,
                 "created_at": now_wib().isoformat()
             })
     
-    return {"message": f"{task_type} progress updated to {progress}%"}
+    return {
+        "message": f"{task_type} progress updated to {progress}%",
+        "progress": progress,
+        "report": report
+    }
 
 @api_router.post("/planning-projects/{project_id}/approve")
 async def approve_planning_project(
