@@ -471,11 +471,14 @@ const RABDetail = () => {
                         <td className="px-2 sm:px-3 py-2 text-right">
                           {!item.is_category && (
                             <Input
-                              type="number"
-                              step="1000"
-                              value={item.unit_price}
-                              onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
+                              type="text"
+                              value={formatNumber(item.unit_price)}
+                              onChange={(e) => {
+                                const rawValue = parseFormattedNumber(e.target.value);
+                                handleItemChange(index, 'unit_price', rawValue);
+                              }}
                               className="text-right text-xs w-28"
+                              placeholder="0"
                             />
                           )}
                         </td>
