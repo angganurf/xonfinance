@@ -460,119 +460,122 @@ const ProjectDetail = () => {
           </Card>
         </div>
 
-        {/* Financial & Deadline Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {/* Total Pengeluaran */}
-          <Card className="lg:col-span-2">
+        {/* Section: Ringkasan Keuangan */}
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-800 mb-3 sm:mb-4">💰 Ringkasan Keuangan</h2>
+          
+          {/* Row 1: Cards Utama */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
+            {/* Nilai Proyek */}
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-blue-700">
+                  <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Nilai Proyek
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-700 mb-1">
+                  {formatCurrency(project.project_value || 0)}
+                </p>
+                <p className="text-xs text-blue-600">Total Kontrak / Budget Awal</p>
+              </CardContent>
+            </Card>
+
+            {/* Total Pengeluaran */}
+            <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-red-700">
+                  <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Total Pengeluaran
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl sm:text-3xl font-bold text-red-700 mb-1">
+                  {formatCurrency(totalExpense)}
+                </p>
+                <p className="text-xs text-red-600">{transactions.length} transaksi tercatat</p>
+              </CardContent>
+            </Card>
+
+            {/* PnL Proyek */}
+            <Card className={`bg-gradient-to-br ${pnl >= 0 ? 'from-green-50 to-green-100 border-green-200' : 'from-red-50 to-red-100 border-red-200'}`}>
+              <CardHeader className="pb-3">
+                <CardTitle className={`flex items-center gap-2 text-sm sm:text-base ${pnl >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Profit & Loss
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className={`text-2xl sm:text-3xl font-bold mb-1 ${pnl >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                  {formatCurrency(pnl)}
+                </p>
+                <p className={`text-xs ${pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {pnl >= 0 ? 'Profit' : 'Loss'} dari Budget
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Row 2: Budget Usage Progress */}
+          <Card className="mb-4">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
-                Total Pengeluaran Proyek
-              </CardTitle>
+              <CardTitle className="text-sm sm:text-base">Penggunaan Budget Proyek</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-xs sm:text-sm text-slate-600">Total Pengeluaran</span>
-                <span className="text-lg sm:text-2xl font-bold text-red-600">{formatCurrency(totalExpense)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs sm:text-sm text-slate-600">Budget Proyek</span>
-                <span className="text-sm sm:text-lg font-semibold text-slate-700">{formatCurrency(project.project_value)}</span>
+              <div className="flex justify-between items-center text-xs sm:text-sm">
+                <span className="text-slate-600">Budget: {formatCurrency(project.project_value)}</span>
+                <span className="text-slate-600">Terpakai: {formatCurrency(totalExpense)}</span>
               </div>
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-xs sm:text-sm text-slate-600">Penggunaan Budget</span>
-                  <span className="text-xs sm:text-sm font-bold">{budgetUsage.toFixed(1)}%</span>
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">Progress</span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-800">{budgetUsage.toFixed(1)}%</span>
                 </div>
-                <Progress value={budgetUsage} className="h-2 sm:h-3" />
+                <Progress value={budgetUsage} className="h-3" />
               </div>
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 pt-2 border-t">
-                <span>{transactions.length} transaksi tercatat</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Deadline Countdown */}
-          {deadline && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-                  Deadline
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="text-center">
-                  <p className={`text-3xl sm:text-4xl font-bold ${
-                    deadline.isOverdue ? 'text-red-600' : 
-                    deadline.daysLeft <= 7 ? 'text-orange-600' : 
-                    'text-green-600'
-                  }`}>
-                    {Math.abs(deadline.daysLeft)}
-                  </p>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                    {deadline.isOverdue ? 'Hari Terlambat' : 'Hari Tersisa'}
-                  </p>
-                </div>
-                <div className="text-center pt-2 border-t">
-                  <p className="text-xs text-slate-500">Deadline:</p>
-                  <p className="text-xs sm:text-sm font-semibold text-slate-700">{formatDate(deadline.date)}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Nilai Proyek */}
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-blue-700">
-                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
-                Nilai Proyek
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-center">
-                <p className="text-2xl sm:text-3xl font-bold text-blue-700">
-                  {formatCurrency(project.project_value || 0)}
-                </p>
-                <p className="text-xs sm:text-sm text-blue-600 mt-1">
-                  Total Kontrak
-                </p>
-              </div>
-              <div className="text-center pt-2 border-t border-blue-200">
-                <p className="text-xs text-blue-600">Budget Awal Proyek</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* PnL Proyek */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                PnL Proyek
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-center">
-                <p className={`text-2xl sm:text-3xl font-bold ${
-                  pnl >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {formatCurrency(pnl)}
-                </p>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                  {pnl >= 0 ? 'Profit' : 'Loss'}
-                </p>
-              </div>
-              <div className="text-center pt-2 border-t">
-                <p className="text-xs text-slate-500">Budget - Pengeluaran</p>
-                <p className="text-xs font-medium text-slate-600 mt-1">
-                  {formatCurrency(project.project_value)} - {formatCurrency(totalExpense)}
-                </p>
+              <div className="flex justify-between text-xs sm:text-sm text-slate-600">
+                <span>Sisa Budget</span>
+                <span className="font-semibold">{formatCurrency(project.project_value - totalExpense)}</span>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Section: Deadline & Timeline */}
+        {deadline && (
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-800 mb-3 sm:mb-4">⏰ Timeline Proyek</h2>
+            <Card className={`border-2 ${deadline.isOverdue ? 'border-red-300 bg-red-50' : deadline.daysLeft <= 7 ? 'border-orange-300 bg-orange-50' : 'border-green-300 bg-green-50'}`}>
+              <CardContent className="pt-6">
+                <div className="flex flex-col sm:flex-row items-center justify-around gap-6">
+                  <div className="text-center">
+                    <p className={`text-5xl sm:text-6xl font-bold ${
+                      deadline.isOverdue ? 'text-red-600' : 
+                      deadline.daysLeft <= 7 ? 'text-orange-600' : 
+                      'text-green-600'
+                    }`}>
+                      {Math.abs(deadline.daysLeft)}
+                    </p>
+                    <p className="text-sm sm:text-base font-medium text-slate-700 mt-2">
+                      {deadline.isOverdue ? 'Hari Terlambat' : 'Hari Tersisa'}
+                    </p>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="h-5 w-5 text-slate-600" />
+                      <p className="text-sm font-medium text-slate-600">Deadline Proyek</p>
+                    </div>
+                    <p className="text-xl sm:text-2xl font-bold text-slate-800">{formatDate(deadline.date)}</p>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                      Mulai: {formatDate(project.contract_date || project.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Breakdown Pengeluaran per Kategori */}
         <Card className="lg:col-span-2">
