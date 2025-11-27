@@ -517,26 +517,21 @@ const ProjectDetail = () => {
             </Card>
           </div>
 
-          {/* Row 2: Budget Usage Progress */}
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle className="text-sm sm:text-base">Penggunaan Budget Proyek</CardTitle>
+          {/* Row 2: Budget Usage Progress - Compact */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Penggunaan Budget</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center text-xs sm:text-sm">
-                <span className="text-slate-600">Budget: {formatCurrency(project.project_value)}</span>
-                <span className="text-slate-600">Terpakai: {formatCurrency(totalExpense)}</span>
-              </div>
+            <CardContent className="space-y-2">
               <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-xs sm:text-sm font-medium text-slate-700">Progress</span>
-                  <span className="text-xs sm:text-sm font-bold text-slate-800">{budgetUsage.toFixed(1)}%</span>
+                <div className="flex justify-between mb-1.5">
+                  <span className="text-xs text-slate-600">Progress</span>
+                  <span className="text-xs font-bold text-slate-800">{budgetUsage.toFixed(1)}%</span>
                 </div>
-                <Progress value={budgetUsage} className="h-3" />
+                <Progress value={budgetUsage} className="h-2" />
               </div>
-              <div className="flex justify-between text-xs sm:text-sm text-slate-600">
-                <span>Sisa Budget</span>
-                <span className="font-semibold">{formatCurrency(project.project_value - totalExpense)}</span>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Sisa: {formatCurrency(project.project_value - totalExpense)}</span>
               </div>
             </CardContent>
           </Card>
