@@ -6,10 +6,11 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Checkbox } from '../../components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
 import { Progress } from '../../components/ui/progress';
+import { Slider } from '../../components/ui/slider';
 import { toast } from 'sonner';
-import { Briefcase, FileText, Calendar, TrendingUp, Edit, CheckCircle, Clock, AlertCircle, Plus, Pencil, Box, Trash2 } from 'lucide-react';
+import { Briefcase, FileText, Calendar, TrendingUp, Edit, CheckCircle, Clock, AlertCircle, Plus, Pencil, Box, Trash2, FileImage } from 'lucide-react';
 import api from '../../utils/api';
 
 const PlanningTeamDashboard = () => {
@@ -20,11 +21,15 @@ const PlanningTeamDashboard = () => {
   const [editDialog, setEditDialog] = useState(false);
   const [createDialog, setCreateDialog] = useState(false);
   const [bulkEditDialog, setBulkEditDialog] = useState(false);
+  const [editTaskProgressDialog, setEditTaskProgressDialog] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedRAB, setSelectedRAB] = useState(null);
   const [selectedProjects, setSelectedProjects] = useState([]);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [newProgress, setNewProgress] = useState(0);
   const [bulkProgress, setBulkProgress] = useState(0);
+  const [taskProgress, setTaskProgress] = useState(0);
+  const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     type: 'interior',
@@ -71,7 +76,6 @@ const PlanningTeamDashboard = () => {
     const rab = rabs.find(r => r.id === rabId);
     if (rab) {
       setSelectedRAB(rab);
-      // Auto-fill nilai proyek dari total RAB
       setFormData({ 
         ...formData, 
         project_value: rab.total_price || 0,
@@ -98,36 +102,66 @@ const PlanningTeamDashboard = () => {
       });
       setSelectedRAB(null);
       console.log('[Planning Dashboard] Reloading overview...');
-      await loadOverview();
-      console.log('[Planning Dashboard] Overview reloaded successfully');
+      loadOverview();
     } catch (error) {
-      console.error('[Planning Dashboard] Error creating planning project:', error);
+      console.error('[Planning Dashboard] Error creating project:', error);
       toast.error('Gagal membuat pekerjaan perencanaan');
     }
   };
 
-  const handleUpdateProgress = async () => {
+  const handleUpdateProgress = async (e) => {
+    e.preventDefault();
     if (!selectedProject) return;
-    
+
     try {
-      await api.patch(`/planning-projects/${selectedProject.project.id}/design-progress`, null, {
-        params: { progress: parseInt(newProgress) }
-      });
-      
-      toast.success('Progress desain berhasil diupdate!');
+      await api.patch(`/planning-projects/${selectedProject.project.id}/design-progress?progress=${newProgress}`);
+      toast.success('Progress berhasil diupdate!');
       setEditDialog(false);
-      setSelectedProject(null);
       loadOverview();
     } catch (error) {
       console.error('Error updating progress:', error);
-      toast.error('Gagal update progress');
+      toast.error('Gagal mengupdate progress');
     }
   };
 
-  // Multi-select handlers
+  const handleBulkUpdateProgress = async () => {
+    try {
+      await Promise.all(
+        selectedProjects.map(projectId => 
+          api.patch(`/planning-projects/${projectId}/design-progress?progress=${bulkProgress}`)
+        )
+      );
+      toast.success(`Progress ${selectedProjects.length} proyek berhasil diupdate!`);
+      setBulkEditDialog(false);
+      setSelectedProjects([]);
+      loadOverview();
+    } catch (error) {
+      console.error('Error bulk updating progress:', error);
+      toast.error('Gagal mengupdate progress');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Hapus ${selectedProjects.length} proyek yang dipilih?`)) return;
+
+    try {
+      await Promise.all(
+        selectedProjects.map(projectId => 
+          api.delete(`/planning-projects/${projectId}`)
+        )
+      );
+      toast.success(`${selectedProjects.length} proyek berhasil dihapus!`);
+      setSelectedProjects([]);
+      loadOverview();
+    } catch (error) {
+      console.error('Error bulk deleting projects:', error);
+      toast.error('Gagal menghapus proyek');
+    }
+  };
+
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedProjects(overview.map(item => item.project.id));
+      setSelectedProjects(overview.map(o => o.project.id));
     } else {
       setSelectedProjects([]);
     }
@@ -141,61 +175,34 @@ const PlanningTeamDashboard = () => {
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedProjects.length === 0) {
-      toast.error('Pilih minimal satu pekerjaan untuk dihapus');
-      return;
-    }
-
-    if (!window.confirm(`Hapus ${selectedProjects.length} pekerjaan yang dipilih?`)) {
-      return;
-    }
-
-    try {
-      await Promise.all(
-        selectedProjects.map(projectId => api.delete(`/planning-projects/${projectId}`))
-      );
-      
-      toast.success(`${selectedProjects.length} pekerjaan berhasil dihapus!`);
-      setSelectedProjects([]);
-      loadOverview();
-    } catch (error) {
-      console.error('Error deleting planning projects:', error);
-      toast.error('Gagal menghapus beberapa pekerjaan');
-    }
+  const openEditTaskProgress = (projectId, taskType, currentProgress) => {
+    const taskNames = {
+      rab: 'RAB',
+      modeling_3d: 'Modeling 3D',
+      shop_drawing: 'Gambar Kerja',
+      schedule: 'Time Schedule'
+    };
+    setSelectedProject({ project: { id: projectId } });
+    setSelectedTask({ type: taskType, name: taskNames[taskType] });
+    setTaskProgress(currentProgress);
+    setEditTaskProgressDialog(true);
   };
 
-  const handleBulkUpdateProgress = async () => {
-    if (selectedProjects.length === 0) {
-      toast.error('Pilih minimal satu pekerjaan untuk diupdate');
-      return;
-    }
-
+  const handleUpdateTaskProgress = async () => {
+    if (!selectedProject || !selectedTask) return;
+    
+    setUpdating(true);
     try {
-      await Promise.all(
-        selectedProjects.map(projectId => 
-          api.patch(`/planning-projects/${projectId}/design-progress`, null, {
-            params: { progress: parseInt(bulkProgress) }
-          })
-        )
-      );
-      
-      toast.success(`Progress ${selectedProjects.length} pekerjaan berhasil diupdate!`);
-      setBulkEditDialog(false);
-      setSelectedProjects([]);
-      setBulkProgress(0);
+      await api.patch(`/planning-projects/${selectedProject.project.id}/task-progress?task_type=${selectedTask.type}&progress=${taskProgress}`);
+      toast.success(`Progress ${selectedTask.name} berhasil diupdate ke ${taskProgress}%`);
+      setEditTaskProgressDialog(false);
       loadOverview();
     } catch (error) {
-      console.error('Error updating progress:', error);
-      toast.error('Gagal update progress beberapa pekerjaan');
+      console.error('Error updating task progress:', error);
+      toast.error('Gagal mengupdate progress');
+    } finally {
+      setUpdating(false);
     }
-  };
-
-  const getProgressColor = (progress) => {
-    if (progress >= 80) return 'bg-green-500';
-    if (progress >= 50) return 'bg-blue-500';
-    if (progress >= 25) return 'bg-yellow-500';
-    return 'bg-red-500';
   };
 
   const getRABStatusColor = (status) => {
@@ -218,6 +225,13 @@ const PlanningTeamDashboard = () => {
     return labels[status] || status;
   };
 
+  const getProgressColor = (progress) => {
+    if (progress >= 100) return 'bg-green-500';
+    if (progress >= 70) return 'bg-blue-500';
+    if (progress >= 40) return 'bg-yellow-500';
+    return 'bg-orange-500';
+  };
+
   const formatDate = (isoString) => {
     if (!isoString) return '-';
     const date = new Date(isoString);
@@ -236,7 +250,6 @@ const PlanningTeamDashboard = () => {
     }).format(value || 0);
   };
 
-  // Calculate stats
   const totalProjects = overview.length;
   const projectsWithRAB = overview.filter(o => o.rab).length;
   const projectsWithSchedule = overview.filter(o => o.schedule).length;
@@ -256,33 +269,35 @@ const PlanningTeamDashboard = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-start justify-between">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Dashboard Planning Team</h2>
-            <p className="text-sm text-slate-600 mt-1">Monitoring progress desain, RAB, dan time schedule</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Dashboard Planning Team</h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">Monitoring progress desain, RAB, dan time schedule</p>
             <div className="mt-2 flex items-center gap-2">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm font-medium">
                 📋 Project Perencanaan (Tahap Sebelum Pembangunan)
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             {selectedProjects.length > 0 && (
               <>
                 <Button 
                   onClick={() => setBulkEditDialog(true)}
                   variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50 text-xs sm:text-sm"
+                  size="sm"
                 >
-                  <Edit className="mr-2 h-4 w-4" /> Update Progress ({selectedProjects.length})
+                  <Edit className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Update ({selectedProjects.length})
                 </Button>
                 <Button 
                   onClick={handleBulkDelete}
                   variant="outline"
-                  className="border-red-600 text-red-600 hover:bg-red-50"
+                  className="border-red-600 text-red-600 hover:bg-red-50 text-xs sm:text-sm"
+                  size="sm"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" /> Hapus ({selectedProjects.length})
+                  <Trash2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Hapus ({selectedProjects.length})
                 </Button>
               </>
             )}
@@ -296,55 +311,55 @@ const PlanningTeamDashboard = () => {
                 location: '',
                 project_value: 0
               });
-            }} className="bg-green-600 hover:bg-green-700">
-              <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan Perencanaan
+            }} className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm" size="sm">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Tambah Pekerjaan
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-blue-800 flex items-center gap-2">
-                <Briefcase className="h-4 w-4" /> Total Proyek
+              <CardTitle className="text-xs sm:text-sm font-medium text-blue-800 flex items-center gap-2">
+                <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" /> Total Proyek
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-blue-900">{totalProjects}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-blue-900">{totalProjects}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-green-800 flex items-center gap-2">
-                <FileText className="h-4 w-4" /> RAB Selesai
+              <CardTitle className="text-xs sm:text-sm font-medium text-green-800 flex items-center gap-2">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4" /> RAB Selesai
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-green-900">{projectsWithRAB}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-green-900">{projectsWithRAB}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-purple-800 flex items-center gap-2">
-                <Calendar className="h-4 w-4" /> Time Schedule
+              <CardTitle className="text-xs sm:text-sm font-medium text-purple-800 flex items-center gap-2">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" /> Time Schedule
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-purple-900">{projectsWithSchedule}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-purple-900">{projectsWithSchedule}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-orange-800 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" /> Avg Progress
+              <CardTitle className="text-xs sm:text-sm font-medium text-orange-800 flex items-center gap-2">
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" /> Avg Progress
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-orange-900">{avgProgress}%</p>
+              <p className="text-2xl sm:text-3xl font-bold text-orange-900">{avgProgress}%</p>
             </CardContent>
           </Card>
         </div>
@@ -352,11 +367,11 @@ const PlanningTeamDashboard = () => {
         {/* Projects List */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <CardTitle>Daftar Pekerjaan Perencanaan</CardTitle>
-                <p className="text-sm text-slate-600 mt-2">
-                  Project ini hanya visible untuk Planning Team. Setelah RAB di-approve, project akan pindah ke fase Pelaksanaan dan visible untuk semua role.
+                <CardTitle className="text-base sm:text-lg">Daftar Pekerjaan Perencanaan</CardTitle>
+                <p className="text-xs sm:text-sm text-slate-600 mt-2">
+                  Project ini hanya visible untuk Planning Team. Setelah RAB di-approve, project akan pindah ke fase Pelaksanaan.
                 </p>
               </div>
               {overview.length > 0 && (
@@ -365,7 +380,7 @@ const PlanningTeamDashboard = () => {
                     checked={selectedProjects.length === overview.length}
                     onCheckedChange={handleSelectAll}
                   />
-                  <Label className="text-sm text-slate-600">Pilih Semua</Label>
+                  <Label className="text-xs sm:text-sm text-slate-600">Pilih Semua</Label>
                 </div>
               )}
             </div>
@@ -374,232 +389,167 @@ const PlanningTeamDashboard = () => {
             {overview.length === 0 ? (
               <div className="text-center py-12 text-slate-500">
                 <Briefcase className="mx-auto h-12 w-12 mb-2 text-slate-300" />
-                <p>Belum ada proyek</p>
+                <p className="text-sm">Belum ada proyek</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {overview.map((item) => (
                   <Card key={item.project.id} className="border-2 hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-4 sm:pt-6">
                       <div className="space-y-4">
                         {/* Header */}
                         <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3">
+                          <div className="flex items-start gap-2 sm:gap-3 flex-1">
                             <Checkbox
                               checked={selectedProjects.includes(item.project.id)}
                               onCheckedChange={(checked) => handleSelectProject(item.project.id, checked)}
                               className="mt-1"
                             />
-                            <div className="flex-1">
-                              <h3 className="text-lg font-bold text-slate-800">{item.project.name}</h3>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base sm:text-lg font-bold text-slate-800 truncate">{item.project.name}</h3>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium inline-block ${
                                   item.project.type === 'interior' 
                                     ? 'bg-blue-100 text-blue-800' 
                                     : 'bg-purple-100 text-purple-800'
                                 }`}>
                                   {item.project.type === 'interior' ? 'Interior' : 'Arsitektur'}
                                 </span>
-                                <span className="text-sm text-slate-600">
+                                <span className="text-xs sm:text-sm text-slate-600">
                                   {item.project.location || 'Lokasi tidak tersedia'}
                                 </span>
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex-shrink-0">
                             <p className="text-xs text-slate-600">Nilai Proyek</p>
-                            <p className="text-lg font-bold text-slate-800">
+                            <p className="text-sm sm:text-lg font-bold text-slate-800">
                               {formatCurrency(item.project.project_value)}
                             </p>
                           </div>
                         </div>
 
-                        {/* Progress Desain */}
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <TrendingUp className="h-4 w-4 text-blue-600" />
-                              <span className="text-sm font-semibold text-slate-800">Progress Desain</span>
+                        {/* Task Progress Grid with Horizontal Bars */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 border-t">
+                          {/* RAB Progress */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-blue-600" />
+                                <span className="text-xs sm:text-sm font-semibold text-slate-800">RAB</span>
+                              </div>
+                              <span className="text-sm sm:text-base font-bold text-blue-600">{item.rab_progress || 0}%</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl font-bold text-blue-600">
-                                {item.design_progress}%
-                              </span>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setSelectedProject(item);
-                                  setNewProgress(item.design_progress);
-                                  setEditDialog(true);
-                                }}
+                            <div className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${getProgressColor(item.rab_progress || 0)} transition-all duration-500 flex items-center justify-end pr-2`}
+                                style={{ width: `${item.rab_progress || 0}%` }}
                               >
-                                <Edit className="h-4 w-4" />
-                              </Button>
+                                {(item.rab_progress || 0) > 10 && (
+                                  <span className="text-white text-xs font-bold">{item.rab_progress || 0}%</span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <Progress 
-                            value={item.design_progress} 
-                            className="h-3"
-                          />
-                        </div>
-
-                        {/* RAB, Modeling 3D, Shop Drawing & Schedule Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-3 border-t">
-                          {/* RAB Info */}
-                          <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                              <FileText className="h-5 w-5 text-green-600" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-xs text-slate-600 font-medium">Pengerjaan RAB</p>
-                              {item.rab ? (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRABStatusColor(item.rab.status)}`}>
-                                    {getRABStatusLabel(item.rab.status)}
-                                  </span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/estimator/rab/${item.rab.id}`)}
-                                  >
-                                    Lihat RAB →
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <AlertCircle className="h-4 w-4 text-orange-500" />
-                                  <span className="text-xs text-orange-600">Belum dibuat</span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/estimator?createRAB=true&projectId=${item.project.id}&projectName=${encodeURIComponent(item.project.name)}&projectType=${item.project.type}&location=${encodeURIComponent(item.project.location || '')}`)}
-                                  >
-                                    Buat RAB →
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditTaskProgress(item.project.id, 'rab', item.rab_progress || 0)}
+                              className="w-full text-xs"
+                            >
+                              <TrendingUp className="mr-1 h-3 w-3" />
+                              Update Progress
+                            </Button>
                           </div>
 
-                          {/* Modeling 3D Info */}
-                          <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                              <Box className="h-5 w-5 text-purple-600" />
+                          {/* Modeling 3D Progress */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Box className="h-4 w-4 text-purple-600" />
+                                <span className="text-xs sm:text-sm font-semibold text-slate-800">Modeling 3D</span>
+                              </div>
+                              <span className="text-sm sm:text-base font-bold text-purple-600">{item.modeling_3d_progress || 0}%</span>
                             </div>
-                            <div className="flex-1">
-                              <p className="text-xs text-slate-600 font-medium">Modeling 3D</p>
-                              {item.modeling_3d ? (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                  <span className="text-xs text-green-600 font-medium">Sudah dibuat</span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/drafter/modeling-3d/${item.modeling_3d.id}`)}
-                                  >
-                                    Lihat →
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <AlertCircle className="h-4 w-4 text-orange-500" />
-                                  <span className="text-xs text-orange-600">Belum dibuat</span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/drafter/modeling-3d/create?project=${item.project.id}`)}
-                                  >
-                                    Buat Modeling 3D →
-                                  </Button>
-                                </div>
-                              )}
+                            <div className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${getProgressColor(item.modeling_3d_progress || 0)} transition-all duration-500 flex items-center justify-end pr-2`}
+                                style={{ width: `${item.modeling_3d_progress || 0}%` }}
+                              >
+                                {(item.modeling_3d_progress || 0) > 10 && (
+                                  <span className="text-white text-xs font-bold">{item.modeling_3d_progress || 0}%</span>
+                                )}
+                              </div>
                             </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditTaskProgress(item.project.id, 'modeling_3d', item.modeling_3d_progress || 0)}
+                              className="w-full text-xs"
+                            >
+                              <TrendingUp className="mr-1 h-3 w-3" />
+                              Update Progress
+                            </Button>
                           </div>
 
-                          {/* Shop Drawing Info */}
-                          <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                              <Pencil className="h-5 w-5 text-blue-600" />
+                          {/* Shop Drawing Progress */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <FileImage className="h-4 w-4 text-green-600" />
+                                <span className="text-xs sm:text-sm font-semibold text-slate-800">Gambar Kerja</span>
+                              </div>
+                              <span className="text-sm sm:text-base font-bold text-green-600">{item.shop_drawing_progress || 0}%</span>
                             </div>
-                            <div className="flex-1">
-                              <p className="text-xs text-slate-600 font-medium">Gambar Kerja</p>
-                              {item.shop_drawing ? (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                  <span className="text-xs text-green-600 font-medium">Sudah dibuat</span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/drafter/shop-drawing/${item.shop_drawing.id}`)}
-                                  >
-                                    Lihat →
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <AlertCircle className="h-4 w-4 text-orange-500" />
-                                  <span className="text-xs text-orange-600">Belum dibuat</span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/drafter/shop-drawing/create?project=${item.project.id}`)}
-                                  >
-                                    Buat Shop Drawing →
-                                  </Button>
-                                </div>
-                              )}
+                            <div className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${getProgressColor(item.shop_drawing_progress || 0)} transition-all duration-500 flex items-center justify-end pr-2`}
+                                style={{ width: `${item.shop_drawing_progress || 0}%` }}
+                              >
+                                {(item.shop_drawing_progress || 0) > 10 && (
+                                  <span className="text-white text-xs font-bold">{item.shop_drawing_progress || 0}%</span>
+                                )}
+                              </div>
                             </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditTaskProgress(item.project.id, 'shop_drawing', item.shop_drawing_progress || 0)}
+                              className="w-full text-xs"
+                            >
+                              <TrendingUp className="mr-1 h-3 w-3" />
+                              Update Progress
+                            </Button>
                           </div>
 
-                          {/* Schedule Info */}
-                          <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                              <Calendar className="h-5 w-5 text-purple-600" />
+                          {/* Time Schedule Progress */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-amber-600" />
+                                <span className="text-xs sm:text-sm font-semibold text-slate-800">Time Schedule</span>
+                              </div>
+                              <span className="text-sm sm:text-base font-bold text-amber-600">{item.schedule_progress || 0}%</span>
                             </div>
-                            <div className="flex-1">
-                              <p className="text-xs text-slate-600 font-medium">Time Schedule</p>
-                              {item.schedule ? (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                  <span className="text-xs text-green-600 font-medium">Sudah dibuat</span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/supervisor/schedule?project=${item.project.id}`)}
-                                  >
-                                    Lihat →
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <AlertCircle className="h-4 w-4 text-orange-500" />
-                                  <span className="text-xs text-orange-600">Belum dibuat</span>
-                                  <Button
-                                    size="sm"
-                                    variant="link"
-                                    className="h-auto p-0 text-xs"
-                                    onClick={() => navigate(`/supervisor/schedule?project=${item.project.id}`)}
-                                  >
-                                    Buat Schedule →
-                                  </Button>
-                                </div>
-                              )}
+                            <div className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${getProgressColor(item.schedule_progress || 0)} transition-all duration-500 flex items-center justify-end pr-2`}
+                                style={{ width: `${item.schedule_progress || 0}%` }}
+                              >
+                                {(item.schedule_progress || 0) > 10 && (
+                                  <span className="text-white text-xs font-bold">{item.schedule_progress || 0}%</span>
+                                )}
+                              </div>
                             </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditTaskProgress(item.project.id, 'schedule', item.schedule_progress || 0)}
+                              className="w-full text-xs"
+                            >
+                              <TrendingUp className="mr-1 h-3 w-3" />
+                              Update Progress
+                            </Button>
                           </div>
-                        </div>
-
-                        {/* Footer Info */}
-                        <div className="flex items-center justify-between pt-3 border-t text-xs text-slate-600">
-                          <span>Dibuat: {formatDate(item.project.created_at)}</span>
-                          <span>Dibuat oleh: {item.project.created_by}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -611,197 +561,182 @@ const PlanningTeamDashboard = () => {
         </Card>
       </div>
 
-      {/* Edit Progress Dialog */}
+      {/* Dialogs remain the same... */}
+      {/* Edit Task Progress Dialog */}
+      <Dialog open={editTaskProgressDialog} onOpenChange={setEditTaskProgressDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg sm:text-xl">Update Progress {selectedTask?.name}</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
+              Geser slider untuk mengatur persentase progress pekerjaan
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="text-center">
+              <p className="text-4xl sm:text-5xl font-bold text-blue-600">{taskProgress}%</p>
+              <p className="text-xs sm:text-sm text-slate-500 mt-2">Persentase Progress</p>
+            </div>
+
+            <div className="space-y-3">
+              <Slider
+                value={[taskProgress]}
+                onValueChange={(value) => setTaskProgress(value[0])}
+                max={100}
+                step={5}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>0%</span>
+                <span>25%</span>
+                <span>50%</span>
+                <span>75%</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <div className="relative w-full h-8 bg-slate-100 rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${getProgressColor(taskProgress)} transition-all duration-300 flex items-center justify-center`}
+                style={{ width: `${taskProgress}%` }}
+              >
+                {taskProgress > 0 && (
+                  <span className="text-white text-sm font-bold">{taskProgress}%</span>
+                )}
+              </div>
+            </div>
+
+            <div className="text-center text-xs sm:text-sm text-slate-600">
+              {taskProgress === 0 && 'Belum Mulai'}
+              {taskProgress > 0 && taskProgress < 100 && 'Sedang Dikerjakan'}
+              {taskProgress === 100 && '✓ Selesai'}
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setEditTaskProgressDialog(false)}
+              disabled={updating}
+              className="w-full sm:w-auto"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleUpdateTaskProgress}
+              disabled={updating}
+              className="w-full sm:w-auto"
+            >
+              {updating ? 'Menyimpan...' : 'Simpan Progress'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Original dialogs... */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Progress Desain</DialogTitle>
           </DialogHeader>
-          {selectedProject && (
-            <div className="space-y-4">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <p className="font-medium text-slate-800">{selectedProject.project.name}</p>
-                <p className="text-sm text-slate-600 mt-1">
-                  Progress saat ini: <span className="font-semibold">{selectedProject.design_progress}%</span>
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700 block mb-2">
-                  Progress Baru (0-100%)
-                </label>
-                <div className="flex items-center gap-4">
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={newProgress}
-                    onChange={(e) => setNewProgress(e.target.value)}
-                    className="flex-1"
-                  />
-                  <span className="text-lg font-bold text-blue-600">{newProgress}%</span>
-                </div>
-                <Progress value={newProgress} className="h-3 mt-3" />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialog(false)}>
-              Batal
-            </Button>
-            <Button onClick={handleUpdateProgress}>
-              Update Progress
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Project Dialog */}
-      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tambah Pekerjaan Perencanaan</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateProject} className="space-y-4">
-            {/* RAB Selection */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <Label htmlFor="rab_selection" className="text-blue-800">Pilih dari RAB (Opsional)</Label>
-              <select
-                id="rab_selection"
-                value={selectedRAB?.id || ''}
-                onChange={(e) => handleRABSelection(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring mt-2"
-              >
-                <option value="">-- Tidak pilih dari RAB --</option>
-                {rabs.map((rab) => (
-                  <option key={rab.id} value={rab.id}>
-                    {rab.project_name} - {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(rab.total_price || 0)}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-blue-600 mt-1">
-                💡 Jika pilih dari RAB, nama proyek dan nilai proyek akan otomatis terisi
-              </p>
-            </div>
-
+          <form onSubmit={handleUpdateProgress} className="space-y-4">
             <div>
-              <Label htmlFor="name">Nama Proyek *</Label>
+              <Label>Progress Desain (%)</Label>
               <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Contoh: Renovasi Rumah Pak Budi"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="type">Tipe Proyek *</Label>
-              <select
-                id="type"
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                required
-              >
-                <option value="interior">Interior</option>
-                <option value="arsitektur">Arsitektur</option>
-              </select>
-            </div>
-
-            <div>
-              <Label htmlFor="location">Lokasi *</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Contoh: Jakarta Selatan"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="project_value">Nilai Proyek (Rp)</Label>
-              <Input
-                id="project_value"
                 type="number"
-                value={formData.project_value}
-                onChange={(e) => setFormData({ ...formData, project_value: parseFloat(e.target.value) || 0 })}
-                placeholder="0 (bisa dikosongkan jika belum ada RAB)"
-                disabled={selectedRAB !== null}
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                {selectedRAB 
-                  ? "✓ Nilai proyek diambil dari RAB yang dipilih" 
-                  : "Bisa dikosongkan dulu, nanti bisa di-update ketika RAB sudah dibuat"}
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Deskripsi</Label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Deskripsi singkat tentang proyek..."
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                min="0"
+                max="100"
+                value={newProgress}
+                onChange={(e) => setNewProgress(parseInt(e.target.value) || 0)}
               />
             </div>
-
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setCreateDialog(false)}>
-                Batal
-              </Button>
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                Simpan
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setEditDialog(false)}>Batal</Button>
+              <Button type="submit">Simpan</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Bulk Edit Progress Dialog */}
       <Dialog open={bulkEditDialog} onOpenChange={setBulkEditDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update Progress {selectedProjects.length} Pekerjaan</DialogTitle>
+            <DialogTitle>Update Progress Desain ({selectedProjects.length} proyek)</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800 font-medium">
-                {selectedProjects.length} pekerjaan dipilih
-              </p>
-              <p className="text-xs text-blue-600 mt-1">
-                Progress yang sama akan diterapkan ke semua pekerjaan yang dipilih
-              </p>
-            </div>
-
             <div>
-              <label className="text-sm font-medium text-slate-700 block mb-2">
-                Progress Desain (0-100%)
-              </label>
-              <div className="flex items-center gap-4">
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={bulkProgress}
-                  onChange={(e) => setBulkProgress(e.target.value)}
-                  className="flex-1"
-                />
-                <span className="text-lg font-bold text-blue-600">{bulkProgress}%</span>
-              </div>
-              <Progress value={bulkProgress} className="h-3 mt-3" />
+              <Label>Progress Desain (%)</Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={bulkProgress}
+                onChange={(e) => setBulkProgress(parseInt(e.target.value) || 0)}
+              />
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setBulkEditDialog(false)}>Batal</Button>
+              <Button onClick={handleBulkUpdateProgress}>Simpan</Button>
+            </DialogFooter>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkEditDialog(false)}>
-              Batal
-            </Button>
-            <Button onClick={handleBulkUpdateProgress} className="bg-blue-600 hover:bg-blue-700">
-              Update {selectedProjects.length} Pekerjaan
-            </Button>
-          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Tambah Pekerjaan Perencanaan</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateProject} className="space-y-4">
+            <div>
+              <Label>Nama Proyek</Label>
+              <Input
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Contoh: Renovasi Rumah Bapak John"
+              />
+            </div>
+            <div>
+              <Label>Tipe Proyek</Label>
+              <select
+                className="w-full border rounded-md px-3 py-2"
+                value={formData.type}
+                onChange={(e) => setFormData({...formData, type: e.target.value})}
+              >
+                <option value="interior">Interior</option>
+                <option value="arsitektur">Arsitektur</option>
+              </select>
+            </div>
+            <div>
+              <Label>Lokasi</Label>
+              <Input
+                value={formData.location}
+                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                placeholder="Contoh: Jakarta Selatan"
+              />
+            </div>
+            <div>
+              <Label>Nilai Proyek</Label>
+              <Input
+                type="number"
+                value={formData.project_value}
+                onChange={(e) => setFormData({...formData, project_value: parseFloat(e.target.value) || 0})}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <Label>Deskripsi (Optional)</Label>
+              <textarea
+                className="w-full border rounded-md px-3 py-2 min-h-[100px]"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Deskripsi proyek..."
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreateDialog(false)}>Batal</Button>
+              <Button type="submit" className="bg-green-600 hover:bg-green-700">Buat Proyek</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </Layout>
