@@ -370,11 +370,8 @@ const RABDetail = () => {
 
         {/* RAB Items Table */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader>
             <CardTitle className="text-base sm:text-lg">Daftar Item Pekerjaan</CardTitle>
-            <Button onClick={addCategory} size="sm" variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> Tambah Kategori
-            </Button>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
