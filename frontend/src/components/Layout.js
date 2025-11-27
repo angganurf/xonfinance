@@ -163,6 +163,7 @@ export const Layout = ({ children }) => {
       combinedItems.push(
         { label: 'Home', path: '/planning', icon: '🏠' },
         { label: 'RAB', path: '/planning/rab', icon: '📋' },
+        { label: 'Harga Satuan', path: '/planning/unit-prices', icon: '💰' },
         { label: 'Time Schedule', path: '/planning/schedule', icon: '📅' }
       );
     }
