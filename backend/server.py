@@ -1367,12 +1367,29 @@ async def get_rab(rab_id: str, user: User = Depends(get_current_user)):
     return rab
 
 @api_router.patch("/rabs/{rab_id}")
-async def update_rab(rab_id: str, input: RABUpdateInput, user: User = Depends(get_current_user)):
+async def update_rab(
+    rab_id: str,
+    tax_percentage: Optional[float] = None,
+    subtotal: Optional[float] = None,
+    tax_amount: Optional[float] = None,
+    total_price: Optional[float] = None,
+    project_name: Optional[str] = None,
+    location: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
     updates = {}
-    if input.discount is not None:
-        updates["discount"] = input.discount
-    if input.tax is not None:
-        updates["tax"] = input.tax
+    if tax_percentage is not None:
+        updates["tax_percentage"] = tax_percentage
+    if subtotal is not None:
+        updates["subtotal"] = subtotal
+    if tax_amount is not None:
+        updates["tax_amount"] = tax_amount
+    if total_price is not None:
+        updates["total_price"] = total_price
+    if project_name is not None:
+        updates["project_name"] = project_name
+    if location is not None:
+        updates["location"] = location
     
     result = await db.rabs.update_one({"id": rab_id}, {"$set": updates})
     if result.matched_count == 0:
