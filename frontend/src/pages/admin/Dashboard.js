@@ -8,6 +8,7 @@ import {
   Calculator, 
   DollarSign,
   BarChart3,
+  TrendingUp,
   Settings
 } from 'lucide-react';
 import api from '../../utils/api';
