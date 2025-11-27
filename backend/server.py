@@ -1169,7 +1169,7 @@ async def update_design_progress(project_id: str, data: dict, user: User = Depen
 
 @api_router.get("/planning/overview")
 async def get_planning_overview(user: User = Depends(get_current_user)):
-    """Get planning team overview: planning projects, RAB, modeling 3D, shop drawings, schedules"""
+    """Get planning team overview: planning projects, RAB, modeling 3D, shop drawings, schedules with progress"""
     # Get planning projects (not execution projects)
     projects = await db.planning_projects.find({}, {"_id": 0}).to_list(1000)
     
@@ -1183,35 +1183,60 @@ async def get_planning_overview(user: User = Depends(get_current_user)):
     # Get modeling 3D info
     modeling3ds = await db.modeling_3d.find({}, {"_id": 0}).to_list(1000)
     modeling3d_by_project = {}
+    modeling3d_progress_by_project = {}
     for m3d in modeling3ds:
         modeling3d_by_project[m3d["project_id"]] = m3d
+        modeling3d_progress_by_project[m3d["project_id"]] = m3d.get("progress", 0)
     
     # Get shop drawing info
-    shop_drawings = await db.shop_drawings.find({}, {"_id": 0}).to_list(1000)
+    shop_drawings = await db.shop_drawing.find({}, {"_id": 0}).to_list(1000)
     shop_drawing_by_project = {}
+    shop_drawing_progress_by_project = {}
     for sd in shop_drawings:
         shop_drawing_by_project[sd["project_id"]] = sd
+        shop_drawing_progress_by_project[sd["project_id"]] = sd.get("progress", 0)
     
-    # Get schedule info
-    schedules = await db.schedules.find({}, {"_id": 0}).to_list(1000)
+    # Get schedule info and calculate progress
+    schedule_items = await db.schedule_items.find({}, {"_id": 0}).to_list(10000)
     schedule_by_project = {}
-    for schedule in schedules:
-        schedule_by_project[schedule["project_id"]] = schedule
+    schedule_progress_by_project = {}
+    for item in schedule_items:
+        if item.get("project_id"):
+            if item["project_id"] not in schedule_by_project:
+                schedule_by_project[item["project_id"]] = []
+            schedule_by_project[item["project_id"]].append(item)
+    
+    # Calculate schedule progress per project
+    for project_id, items in schedule_by_project.items():
+        completed_count = sum(1 for item in items if item.get("status") == "completed")
+        progress = (completed_count * 100) // len(items) if items else 0
+        schedule_progress_by_project[project_id] = progress
     
     # Combine data
     result = []
     for project in projects:
         rab_info = rab_by_project.get(project["id"])
+        rab_progress = rab_info.get("progress", 0) if rab_info else 0
+        
         modeling3d_info = modeling3d_by_project.get(project["id"])
+        modeling3d_progress = modeling3d_progress_by_project.get(project["id"], 0)
+        
         shop_drawing_info = shop_drawing_by_project.get(project["id"])
-        schedule_info = schedule_by_project.get(project["id"])
+        shop_drawing_progress = shop_drawing_progress_by_project.get(project["id"], 0)
+        
+        schedule_items_list = schedule_by_project.get(project["id"], [])
+        schedule_progress = schedule_progress_by_project.get(project["id"], 0)
         
         result.append({
             "project": project,
             "rab": rab_info,
+            "rab_progress": rab_progress,
             "modeling_3d": modeling3d_info,
+            "modeling_3d_progress": modeling3d_progress,
             "shop_drawing": shop_drawing_info,
-            "schedule": schedule_info,
+            "shop_drawing_progress": shop_drawing_progress,
+            "schedule": {"items": schedule_items_list} if schedule_items_list else None,
+            "schedule_progress": schedule_progress,
             "design_progress": project.get("design_progress", 0)
         })
     
