@@ -529,65 +529,54 @@ const ProjectDetail = () => {
             </Card>
           </div>
 
-          {/* Row 2: Budget Usage Progress - Compact */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Penggunaan Budget</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-xs text-slate-600">Progress</span>
+          {/* Row 2: Budget, Timeline, Breakdown - Extra Compact in Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Budget Usage - Extra Compact */}
+            <Card>
+              <CardHeader className="pb-1">
+                <CardTitle className="text-xs font-medium">💰 Budget</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-slate-800">{budgetUsage.toFixed(1)}%</span>
+                  <span className="text-xs text-slate-500">Terpakai</span>
                 </div>
-                <Progress value={budgetUsage} className="h-2" />
-              </div>
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>Sisa: {formatCurrency(project.project_value - totalExpense)}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                <Progress value={budgetUsage} className="h-1.5" />
+                <p className="text-xs text-slate-500">Sisa: {formatCurrency(project.project_value - totalExpense)}</p>
+              </CardContent>
+            </Card>
 
-        {/* Section: Deadline & Timeline - Compact */}
-        {deadline && (
-          <Card className={`border ${deadline.isOverdue ? 'border-red-300 bg-red-50' : deadline.daysLeft <= 7 ? 'border-orange-300 bg-orange-50' : 'border-green-300 bg-green-50'}`}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Timeline Proyek
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-3xl font-bold ${
+            {/* Timeline - Extra Compact */}
+            {deadline && (
+              <Card className={`border ${deadline.isOverdue ? 'border-red-300 bg-red-50' : deadline.daysLeft <= 7 ? 'border-orange-300 bg-orange-50' : 'border-green-300 bg-green-50'}`}>
+                <CardHeader className="pb-1">
+                  <CardTitle className="text-xs font-medium flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Timeline
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1">
+                  <p className={`text-2xl font-bold ${
                     deadline.isOverdue ? 'text-red-600' : 
                     deadline.daysLeft <= 7 ? 'text-orange-600' : 
                     'text-green-600'
                   }`}>
-                    {Math.abs(deadline.daysLeft)} Hari
+                    {Math.abs(deadline.daysLeft)}
                   </p>
-                  <p className="text-xs text-slate-600 mt-1">
-                    {deadline.isOverdue ? 'Terlambat' : 'Tersisa'}
+                  <p className="text-xs text-slate-600">
+                    {deadline.isOverdue ? 'Hari Terlambat' : 'Hari Tersisa'}
                   </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-slate-500">Deadline</p>
-                  <p className="text-sm font-semibold text-slate-800">{formatDate(deadline.date)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Section: Breakdown Pengeluaran per Kategori - Compact */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">📊 Breakdown Pengeluaran</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+            {/* Breakdown - Extra Compact */}
+            <Card>
+              <CardHeader className="pb-1">
+                <CardTitle className="text-xs font-medium">📊 Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
               {/* Bahan */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
