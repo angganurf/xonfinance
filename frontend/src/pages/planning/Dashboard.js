@@ -191,41 +191,19 @@ const PlanningTeamDashboard = () => {
     setEditTaskProgressDialog(true);
   };
 
-  const handleProgressDrag = (e, projectId, taskType, currentProgress) => {
+  const handleProgressBarClick = (e, projectId, taskType, taskName, currentProgress) => {
     const bar = e.currentTarget;
     const rect = bar.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.round((x / rect.width) * 100);
     const clampedPercentage = Math.max(0, Math.min(100, percentage));
     
-    const key = `${projectId}-${taskType}`;
-    setTempProgress(prev => ({...prev, [key]: clampedPercentage}));
-    setShowUpdateButton(prev => ({...prev, [key]: true}));
-  };
-
-  const handleConfirmUpdate = (projectId, taskType, taskName) => {
-    const key = `${projectId}-${taskType}`;
-    const progress = tempProgress[key];
-    
+    // Langsung buka dialog dengan progress yang diklik
     setSelectedProject({ project: { id: projectId } });
     setSelectedTask({ type: taskType, name: taskName });
-    setTaskProgress(progress);
+    setTaskProgress(clampedPercentage);
     setProgressReport('');
     setEditTaskProgressDialog(true);
-  };
-
-  const handleCancelUpdate = (projectId, taskType) => {
-    const key = `${projectId}-${taskType}`;
-    setTempProgress(prev => {
-      const newTemp = {...prev};
-      delete newTemp[key];
-      return newTemp;
-    });
-    setShowUpdateButton(prev => {
-      const newShow = {...prev};
-      delete newShow[key];
-      return newShow;
-    });
   };
 
   const handleUpdateTaskProgress = async () => {
