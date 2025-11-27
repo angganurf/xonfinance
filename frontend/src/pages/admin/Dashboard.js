@@ -145,20 +145,6 @@ const AdminDashboard = () => {
       icon: Users,
       path: '/admin/members',
       color: 'text-blue-600'
-    },
-    {
-      title: 'Laporan Keuangan',
-      description: 'Lihat ringkasan keuangan lengkap',
-      icon: TrendingUp,
-      path: '/accounting',
-      color: 'text-green-600'
-    },
-    {
-      title: 'Statistik Proyek',
-      description: 'Analisis performa proyek',
-      icon: BarChart3,
-      path: '/accounting',
-      color: 'text-orange-600'
     }
   ];
 
