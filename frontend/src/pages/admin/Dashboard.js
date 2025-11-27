@@ -127,10 +127,10 @@ const AdminDashboard = () => {
       stats: `Saldo: Rp ${(stats.cashBalance / 1000000).toFixed(0)}jt`
     },
     {
-      title: 'Estimator',
-      description: 'Buat dan kelola RAB proyek',
+      title: 'Planning Team',
+      description: 'Dashboard Tim Perencanaan Proyek',
       icon: Calculator,
-      path: '/estimator',
+      path: '/planning/dashboard',
       color: 'bg-green-500',
       stats: `${stats.totalProjects} proyek aktif`
     }
