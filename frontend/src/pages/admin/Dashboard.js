@@ -7,6 +7,7 @@ import {
   Users, 
   Calculator, 
   DollarSign,
+  BarChart3,
   Settings
 } from 'lucide-react';
 import api from '../../utils/api';
