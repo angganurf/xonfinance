@@ -536,6 +536,7 @@ const ProjectDetail = () => {
             </CardContent>
           </Card>
         </div>
+        </div>
 
         {/* Section: Deadline & Timeline - Compact */}
         {deadline && (
