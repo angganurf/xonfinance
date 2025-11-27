@@ -951,6 +951,19 @@ const ProjectDetail = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
+
+        {/* Description - Full Width */}
+        {project.description && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Deskripsi Proyek</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap">{project.description}</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </Layout>
   );
