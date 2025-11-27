@@ -726,7 +726,7 @@ const ProjectDetail = () => {
             </div>
 
             {/* Task List */}
-            <div className="space-y-2 max-h-80 overflow-y-auto">
+            <div className="space-y-2 max-h-60 overflow-y-auto">
               {tasks.length === 0 ? (
                 <div className="text-center py-8 text-slate-400">
                   <CheckCircle2 className="mx-auto h-12 w-12 mb-2" />
