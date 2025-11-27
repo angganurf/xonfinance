@@ -53,6 +53,8 @@ const AccountingTransactions = () => {
   
   const [supplierName, setSupplierName] = useState('');
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [showSuggestions, setShowSuggestions] = useState({});
+  const [filteredSuggestions, setFilteredSuggestions] = useState({});
 
   useEffect(() => {
     loadData();
