@@ -325,6 +325,124 @@ const AccountingAdmin = () => {
           </Card>
         </div>
 
+        {/* Breakdown Pengeluaran per Kategori */}
+        <Card>
+          <CardHeader className="bg-gradient-to-r from-slate-600 to-slate-700 text-white">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <TrendingDown className="h-5 w-5" />
+              Breakdown Pengeluaran per Kategori
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Bahan */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">Bahan</span>
+                  <span className="text-xs font-semibold text-blue-600">
+                    {statistics.totalExpenses > 0 ? ((statistics.expensesByCategory?.bahan / statistics.totalExpenses) * 100).toFixed(1) : 0}%
+                  </span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-blue-600">{formatCurrency(statistics.expensesByCategory?.bahan || 0)}</p>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${statistics.totalExpenses > 0 ? Math.min(((statistics.expensesByCategory?.bahan || 0) / statistics.totalExpenses) * 100, 100) : 0}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Upah */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">Upah</span>
+                  <span className="text-xs font-semibold text-green-600">
+                    {statistics.totalExpenses > 0 ? ((statistics.expensesByCategory?.upah / statistics.totalExpenses) * 100).toFixed(1) : 0}%
+                  </span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-green-600">{formatCurrency(statistics.expensesByCategory?.upah || 0)}</p>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${statistics.totalExpenses > 0 ? Math.min(((statistics.expensesByCategory?.upah || 0) / statistics.totalExpenses) * 100, 100) : 0}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Alat */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">Alat</span>
+                  <span className="text-xs font-semibold text-orange-600">
+                    {statistics.totalExpenses > 0 ? ((statistics.expensesByCategory?.alat / statistics.totalExpenses) * 100).toFixed(1) : 0}%
+                  </span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-orange-600">{formatCurrency(statistics.expensesByCategory?.alat || 0)}</p>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-orange-600 h-2 rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${statistics.totalExpenses > 0 ? Math.min(((statistics.expensesByCategory?.alat || 0) / statistics.totalExpenses) * 100, 100) : 0}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Operasional */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">Operasional</span>
+                  <span className="text-xs font-semibold text-purple-600">
+                    {statistics.totalExpenses > 0 ? ((statistics.expensesByCategory?.operasional / statistics.totalExpenses) * 100).toFixed(1) : 0}%
+                  </span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-purple-600">{formatCurrency(statistics.expensesByCategory?.operasional || 0)}</p>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-purple-600 h-2 rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${statistics.totalExpenses > 0 ? Math.min(((statistics.expensesByCategory?.operasional || 0) / statistics.totalExpenses) * 100, 100) : 0}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Vendor */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">Vendor</span>
+                  <span className="text-xs font-semibold text-red-600">
+                    {statistics.totalExpenses > 0 ? ((statistics.expensesByCategory?.vendor / statistics.totalExpenses) * 100).toFixed(1) : 0}%
+                  </span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-red-600">{formatCurrency(statistics.expensesByCategory?.vendor || 0)}</p>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div 
+                    className="bg-red-600 h-2 rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${statistics.totalExpenses > 0 ? Math.min(((statistics.expensesByCategory?.vendor || 0) / statistics.totalExpenses) * 100, 100) : 0}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="space-y-2 md:col-span-2 lg:col-span-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm font-bold text-slate-800">Total</span>
+                  <span className="text-xs font-semibold text-slate-800">100%</span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-red-600">{formatCurrency(statistics.totalExpenses)}</p>
+                <div className="w-full bg-slate-800 rounded-full h-2"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Project Statistics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
           <Card>
