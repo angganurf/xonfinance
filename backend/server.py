@@ -829,13 +829,18 @@ async def update_task_progress(
         if existing:
             await db.modeling_3d.update_many(
                 {"project_id": project_id},
-                {"$set": {"progress": progress}}
+                {"$set": {
+                    "progress": progress,
+                    "last_report": report,
+                    "updated_at": now_wib().isoformat()
+                }}
             )
         else:
             await db.modeling_3d.insert_one({
                 "id": str(uuid.uuid4()),
                 "project_id": project_id,
                 "progress": progress,
+                "last_report": report,
                 "created_at": now_wib().isoformat()
             })
     
@@ -845,7 +850,11 @@ async def update_task_progress(
         if existing:
             await db.shop_drawing.update_many(
                 {"project_id": project_id},
-                {"$set": {"progress": progress}}
+                {"$set": {
+                    "progress": progress,
+                    "last_report": report,
+                    "updated_at": now_wib().isoformat()
+                }}
             )
         else:
             await db.shop_drawing.insert_one({
