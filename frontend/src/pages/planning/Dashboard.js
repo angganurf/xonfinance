@@ -191,14 +191,62 @@ const PlanningTeamDashboard = () => {
     setEditTaskProgressDialog(true);
   };
 
+  const handleProgressDrag = (e, projectId, taskType, currentProgress) => {
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.round((x / rect.width) * 100);
+    const clampedPercentage = Math.max(0, Math.min(100, percentage));
+    
+    const key = `${projectId}-${taskType}`;
+    setTempProgress(prev => ({...prev, [key]: clampedPercentage}));
+    setShowUpdateButton(prev => ({...prev, [key]: true}));
+  };
+
+  const handleConfirmUpdate = (projectId, taskType, taskName) => {
+    const key = `${projectId}-${taskType}`;
+    const progress = tempProgress[key];
+    
+    setSelectedProject({ project: { id: projectId } });
+    setSelectedTask({ type: taskType, name: taskName });
+    setTaskProgress(progress);
+    setProgressReport('');
+    setEditTaskProgressDialog(true);
+  };
+
+  const handleCancelUpdate = (projectId, taskType) => {
+    const key = `${projectId}-${taskType}`;
+    setTempProgress(prev => {
+      const newTemp = {...prev};
+      delete newTemp[key];
+      return newTemp;
+    });
+    setShowUpdateButton(prev => {
+      const newShow = {...prev};
+      delete newShow[key];
+      return newShow;
+    });
+  };
+
   const handleUpdateTaskProgress = async () => {
     if (!selectedProject || !selectedTask) return;
     
+    if (!progressReport.trim()) {
+      toast.error('Laporan progress wajib diisi');
+      return;
+    }
+    
     setUpdating(true);
     try {
-      await api.patch(`/planning-projects/${selectedProject.project.id}/task-progress?task_type=${selectedTask.type}&progress=${taskProgress}`);
+      await api.patch(`/planning-projects/${selectedProject.project.id}/task-progress?task_type=${selectedTask.type}&progress=${taskProgress}&report=${encodeURIComponent(progressReport)}`);
       toast.success(`Progress ${selectedTask.name} berhasil diupdate ke ${taskProgress}%`);
+      
+      // Clear temp states
+      const key = `${selectedProject.project.id}-${selectedTask.type}`;
+      handleCancelUpdate(selectedProject.project.id, selectedTask.type);
+      
       setEditTaskProgressDialog(false);
+      setProgressReport('');
       loadOverview();
     } catch (error) {
       console.error('Error updating task progress:', error);
