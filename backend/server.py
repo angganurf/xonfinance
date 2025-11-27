@@ -334,10 +334,13 @@ class RABItemInput(BaseModel):
     rab_id: str
     project_id: Optional[str] = None
     category: str
+    item_number: str
     description: str
-    unit_price: float
-    quantity: float
     unit: str
+    volume: float
+    unit_price: float
+    total_price: float
+    is_category: Optional[bool] = False
 
 class RABUpdateInput(BaseModel):
     discount: Optional[float] = None
