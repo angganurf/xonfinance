@@ -657,6 +657,8 @@ const ProjectDetail = () => {
             </div>
           </CardContent>
         </Card>
+          </div>
+        </div>
 
         {/* Section: Resources */}
         <div>
