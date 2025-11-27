@@ -1257,6 +1257,84 @@ async def get_planning_overview(user: User = Depends(get_current_user)):
     
     return result
 
+# ============= UNIT PRICES ENDPOINTS =============
+
+@api_router.get("/unit-prices")
+async def get_unit_prices(category: Optional[str] = None, user: User = Depends(get_current_user)):
+    """Get all unit prices, optionally filtered by category"""
+    query = {}
+    if category:
+        query["category"] = category
+    
+    unit_prices = await db.unit_prices.find(query, {"_id": 0}).sort("description", 1).to_list(1000)
+    return unit_prices
+
+@api_router.post("/unit-prices")
+async def create_unit_price(
+    description: str,
+    unit: str,
+    price: float,
+    category: str,
+    user: User = Depends(get_current_user)
+):
+    """Create a new unit price"""
+    unit_price = UnitPrice(
+        description=description,
+        unit=unit,
+        price=price,
+        category=category,
+        created_by=user.id
+    )
+    
+    unit_price_dict = unit_price.model_dump()
+    unit_price_dict["created_at"] = unit_price_dict["created_at"].isoformat()
+    if unit_price_dict.get("updated_at"):
+        unit_price_dict["updated_at"] = unit_price_dict["updated_at"].isoformat()
+    
+    await db.unit_prices.insert_one(unit_price_dict)
+    return {"message": "Unit price created", "id": unit_price.id}
+
+@api_router.patch("/unit-prices/{price_id}")
+async def update_unit_price(
+    price_id: str,
+    description: Optional[str] = None,
+    unit: Optional[str] = None,
+    price: Optional[float] = None,
+    category: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
+    """Update a unit price"""
+    update_data = {"updated_at": now_wib().isoformat()}
+    
+    if description is not None:
+        update_data["description"] = description
+    if unit is not None:
+        update_data["unit"] = unit
+    if price is not None:
+        update_data["price"] = price
+    if category is not None:
+        update_data["category"] = category
+    
+    result = await db.unit_prices.update_one(
+        {"id": price_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Unit price not found")
+    
+    return {"message": "Unit price updated"}
+
+@api_router.delete("/unit-prices/{price_id}")
+async def delete_unit_price(price_id: str, user: User = Depends(get_current_user)):
+    """Delete a unit price"""
+    result = await db.unit_prices.delete_one({"id": price_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Unit price not found")
+    
+    return {"message": "Unit price deleted"}
+
 # ============= RAB ENDPOINTS =============
 
 @api_router.post("/rabs")
