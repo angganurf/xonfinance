@@ -6,11 +6,7 @@ import { Button } from '../../components/ui/button';
 import { 
   Users, 
   Calculator, 
-  HardHat, 
-  UserCheck, 
   DollarSign,
-  TrendingUp,
-  BarChart3,
   Settings
 } from 'lucide-react';
 import api from '../../utils/api';
