@@ -191,19 +191,22 @@ const PlanningTeamDashboard = () => {
     setEditTaskProgressDialog(true);
   };
 
-  const handleProgressBarClick = (e, projectId, taskType, taskName, currentProgress) => {
+  const handleProgressBarClick = async (e, projectId, taskType, taskName, currentProgress) => {
     const bar = e.currentTarget;
     const rect = bar.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.round((x / rect.width) * 100);
     const clampedPercentage = Math.max(0, Math.min(100, percentage));
     
-    // Langsung buka dialog dengan progress yang diklik
-    setSelectedProject({ project: { id: projectId } });
-    setSelectedTask({ type: taskType, name: taskName });
-    setTaskProgress(clampedPercentage);
-    setProgressReport('');
-    setEditTaskProgressDialog(true);
+    // Langsung update tanpa dialog
+    try {
+      await api.patch(`/planning-projects/${projectId}/task-progress?task_type=${taskType}&progress=${clampedPercentage}&report=Progress diupdate via quick click`);
+      toast.success(`Progress ${taskName} berhasil diupdate ke ${clampedPercentage}%`);
+      loadOverview(); // Refresh data
+    } catch (error) {
+      console.error('Error updating progress:', error);
+      toast.error('Gagal mengupdate progress');
+    }
   };
 
   const handleUpdateTaskProgress = async () => {
