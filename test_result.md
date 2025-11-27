@@ -407,7 +407,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "XON Architect New Features Testing"
+    - "Accounting Admin Dashboard Testing - COMPLETED"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
