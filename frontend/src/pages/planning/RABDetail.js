@@ -18,7 +18,7 @@ const RABDetail = () => {
   const [unitPrices, setUnitPrices] = useState([]);
   const [items, setItems] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [tax Percentage, setTaxPercentage] = useState(0);
+  const [taxPercentage, setTaxPercentage] = useState(0);
   const [showSuggestions, setShowSuggestions] = useState({});
   const [filteredSuggestions, setFilteredSuggestions] = useState({});
 
