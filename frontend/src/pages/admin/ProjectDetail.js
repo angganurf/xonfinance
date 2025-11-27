@@ -537,39 +537,36 @@ const ProjectDetail = () => {
           </Card>
         </div>
 
-        {/* Section: Deadline & Timeline */}
+        {/* Section: Deadline & Timeline - Compact */}
         {deadline && (
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-800 mb-3 sm:mb-4">⏰ Timeline Proyek</h2>
-            <Card className={`border-2 ${deadline.isOverdue ? 'border-red-300 bg-red-50' : deadline.daysLeft <= 7 ? 'border-orange-300 bg-orange-50' : 'border-green-300 bg-green-50'}`}>
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row items-center justify-around gap-6">
-                  <div className="text-center">
-                    <p className={`text-5xl sm:text-6xl font-bold ${
-                      deadline.isOverdue ? 'text-red-600' : 
-                      deadline.daysLeft <= 7 ? 'text-orange-600' : 
-                      'text-green-600'
-                    }`}>
-                      {Math.abs(deadline.daysLeft)}
-                    </p>
-                    <p className="text-sm sm:text-base font-medium text-slate-700 mt-2">
-                      {deadline.isOverdue ? 'Hari Terlambat' : 'Hari Tersisa'}
-                    </p>
-                  </div>
-                  <div className="text-center sm:text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Clock className="h-5 w-5 text-slate-600" />
-                      <p className="text-sm font-medium text-slate-600">Deadline Proyek</p>
-                    </div>
-                    <p className="text-xl sm:text-2xl font-bold text-slate-800">{formatDate(deadline.date)}</p>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                      Mulai: {formatDate(project.contract_date || project.created_at)}
-                    </p>
-                  </div>
+          <Card className={`border ${deadline.isOverdue ? 'border-red-300 bg-red-50' : deadline.daysLeft <= 7 ? 'border-orange-300 bg-orange-50' : 'border-green-300 bg-green-50'}`}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Timeline Proyek
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-3xl font-bold ${
+                    deadline.isOverdue ? 'text-red-600' : 
+                    deadline.daysLeft <= 7 ? 'text-orange-600' : 
+                    'text-green-600'
+                  }`}>
+                    {Math.abs(deadline.daysLeft)} Hari
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    {deadline.isOverdue ? 'Terlambat' : 'Tersisa'}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-500">Deadline</p>
+                  <p className="text-sm font-semibold text-slate-800">{formatDate(deadline.date)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Section: Breakdown Pengeluaran per Kategori */}
