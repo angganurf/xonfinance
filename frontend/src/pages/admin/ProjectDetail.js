@@ -959,7 +959,6 @@ const ProjectDetail = () => {
             </div>
           </CardContent>
         </Card>
-        </div>
 
         {/* Description - Full Width */}
         {project.description && (
