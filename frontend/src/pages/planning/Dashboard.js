@@ -219,10 +219,6 @@ const PlanningTeamDashboard = () => {
       await api.patch(`/planning-projects/${selectedProject.project.id}/task-progress?task_type=${selectedTask.type}&progress=${taskProgress}&report=${encodeURIComponent(progressReport)}`);
       toast.success(`Progress ${selectedTask.name} berhasil diupdate ke ${taskProgress}%`);
       
-      // Clear temp states
-      const key = `${selectedProject.project.id}-${selectedTask.type}`;
-      handleCancelUpdate(selectedProject.project.id, selectedTask.type);
-      
       setEditTaskProgressDialog(false);
       setProgressReport('');
       loadOverview();
