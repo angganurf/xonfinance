@@ -187,7 +187,6 @@ const ProjectDetail = () => {
 
       const formData = new FormData();
       formData.append('message', newComment || '');
-      
       if (mentions.length > 0) {
         mentions.forEach(m => formData.append('mentions', m));
       }
@@ -196,13 +195,11 @@ const ProjectDetail = () => {
         formData.append('images', image);
       });
 
-      const response = await api.post(`/projects/${id}/comments`, formData, {
+      await api.post(`/projects/${id}/comments`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
-      console.log('Comment posted successfully:', response.data);
       
       toast.success('Pesan berhasil dikirim!');
       setNewComment('');
@@ -412,18 +409,6 @@ const ProjectDetail = () => {
           </span>
         </div>
 
-        {/* Description - Moved to Top */}
-        {project.description && (
-          <Card className="bg-blue-50 border-blue-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-blue-900">📋 Deskripsi Proyek</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{project.description}</p>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Info Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           <Card>
@@ -532,101 +517,180 @@ const ProjectDetail = () => {
             </Card>
           </div>
 
-          {/* Row 2: Budget, Timeline, Breakdown - Extra Compact in Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* Budget Usage - Extra Compact */}
-            <Card>
-              <CardHeader className="pb-1">
-                <CardTitle className="text-xs font-medium">💰 Budget</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1.5">
-                <div className="flex justify-between items-center">
+          {/* Row 2: Budget Usage Progress - Compact */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Penggunaan Budget</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div>
+                <div className="flex justify-between mb-1.5">
+                  <span className="text-xs text-slate-600">Progress</span>
                   <span className="text-xs font-bold text-slate-800">{budgetUsage.toFixed(1)}%</span>
-                  <span className="text-xs text-slate-500">Terpakai</span>
                 </div>
-                <Progress value={budgetUsage} className="h-1.5" />
-                <p className="text-xs text-slate-500">Sisa: {formatCurrency(project.project_value - totalExpense)}</p>
-              </CardContent>
-            </Card>
+                <Progress value={budgetUsage} className="h-2" />
+              </div>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Sisa: {formatCurrency(project.project_value - totalExpense)}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        </div>
 
-            {/* Timeline - Extra Compact */}
-            {deadline && (
-              <Card className={`border ${deadline.isOverdue ? 'border-red-300 bg-red-50' : deadline.daysLeft <= 7 ? 'border-orange-300 bg-orange-50' : 'border-green-300 bg-green-50'}`}>
-                <CardHeader className="pb-1">
-                  <CardTitle className="text-xs font-medium flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Timeline
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1">
-                  <p className={`text-2xl font-bold ${
+        {/* Section: Deadline & Timeline - Compact */}
+        {deadline && (
+          <Card className={`border ${deadline.isOverdue ? 'border-red-300 bg-red-50' : deadline.daysLeft <= 7 ? 'border-orange-300 bg-orange-50' : 'border-green-300 bg-green-50'}`}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Timeline Proyek
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-3xl font-bold ${
                     deadline.isOverdue ? 'text-red-600' : 
                     deadline.daysLeft <= 7 ? 'text-orange-600' : 
                     'text-green-600'
                   }`}>
-                    {Math.abs(deadline.daysLeft)}
+                    {Math.abs(deadline.daysLeft)} Hari
                   </p>
-                  <p className="text-xs text-slate-600">
-                    {deadline.isOverdue ? 'Hari Terlambat' : 'Hari Tersisa'}
+                  <p className="text-xs text-slate-600 mt-1">
+                    {deadline.isOverdue ? 'Terlambat' : 'Tersisa'}
                   </p>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-500">Deadline</p>
+                  <p className="text-sm font-semibold text-slate-800">{formatDate(deadline.date)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-            {/* Breakdown - Extra Compact */}
-            <Card>
-              <CardHeader className="pb-1">
-                <CardTitle className="text-xs font-medium">📊 Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-              {/* Simplified List */}
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                  <span className="text-xs flex-1">Bahan</span>
-                  <span className="text-xs font-semibold text-blue-600">{expensePercentages.bahan.toFixed(0)}%</span>
+        {/* Section: Breakdown Pengeluaran per Kategori - Compact */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">📊 Breakdown Pengeluaran</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Bahan */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-slate-700">🔵 Bahan</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-blue-600">{formatCurrency(expensesByCategory.bahan)}</span>
+                    <span className="text-xs text-slate-500 ml-1">({expensePercentages.bahan.toFixed(1)}%)</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                  <span className="text-xs flex-1">Upah</span>
-                  <span className="text-xs font-semibold text-green-600">{expensePercentages.upah.toFixed(0)}%</span>
+                <div className="w-full bg-slate-200 rounded-full h-1.5">
+                  <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(expensePercentages.bahan, 100)}%` }}></div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-600"></div>
-                  <span className="text-xs flex-1">Alat</span>
-                  <span className="text-xs font-semibold text-orange-600">{expensePercentages.alat.toFixed(0)}%</span>
+              </div>
+
+              {/* Upah */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-slate-700">🟢 Upah</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-green-600">{formatCurrency(expensesByCategory.upah)}</span>
+                    <span className="text-xs text-slate-500 ml-1">({expensePercentages.upah.toFixed(1)}%)</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-purple-600"></div>
-                  <span className="text-xs flex-1">Operasional</span>
-                  <span className="text-xs font-semibold text-purple-600">{expensePercentages.operasional.toFixed(0)}%</span>
+                <div className="w-full bg-slate-200 rounded-full h-1.5">
+                  <div className="bg-green-600 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(expensePercentages.upah, 100)}%` }}></div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-600"></div>
-                  <span className="text-xs flex-1">Vendor</span>
-                  <span className="text-xs font-semibold text-red-600">{expensePercentages.vendor.toFixed(0)}%</span>
+              </div>
+
+              {/* Alat */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-slate-700">🟠 Alat</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-orange-600">{formatCurrency(expensesByCategory.alat)}</span>
+                    <span className="text-xs text-slate-500 ml-1">({expensePercentages.alat.toFixed(1)}%)</span>
+                  </div>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5">
+                  <div className="bg-orange-600 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(expensePercentages.alat, 100)}%` }}></div>
+                </div>
+              </div>
+
+              {/* Operasional */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-slate-700">🟣 Operasional</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-purple-600">{formatCurrency(expensesByCategory.operasional)}</span>
+                    <span className="text-xs text-slate-500 ml-1">({expensePercentages.operasional.toFixed(1)}%)</span>
+                  </div>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5">
+                  <div className="bg-purple-600 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(expensePercentages.operasional, 100)}%` }}></div>
+                </div>
+              </div>
+
+              {/* Vendor */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-slate-700">🔴 Vendor</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-red-600">{formatCurrency(expensesByCategory.vendor)}</span>
+                    <span className="text-xs text-slate-500 ml-1">({expensePercentages.vendor.toFixed(1)}%)</span>
+                  </div>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5">
+                  <div className="bg-red-600 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(expensePercentages.vendor, 100)}%` }}></div>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="pt-2 border-t border-slate-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-800">Total</span>
+                  <span className="text-sm font-bold text-red-600">{formatCurrency(totalExpense)}</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-          </div>
-        </div>
 
         {/* Section: Resources */}
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-purple-700">
-              <Package className="h-4 w-4" />
-              📦 Inventory
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-purple-700 mb-1">{inventory.length}</p>
-            <p className="text-xs text-purple-600">Total Items Material & Peralatan</p>
-          </CardContent>
-        </Card>
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-800 mb-3 sm:mb-4">📦 Resources & Assets</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Inventory */}
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-purple-700">
+                  <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Inventory
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl sm:text-4xl font-bold text-purple-700 mb-2">{inventory.length}</p>
+                <p className="text-xs sm:text-sm text-purple-600">Total Items Material & Peralatan</p>
+              </CardContent>
+            </Card>
+
+            {/* Placeholder for future cards */}
+            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-slate-700">
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Progress Tasks
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl sm:text-4xl font-bold text-slate-700 mb-2">{taskProgress.toFixed(0)}%</p>
+                <p className="text-xs sm:text-sm text-slate-600">{tasks.filter(t => t.completed).length} dari {tasks.length} tugas selesai</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {/* Section: Task & Discussion - Side by Side on Desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -638,16 +702,7 @@ const ProjectDetail = () => {
                 Task & Tugas
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Progress Bar */}
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-medium text-slate-700">Progress</span>
-                  <span className="text-xs font-bold text-green-600">{taskProgress.toFixed(0)}%</span>
-                </div>
-                <Progress value={taskProgress} className="h-2" />
-                <p className="text-xs text-slate-500 mt-1.5">{tasks.filter(t => t.completed).length} dari {tasks.length} tugas selesai</p>
-              </div>
+          <CardContent className="space-y-4">
             {/* Task Progress */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
@@ -899,6 +954,17 @@ const ProjectDetail = () => {
         </Card>
         </div>
 
+        {/* Description - Full Width */}
+        {project.description && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Deskripsi Proyek</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap">{project.description}</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </Layout>
   );
