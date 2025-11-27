@@ -258,6 +258,22 @@ function App() {
             }
           />
           <Route
+            path="/planning/rab/:id"
+            element={
+              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+                <PlanningRABDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning/unit-prices"
+            element={
+              <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
+                <PlanningUnitPrices />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/planning/schedule"
             element={
               <ProtectedRoute allowedRoles={['project_planning_team', 'admin']}>
