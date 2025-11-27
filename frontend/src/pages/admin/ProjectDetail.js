@@ -187,6 +187,7 @@ const ProjectDetail = () => {
 
       const formData = new FormData();
       formData.append('message', newComment || '');
+      
       if (mentions.length > 0) {
         mentions.forEach(m => formData.append('mentions', m));
       }
@@ -195,11 +196,13 @@ const ProjectDetail = () => {
         formData.append('images', image);
       });
 
-      await api.post(`/projects/${id}/comments`, formData, {
+      const response = await api.post(`/projects/${id}/comments`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      
+      console.log('Comment posted successfully:', response.data);
       
       toast.success('Pesan berhasil dikirim!');
       setNewComment('');
