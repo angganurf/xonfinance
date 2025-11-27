@@ -465,22 +465,47 @@ const AccountingTransactions = () => {
                         <Card key={index} className="p-4">
                           <div className="flex items-start gap-2">
                             <div className="flex-1 space-y-3">
-                              <div>
+                              <div className="relative">
                                 <Label className="text-xs">Deskripsi Bahan</Label>
                                 <Input
-                                  list={`item-names-${index}`}
                                   value={item.description}
                                   onChange={(e) => handleBahanItemChange(index, 'description', e.target.value)}
-                                  placeholder="Ketik atau pilih nama bahan yang sudah ada"
+                                  onFocus={() => {
+                                    if (item.description.trim().length > 0 && filteredSuggestions[index]?.length > 0) {
+                                      setShowSuggestions({ ...showSuggestions, [index]: true });
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    setTimeout(() => {
+                                      setShowSuggestions({ ...showSuggestions, [index]: false });
+                                    }, 200);
+                                  }}
+                                  placeholder="Ketik nama bahan..."
                                   data-testid={`bahan-desc-${index}`}
+                                  autoComplete="off"
                                 />
-                                <datalist id={`item-names-${index}`}>
-                                  {itemNames.map((name, i) => (
-                                    <option key={i} value={name} />
-                                  ))}
-                                </datalist>
-                                {item.description && itemNames.includes(item.description) && (
+                                
+                                {/* Autocomplete Dropdown */}
+                                {showSuggestions[index] && filteredSuggestions[index]?.length > 0 && (
+                                  <div className="absolute z-10 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    {filteredSuggestions[index].map((suggestion, i) => (
+                                      <div
+                                        key={i}
+                                        onClick={() => selectSuggestion(index, suggestion)}
+                                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b last:border-b-0 flex items-center gap-2"
+                                      >
+                                        <span className="text-xs text-green-600">✓</span>
+                                        <span className="text-sm">{suggestion}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {item.description && itemNames.includes(item.description) && !showSuggestions[index] && (
                                   <p className="text-xs text-green-600 mt-1">✓ Item sudah ada di inventory</p>
+                                )}
+                                {item.description && !itemNames.includes(item.description) && item.description.trim().length > 0 && !showSuggestions[index] && (
+                                  <p className="text-xs text-blue-600 mt-1">ℹ Item baru akan ditambahkan ke inventory</p>
                                 )}
                               </div>
                               <div className="grid grid-cols-5 gap-2">
