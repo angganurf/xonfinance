@@ -767,26 +767,14 @@ const ProjectDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Description */}
-        {project.description && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm sm:text-base">Deskripsi Proyek</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap">{project.description}</p>
-            </CardContent>
-          </Card>
-        )}
-
         {/* WhatsApp-Style Discussion */}
         <Card className="overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-              Diskusi Proyek
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <MessageCircle className="h-4 w-4" />
+              Diskusi
             </CardTitle>
-            <p className="text-xs sm:text-sm text-blue-100 mt-1">
+            <p className="text-xs text-blue-100 mt-1">
               {comments.length} pesan
             </p>
           </CardHeader>
