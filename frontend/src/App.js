@@ -15,6 +15,8 @@ import RABList from './pages/estimator/RABList';
 import DrafterDashboard from './pages/drafter/Dashboard';
 import PlanningTeamDashboard from './pages/planning/Dashboard';
 import PlanningRABList from './pages/planning/RABList';
+import PlanningRABDetail from './pages/planning/RABDetail';
+import PlanningUnitPrices from './pages/planning/UnitPrices';
 import PlanningScheduleList from './pages/planning/ScheduleList';
 import PlanningSettings from './pages/planning/Settings';
 import InventoryDashboard from './pages/inventory/Dashboard';
