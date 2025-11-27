@@ -753,6 +753,90 @@ async def update_planning_project_progress(
     
     return {"message": "Progress updated", "progress": progress}
 
+@api_router.patch("/planning-projects/{project_id}/task-progress")
+async def update_task_progress(
+    project_id: str,
+    task_type: str,
+    progress: int,
+    user: User = Depends(get_current_user)
+):
+    """Update progress for specific task (rab, modeling_3d, shop_drawing, schedule)"""
+    if progress < 0 or progress > 100:
+        raise HTTPException(status_code=400, detail="Progress must be between 0 and 100")
+    
+    # Validate task type
+    valid_tasks = ["rab", "modeling_3d", "shop_drawing", "schedule"]
+    if task_type not in valid_tasks:
+        raise HTTPException(status_code=400, detail="Invalid task type")
+    
+    # Update progress based on task type
+    if task_type == "rab":
+        # For RAB, we'll create/update a single record to track progress
+        existing = await db.rabs.find_one({"project_id": project_id})
+        if existing:
+            await db.rabs.update_one(
+                {"project_id": project_id},
+                {"$set": {"progress": progress}}
+            )
+        else:
+            # Create a placeholder RAB with progress
+            await db.rabs.insert_one({
+                "id": str(uuid.uuid4()),
+                "project_id": project_id,
+                "progress": progress,
+                "created_at": now_wib().isoformat()
+            })
+    
+    elif task_type == "modeling_3d":
+        # Update or create modeling_3d record
+        existing = await db.modeling_3d.find_one({"project_id": project_id})
+        if existing:
+            await db.modeling_3d.update_many(
+                {"project_id": project_id},
+                {"$set": {"progress": progress}}
+            )
+        else:
+            await db.modeling_3d.insert_one({
+                "id": str(uuid.uuid4()),
+                "project_id": project_id,
+                "progress": progress,
+                "created_at": now_wib().isoformat()
+            })
+    
+    elif task_type == "shop_drawing":
+        # Update or create shop_drawing record
+        existing = await db.shop_drawing.find_one({"project_id": project_id})
+        if existing:
+            await db.shop_drawing.update_many(
+                {"project_id": project_id},
+                {"$set": {"progress": progress}}
+            )
+        else:
+            await db.shop_drawing.insert_one({
+                "id": str(uuid.uuid4()),
+                "project_id": project_id,
+                "progress": progress,
+                "created_at": now_wib().isoformat()
+            })
+    
+    elif task_type == "schedule":
+        # For schedule, update a metadata record
+        existing = await db.schedule_metadata.find_one({"project_id": project_id})
+        if existing:
+            await db.schedule_metadata.update_one(
+                {"project_id": project_id},
+                {"$set": {"progress": progress}}
+            )
+        else:
+            await db.schedule_metadata.insert_one({
+                "id": str(uuid.uuid4()),
+                "project_id": project_id,
+                "progress": progress,
+                "created_at": now_wib().isoformat()
+            })
+    
+    return {"message": f"{task_type} progress updated to {progress}%"}
+
 @api_router.post("/planning-projects/{project_id}/approve")
 async def approve_planning_project(
     project_id: str,
