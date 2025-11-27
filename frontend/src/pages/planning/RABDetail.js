@@ -279,6 +279,18 @@ const RABDetail = () => {
     }).format(value || 0);
   };
 
+  // Format number with thousand separators (dots)
+  const formatNumber = (value) => {
+    if (!value) return '';
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
+  // Parse formatted number back to plain number
+  const parseFormattedNumber = (value) => {
+    if (!value) return 0;
+    return parseFloat(value.toString().replace(/\./g, '')) || 0;
+  };
+
   if (loading) {
     return (
       <Layout>
