@@ -360,7 +360,12 @@ const ProjectDetail = () => {
     );
   }
 
-  const totalExpense = transactions.reduce((sum, t) => sum + (t.total_amount || 0), 0);
+  // Helper function to get amount from transaction (handles both total_amount and amount fields)
+  const getTransactionAmount = (t) => {
+    return t.total_amount || t.amount || 0;
+  };
+
+  const totalExpense = transactions.reduce((sum, t) => sum + getTransactionAmount(t), 0);
   const budgetRemaining = (project.project_value || 0) - totalExpense;
   const budgetUsage = project.project_value > 0 ? (totalExpense / project.project_value) * 100 : 0;
   const pnl = budgetRemaining;
@@ -369,11 +374,11 @@ const ProjectDetail = () => {
 
   // Calculate expenses by category
   const expensesByCategory = {
-    bahan: transactions.filter(t => t.category === 'bahan').reduce((sum, t) => sum + (t.total_amount || 0), 0),
-    upah: transactions.filter(t => t.category === 'upah').reduce((sum, t) => sum + (t.total_amount || 0), 0),
-    alat: transactions.filter(t => t.category === 'alat').reduce((sum, t) => sum + (t.total_amount || 0), 0),
-    operasional: transactions.filter(t => t.category === 'operasional').reduce((sum, t) => sum + (t.total_amount || 0), 0),
-    vendor: transactions.filter(t => t.category === 'vendor').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+    bahan: transactions.filter(t => t.category === 'bahan').reduce((sum, t) => sum + getTransactionAmount(t), 0),
+    upah: transactions.filter(t => t.category === 'upah').reduce((sum, t) => sum + getTransactionAmount(t), 0),
+    alat: transactions.filter(t => t.category === 'alat').reduce((sum, t) => sum + getTransactionAmount(t), 0),
+    operasional: transactions.filter(t => t.category === 'operasional').reduce((sum, t) => sum + getTransactionAmount(t), 0),
+    vendor: transactions.filter(t => t.category === 'vendor').reduce((sum, t) => sum + getTransactionAmount(t), 0),
   };
 
   // Calculate percentages from total expense
@@ -384,6 +389,10 @@ const ProjectDetail = () => {
     operasional: totalExpense > 0 ? (expensesByCategory.operasional / totalExpense) * 100 : 0,
     vendor: totalExpense > 0 ? (expensesByCategory.vendor / totalExpense) * 100 : 0,
   };
+
+  console.log('📊 Expenses by category:', expensesByCategory);
+  console.log('📈 Total expense:', totalExpense);
+  console.log('📊 Percentages:', expensePercentages);
 
   return (
     <Layout>
