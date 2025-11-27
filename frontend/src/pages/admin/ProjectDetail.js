@@ -174,6 +174,10 @@ const ProjectDetail = () => {
 
     setUploading(true);
     try {
+      console.log('Sending comment to project:', id);
+      console.log('Message:', newComment);
+      console.log('Images:', selectedImages.length);
+      
       const mentionRegex = /@([^\s]+)/g;
       const mentions = [];
       let match;
@@ -195,12 +199,14 @@ const ProjectDetail = () => {
         formData.append('images', image);
       });
 
-      await api.post(`/projects/${id}/comments`, formData, {
+      console.log('Posting to:', `/projects/${id}/comments`);
+      const response = await api.post(`/projects/${id}/comments`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       
+      console.log('Response:', response.data);
       toast.success('Pesan berhasil dikirim!');
       setNewComment('');
       setSelectedImages([]);
@@ -208,7 +214,9 @@ const ProjectDetail = () => {
       loadComments();
     } catch (error) {
       console.error('Error sending comment:', error);
-      toast.error('Gagal mengirim pesan');
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      toast.error(`Gagal mengirim pesan: ${error.response?.data?.detail || error.message}`);
     } finally {
       setUploading(false);
     }
