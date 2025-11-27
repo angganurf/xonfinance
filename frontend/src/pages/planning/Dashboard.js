@@ -29,6 +29,9 @@ const PlanningTeamDashboard = () => {
   const [newProgress, setNewProgress] = useState(0);
   const [bulkProgress, setBulkProgress] = useState(0);
   const [taskProgress, setTaskProgress] = useState(0);
+  const [tempProgress, setTempProgress] = useState({});
+  const [showUpdateButton, setShowUpdateButton] = useState({});
+  const [progressReport, setProgressReport] = useState('');
   const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
