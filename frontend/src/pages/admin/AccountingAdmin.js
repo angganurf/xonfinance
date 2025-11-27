@@ -23,7 +23,14 @@ const AccountingAdmin = () => {
     labaBersih: 0,
     totalAset: 0,
     totalPendapatan: 0,
-    totalBebanOperasional: 0
+    totalBebanOperasional: 0,
+    expensesByCategory: {
+      bahan: 0,
+      upah: 0,
+      alat: 0,
+      operasional: 0,
+      vendor: 0
+    }
   });
   const [monthlyData, setMonthlyData] = useState([]);
   const [plData, setPLData] = useState({
