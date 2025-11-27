@@ -367,6 +367,24 @@ const ProjectDetail = () => {
   const deadline = calculateDeadline();
   const taskProgress = tasks.length > 0 ? (tasks.filter(t => t.completed).length / tasks.length) * 100 : 0;
 
+  // Calculate expenses by category
+  const expensesByCategory = {
+    bahan: transactions.filter(t => t.category === 'bahan').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+    upah: transactions.filter(t => t.category === 'upah').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+    alat: transactions.filter(t => t.category === 'alat').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+    operasional: transactions.filter(t => t.category === 'operasional').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+    vendor: transactions.filter(t => t.category === 'vendor').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+  };
+
+  // Calculate percentages from total expense
+  const expensePercentages = {
+    bahan: totalExpense > 0 ? (expensesByCategory.bahan / totalExpense) * 100 : 0,
+    upah: totalExpense > 0 ? (expensesByCategory.upah / totalExpense) * 100 : 0,
+    alat: totalExpense > 0 ? (expensesByCategory.alat / totalExpense) * 100 : 0,
+    operasional: totalExpense > 0 ? (expensesByCategory.operasional / totalExpense) * 100 : 0,
+    vendor: totalExpense > 0 ? (expensesByCategory.vendor / totalExpense) * 100 : 0,
+  };
+
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
