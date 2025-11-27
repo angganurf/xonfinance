@@ -164,6 +164,15 @@ const AccountingAdmin = () => {
         }
       });
 
+      // Calculate expenses by category (global)
+      const expensesByCategory = {
+        bahan: allTransactions.filter(t => t.category === 'bahan').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+        upah: allTransactions.filter(t => t.category === 'upah').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+        alat: allTransactions.filter(t => t.category === 'alat').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+        operasional: allTransactions.filter(t => t.category === 'operasional').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+        vendor: allTransactions.filter(t => t.category === 'vendor').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+      };
+
       setStatistics({
         totalProjectValue,
         totalExpenses,
@@ -174,7 +183,8 @@ const AccountingAdmin = () => {
         labaBersih,
         totalAset,
         totalPendapatan: pendapatan,
-        totalBebanOperasional: bebanOperasional
+        totalBebanOperasional: bebanOperasional,
+        expensesByCategory
       });
 
       // Prepare monthly trend data
