@@ -577,13 +577,32 @@ const PlanningTeamDashboard = () => {
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl">Update Progress {selectedTask?.name}</DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
-              Konfirmasi progress dan tambahkan laporan pekerjaan
+              Sesuaikan progress dengan slider dan tambahkan laporan
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="text-center bg-blue-50 p-4 rounded-lg">
               <p className="text-4xl sm:text-5xl font-bold text-blue-600">{taskProgress}%</p>
-              <p className="text-xs sm:text-sm text-slate-500 mt-2">Progress yang akan diupdate</p>
+              <p className="text-xs sm:text-sm text-slate-500 mt-2">Progress Pekerjaan</p>
+            </div>
+
+            {/* Slider untuk adjust progress */}
+            <div className="space-y-3 px-2">
+              <Label className="text-sm font-medium">Adjust Progress:</Label>
+              <Slider
+                value={[taskProgress]}
+                onValueChange={(value) => setTaskProgress(value[0])}
+                max={100}
+                step={5}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>0%</span>
+                <span>25%</span>
+                <span>50%</span>
+                <span>75%</span>
+                <span>100%</span>
+              </div>
             </div>
 
             <div className="relative w-full h-8 bg-slate-100 rounded-full overflow-hidden">
@@ -597,7 +616,7 @@ const PlanningTeamDashboard = () => {
               </div>
             </div>
 
-            <div className="text-center text-xs sm:text-sm text-slate-600">
+            <div className="text-center text-xs sm:text-sm text-slate-600 font-medium">
               {taskProgress === 0 && '⚪ Belum Mulai'}
               {taskProgress > 0 && taskProgress < 100 && '🔄 Sedang Dikerjakan'}
               {taskProgress === 100 && '✅ Selesai'}
@@ -612,7 +631,7 @@ const PlanningTeamDashboard = () => {
                 value={progressReport}
                 onChange={(e) => setProgressReport(e.target.value)}
                 placeholder="Jelaskan pekerjaan yang sudah dilakukan, kendala, atau catatan penting lainnya..."
-                className="w-full border rounded-md px-3 py-2 min-h-[100px] text-sm"
+                className="w-full border rounded-md px-3 py-2 min-h-[100px] text-sm focus:ring-2 focus:ring-blue-500"
                 required
               />
               <p className="text-xs text-slate-500">Laporan wajib diisi untuk update progress</p>
