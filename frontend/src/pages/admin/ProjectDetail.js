@@ -691,14 +691,16 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        {/* Task Management */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-              Task & Tugas Proyek
-            </CardTitle>
-          </CardHeader>
+        {/* Section: Task & Discussion - Side by Side on Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Task Management */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                Task & Tugas
+              </CardTitle>
+            </CardHeader>
           <CardContent className="space-y-4">
             {/* Task Progress */}
             <div className="space-y-2">
