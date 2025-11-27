@@ -4,7 +4,7 @@ import Layout from '../../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { toast } from 'sonner';
-import { DollarSign, TrendingUp, TrendingDown, FileText, Eye } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, FileText, Eye, Wallet, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
 import api from '../../utils/api';
 
@@ -12,14 +12,45 @@ const AccountingAdmin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [statistics, setStatistics] = useState({
     totalProjectValue: 0,
     totalExpenses: 0,
     totalBudgetRemaining: 0,
     totalProfit: 0,
-    projectCount: 0
+    projectCount: 0,
+    saldoKas: 0,
+    labaBersih: 0,
+    totalAset: 0,
+    totalPendapatan: 0,
+    totalBebanOperasional: 0
   });
   const [monthlyData, setMonthlyData] = useState([]);
+  const [plData, setPLData] = useState({
+    pendapatan: 0,
+    bebanPokok: 0,
+    labaBruto: 0,
+    bebanOperasional: 0,
+    labaBersih: 0
+  });
+  const [neraca, setNeraca] = useState({
+    aset: {
+      kas: 0,
+      piutang: 0,
+      persediaan: 0,
+      asetTetap: 0,
+      total: 0
+    },
+    kewajiban: {
+      hutang: 0,
+      total: 0
+    },
+    ekuitas: {
+      modal: 0,
+      labaDitahan: 0,
+      total: 0
+    }
+  });
 
   useEffect(() => {
     loadData();
@@ -27,18 +58,21 @@ const AccountingAdmin = () => {
 
   const loadData = async () => {
     try {
-      // Load all projects
-      const projectsRes = await api.get('/projects');
-      const projectsList = projectsRes.data;
+      const [projectsRes, transactionsRes] = await Promise.all([
+        api.get('/projects'),
+        api.get('/transactions')
+      ]);
 
-      // Load transactions for all projects
-      const transactionsRes = await api.get('/transactions');
+      const projectsList = projectsRes.data;
       const allTransactions = transactionsRes.data;
+      setTransactions(allTransactions);
 
       // Calculate statistics per project
       const projectsWithStats = projectsList.map(project => {
         const projectTransactions = allTransactions.filter(t => t.project_id === project.id);
-        const totalExpense = projectTransactions.reduce((sum, t) => sum + (t.total_amount || 0), 0);
+        const totalExpense = projectTransactions
+          .filter(t => ['bahan', 'upah', 'alat', 'vendor', 'operasional'].includes(t.category))
+          .reduce((sum, t) => sum + (t.total_amount || 0), 0);
         const budgetRemaining = (project.project_value || 0) - totalExpense;
         const budgetUsage = project.project_value > 0 ? (totalExpense / project.project_value) * 100 : 0;
         
@@ -57,34 +91,118 @@ const AccountingAdmin = () => {
       const totalProjectValue = projectsWithStats.reduce((sum, p) => sum + (p.project_value || 0), 0);
       const totalExpenses = projectsWithStats.reduce((sum, p) => sum + p.totalExpense, 0);
       const totalBudgetRemaining = totalProjectValue - totalExpenses;
-      const totalProfit = totalBudgetRemaining;
+
+      // Calculate financial data
+      const kasMasuk = allTransactions
+        .filter(t => t.category === 'kas_masuk')
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      
+      const kasKeluar = allTransactions
+        .filter(t => ['bahan', 'upah', 'alat', 'vendor', 'operasional'].includes(t.category))
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      
+      const saldoKas = kasMasuk - kasKeluar;
+
+      // Calculate P&L
+      const pendapatan = totalProjectValue; // Total nilai proyek sebagai pendapatan
+      const bebanPokok = allTransactions
+        .filter(t => ['bahan', 'upah', 'alat'].includes(t.category))
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      const labaBruto = pendapatan - bebanPokok;
+      const bebanOperasional = allTransactions
+        .filter(t => ['vendor', 'operasional'].includes(t.category))
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      const labaBersih = labaBruto - bebanOperasional;
+
+      setPLData({
+        pendapatan,
+        bebanPokok,
+        labaBruto,
+        bebanOperasional,
+        labaBersih
+      });
+
+      // Calculate Neraca (Balance Sheet)
+      const piutang = allTransactions
+        .filter(t => t.category === 'piutang')
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      
+      const persediaan = allTransactions
+        .filter(t => t.category === 'bahan')
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      
+      const asetTetap = allTransactions
+        .filter(t => t.category === 'aset')
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+      
+      const totalAset = saldoKas + piutang + persediaan + asetTetap;
+
+      const hutang = allTransactions
+        .filter(t => t.category === 'hutang')
+        .reduce((sum, t) => sum + (t.total_amount || 0), 0);
+
+      const modal = totalProjectValue;
+      const labaDitahan = labaBersih;
+      const totalEkuitas = modal + labaDitahan;
+
+      setNeraca({
+        aset: {
+          kas: saldoKas,
+          piutang,
+          persediaan,
+          asetTetap,
+          total: totalAset
+        },
+        kewajiban: {
+          hutang,
+          total: hutang
+        },
+        ekuitas: {
+          modal,
+          labaDitahan,
+          total: totalEkuitas
+        }
+      });
 
       setStatistics({
         totalProjectValue,
         totalExpenses,
         totalBudgetRemaining,
-        totalProfit,
-        projectCount: projectsList.length
+        totalProfit: totalBudgetRemaining,
+        projectCount: projectsList.length,
+        saldoKas,
+        labaBersih,
+        totalAset,
+        totalPendapatan: pendapatan,
+        totalBebanOperasional: bebanOperasional
       });
 
-      // Prepare monthly trend data (last 6 months)
+      // Prepare monthly trend data
       const monthlyExpenses = {};
+      const monthlyIncome = {};
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
       
       allTransactions.forEach(transaction => {
         if (transaction.transaction_date) {
           const date = new Date(transaction.transaction_date);
           const monthKey = `${months[date.getMonth()]} ${date.getFullYear()}`;
-          monthlyExpenses[monthKey] = (monthlyExpenses[monthKey] || 0) + (transaction.total_amount || 0);
+          
+          if (transaction.category === 'kas_masuk') {
+            monthlyIncome[monthKey] = (monthlyIncome[monthKey] || 0) + (transaction.total_amount || 0);
+          } else if (['bahan', 'upah', 'alat', 'vendor', 'operasional'].includes(transaction.category)) {
+            monthlyExpenses[monthKey] = (monthlyExpenses[monthKey] || 0) + (transaction.total_amount || 0);
+          }
         }
       });
 
-      const monthlyDataArray = Object.keys(monthlyExpenses)
+      const allMonths = [...new Set([...Object.keys(monthlyExpenses), ...Object.keys(monthlyIncome)])];
+      const monthlyDataArray = allMonths
         .sort((a, b) => new Date(a) - new Date(b))
         .slice(-6)
         .map(month => ({
           month,
-          pengeluaran: monthlyExpenses[month]
+          pengeluaran: monthlyExpenses[month] || 0,
+          pemasukan: monthlyIncome[month] || 0
         }));
 
       setMonthlyData(monthlyDataArray);
@@ -117,7 +235,6 @@ const AccountingAdmin = () => {
     );
   }
 
-  // Prepare data for charts
   const pieChartData = projects.map((project, idx) => ({
     name: project.name,
     value: project.totalExpense,
@@ -136,10 +253,69 @@ const AccountingAdmin = () => {
         {/* Header */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">Accounting Admin</h1>
-          <p className="text-sm sm:text-base text-slate-600 mt-1">Dashboard Keuangan & Statistik Proyek</p>
+          <p className="text-sm sm:text-base text-slate-600 mt-1">Dashboard Keuangan & Laporan Lengkap</p>
         </div>
 
-        {/* Statistics Cards */}
+        {/* Main Financial Statistics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-green-700 flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                Saldo Kas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className={`text-lg sm:text-2xl font-bold ${
+                statistics.saldoKas >= 0 ? 'text-green-700' : 'text-red-600'
+              }`}>{formatCurrency(statistics.saldoKas)}</p>
+              <p className="text-xs text-green-600 mt-1">Kas Masuk - Kas Keluar</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-blue-700 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Laba Bersih
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className={`text-lg sm:text-2xl font-bold ${
+                statistics.labaBersih >= 0 ? 'text-blue-700' : 'text-red-600'
+              }`}>{formatCurrency(statistics.labaBersih)}</p>
+              <p className="text-xs text-blue-600 mt-1">Laba Bruto - Beban Operasional</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-purple-700 flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Total Aset
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg sm:text-2xl font-bold text-purple-700">{formatCurrency(statistics.totalAset)}</p>
+              <p className="text-xs text-purple-600 mt-1">Kas + Piutang + Persediaan + Aset Tetap</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-orange-700 flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Total Pendapatan
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg sm:text-2xl font-bold text-orange-700">{formatCurrency(statistics.totalPendapatan)}</p>
+              <p className="text-xs text-orange-600 mt-1">Total Nilai Proyek</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Project Statistics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
           <Card>
             <CardHeader className="pb-2">
@@ -161,7 +337,7 @@ const AccountingAdmin = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg sm:text-xl font-bold text-blue-600">{formatCurrency(statistics.totalProjectValue)}</p>
+              <p className="text-base sm:text-lg font-bold text-blue-600">{formatCurrency(statistics.totalProjectValue)}</p>
             </CardContent>
           </Card>
 
@@ -173,7 +349,7 @@ const AccountingAdmin = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg sm:text-xl font-bold text-red-600">{formatCurrency(statistics.totalExpenses)}</p>
+              <p className="text-base sm:text-lg font-bold text-red-600">{formatCurrency(statistics.totalExpenses)}</p>
             </CardContent>
           </Card>
 
@@ -185,7 +361,7 @@ const AccountingAdmin = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg sm:text-xl font-bold text-green-600">{formatCurrency(statistics.totalBudgetRemaining)}</p>
+              <p className="text-base sm:text-lg font-bold text-green-600">{formatCurrency(statistics.totalBudgetRemaining)}</p>
             </CardContent>
           </Card>
 
@@ -197,16 +373,150 @@ const AccountingAdmin = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className={`text-lg sm:text-xl font-bold ${statistics.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-base sm:text-lg font-bold ${
+                statistics.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
                 {formatCurrency(statistics.totalProfit)}
               </p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Laporan Laba Rugi (P&L) */}
+        <Card>
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Laporan Laba Rugi (P&L)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center pb-2 border-b-2 border-slate-200">
+                <span className="text-sm sm:text-base font-semibold text-slate-700">Pendapatan</span>
+                <span className="text-base sm:text-lg font-bold text-green-600">{formatCurrency(plData.pendapatan)}</span>
+              </div>
+              <div className="flex justify-between items-center pl-4">
+                <span className="text-xs sm:text-sm text-slate-600">Beban Pokok Penjualan</span>
+                <span className="text-sm sm:text-base text-red-600">({formatCurrency(plData.bebanPokok)})</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span className="text-sm sm:text-base font-semibold text-slate-700">Laba Bruto</span>
+                <span className="text-base sm:text-lg font-bold text-blue-600">{formatCurrency(plData.labaBruto)}</span>
+              </div>
+              <div className="flex justify-between items-center pl-4">
+                <span className="text-xs sm:text-sm text-slate-600">Beban Operasional</span>
+                <span className="text-sm sm:text-base text-red-600">({formatCurrency(plData.bebanOperasional)})</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t-2 border-slate-300">
+                <span className="text-base sm:text-lg font-bold text-slate-800">Laba Bersih</span>
+                <span className={`text-xl sm:text-2xl font-bold ${
+                  plData.labaBersih >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>{formatCurrency(plData.labaBersih)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Neraca (Balance Sheet) */}
+        <Card>
+          <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <PieChartIcon className="h-5 w-5" />
+              Neraca (Balance Sheet)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Aset */}
+              <div className="space-y-2">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-3 border-b-2 pb-2">ASET</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-slate-600">Kas</span>
+                    <span className="text-xs sm:text-sm font-semibold">{formatCurrency(neraca.aset.kas)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-slate-600">Piutang</span>
+                    <span className="text-xs sm:text-sm font-semibold">{formatCurrency(neraca.aset.piutang)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-slate-600">Persediaan</span>
+                    <span className="text-xs sm:text-sm font-semibold">{formatCurrency(neraca.aset.persediaan)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-slate-600">Aset Tetap</span>
+                    <span className="text-xs sm:text-sm font-semibold">{formatCurrency(neraca.aset.asetTetap)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t-2 border-purple-200">
+                    <span className="text-sm sm:text-base font-bold text-purple-700">Total Aset</span>
+                    <span className="text-sm sm:text-base font-bold text-purple-700">{formatCurrency(neraca.aset.total)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Kewajiban */}
+              <div className="space-y-2">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-3 border-b-2 pb-2">KEWAJIBAN</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-slate-600">Hutang</span>
+                    <span className="text-xs sm:text-sm font-semibold">{formatCurrency(neraca.kewajiban.hutang)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t-2 border-purple-200">
+                    <span className="text-sm sm:text-base font-bold text-purple-700">Total Kewajiban</span>
+                    <span className="text-sm sm:text-base font-bold text-purple-700">{formatCurrency(neraca.kewajiban.total)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ekuitas */}
+              <div className="space-y-2">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-3 border-b-2 pb-2">EKUITAS</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-slate-600">Modal</span>
+                    <span className="text-xs sm:text-sm font-semibold">{formatCurrency(neraca.ekuitas.modal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs sm:text-sm text-slate-600">Laba Ditahan</span>
+                    <span className="text-xs sm:text-sm font-semibold">{formatCurrency(neraca.ekuitas.labaDitahan)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t-2 border-purple-200">
+                    <span className="text-sm sm:text-base font-bold text-purple-700">Total Ekuitas</span>
+                    <span className="text-sm sm:text-base font-bold text-purple-700">{formatCurrency(neraca.ekuitas.total)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Balance Check */}
+            <div className="mt-6 p-4 bg-slate-100 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-slate-700">Total Aset</span>
+                <span className="text-base font-bold text-slate-800">{formatCurrency(neraca.aset.total)}</span>
+              </div>
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-sm font-semibold text-slate-700">Total Kewajiban + Ekuitas</span>
+                <span className="text-base font-bold text-slate-800">{formatCurrency(neraca.kewajiban.total + neraca.ekuitas.total)}</span>
+              </div>
+              <div className="mt-2 pt-2 border-t border-slate-300">
+                <span className={`text-xs ${
+                  Math.abs(neraca.aset.total - (neraca.kewajiban.total + neraca.ekuitas.total)) < 1 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {Math.abs(neraca.aset.total - (neraca.kewajiban.total + neraca.ekuitas.total)) < 1 
+                    ? '✓ Neraca Balance' 
+                    : '⚠ Neraca Tidak Balance'}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {/* Pie Chart - Breakdown Pengeluaran per Proyek */}
           <Card>
             <CardHeader>
               <CardTitle className="text-sm sm:text-base">Breakdown Pengeluaran per Proyek</CardTitle>
@@ -235,7 +545,6 @@ const AccountingAdmin = () => {
             </CardContent>
           </Card>
 
-          {/* Bar Chart - Budget vs Pengeluaran */}
           <Card>
             <CardHeader>
               <CardTitle className="text-sm sm:text-base">Budget vs Pengeluaran per Proyek</CardTitle>
@@ -256,11 +565,11 @@ const AccountingAdmin = () => {
           </Card>
         </div>
 
-        {/* Line Chart - Trend Pengeluaran */}
+        {/* Line Chart - Trend */}
         {monthlyData.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm sm:text-base">Trend Pengeluaran Bulanan (6 Bulan Terakhir)</CardTitle>
+              <CardTitle className="text-sm sm:text-base">Trend Pemasukan & Pengeluaran (6 Bulan Terakhir)</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -270,7 +579,8 @@ const AccountingAdmin = () => {
                   <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
-                  <Line type="monotone" dataKey="pengeluaran" stroke="#3b82f6" strokeWidth={2} name="Pengeluaran" />
+                  <Line type="monotone" dataKey="pemasukan" stroke="#10b981" strokeWidth={2} name="Pemasukan" />
+                  <Line type="monotone" dataKey="pengeluaran" stroke="#ef4444" strokeWidth={2} name="Pengeluaran" />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
