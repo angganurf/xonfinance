@@ -612,38 +612,18 @@ const ProjectDetail = () => {
         </div>
 
         {/* Section: Resources */}
-        <div>
-          <h2 className="text-lg sm:text-xl font-bold text-slate-800 mb-3 sm:mb-4">📦 Resources & Assets</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Inventory */}
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-purple-700">
-                  <Package className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Inventory
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl sm:text-4xl font-bold text-purple-700 mb-2">{inventory.length}</p>
-                <p className="text-xs sm:text-sm text-purple-600">Total Items Material & Peralatan</p>
-              </CardContent>
-            </Card>
-
-            {/* Placeholder for future cards */}
-            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-slate-700">
-                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Progress Tasks
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl sm:text-4xl font-bold text-slate-700 mb-2">{taskProgress.toFixed(0)}%</p>
-                <p className="text-xs sm:text-sm text-slate-600">{tasks.filter(t => t.completed).length} dari {tasks.length} tugas selesai</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-purple-700">
+              <Package className="h-4 w-4" />
+              📦 Inventory
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-purple-700 mb-1">{inventory.length}</p>
+            <p className="text-xs text-purple-600">Total Items Material & Peralatan</p>
+          </CardContent>
+        </Card>
 
         {/* Section: Task & Discussion - Side by Side on Desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
