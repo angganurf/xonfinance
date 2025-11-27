@@ -7,7 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Progress } from '../../components/ui/progress';
 import { Checkbox } from '../../components/ui/checkbox';
 import { toast } from 'sonner';
-import { ArrowLeft, Building2, MapPin, Calendar, DollarSign, TrendingUp, Package, MessageCircle, Send, Trash2, Image as ImageIcon, X, Clock, CheckCircle2, Circle, Plus } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Calendar, DollarSign, TrendingUp, TrendingDown, Package, MessageCircle, Send, Trash2, Image as ImageIcon, X, Clock, CheckCircle2, Circle, Plus } from 'lucide-react';
 import { Textarea } from '../../components/ui/textarea';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
 import { useAuth } from '../../contexts/AuthContext';
