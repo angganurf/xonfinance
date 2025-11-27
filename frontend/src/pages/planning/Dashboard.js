@@ -589,27 +589,47 @@ const PlanningTeamDashboard = () => {
                                 <FileImage className="h-4 w-4 text-green-600" />
                                 <span className="text-xs sm:text-sm font-semibold text-slate-800">Gambar Kerja</span>
                               </div>
-                              <span className="text-sm sm:text-base font-bold text-green-600">{item.shop_drawing_progress || 0}%</span>
+                              <span className="text-sm sm:text-base font-bold text-green-600">
+                                {tempProgress[`${item.project.id}-shop_drawing`] !== undefined ? tempProgress[`${item.project.id}-shop_drawing`] : (item.shop_drawing_progress || 0)}%
+                              </span>
                             </div>
-                            <div className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                              className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden cursor-pointer hover:ring-2 hover:ring-green-400"
+                              onClick={(e) => handleProgressDrag(e, item.project.id, 'shop_drawing', item.shop_drawing_progress || 0)}
+                              title="Klik di bar untuk set progress"
+                            >
                               <div 
-                                className={`h-full ${getProgressColor(item.shop_drawing_progress || 0)} transition-all duration-500 flex items-center justify-end pr-2`}
-                                style={{ width: `${item.shop_drawing_progress || 0}%` }}
+                                className={`h-full ${getProgressColor(tempProgress[`${item.project.id}-shop_drawing`] !== undefined ? tempProgress[`${item.project.id}-shop_drawing`] : (item.shop_drawing_progress || 0))} transition-all duration-300 flex items-center justify-end pr-2`}
+                                style={{ width: `${tempProgress[`${item.project.id}-shop_drawing`] !== undefined ? tempProgress[`${item.project.id}-shop_drawing`] : (item.shop_drawing_progress || 0)}%` }}
                               >
-                                {(item.shop_drawing_progress || 0) > 10 && (
-                                  <span className="text-white text-xs font-bold">{item.shop_drawing_progress || 0}%</span>
+                                {((tempProgress[`${item.project.id}-shop_drawing`] !== undefined ? tempProgress[`${item.project.id}-shop_drawing`] : (item.shop_drawing_progress || 0)) > 10) && (
+                                  <span className="text-white text-xs font-bold">
+                                    {tempProgress[`${item.project.id}-shop_drawing`] !== undefined ? tempProgress[`${item.project.id}-shop_drawing`] : (item.shop_drawing_progress || 0)}%
+                                  </span>
                                 )}
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => openEditTaskProgress(item.project.id, 'shop_drawing', item.shop_drawing_progress || 0)}
-                              className="w-full text-xs"
-                            >
-                              <TrendingUp className="mr-1 h-3 w-3" />
-                              Update Progress
-                            </Button>
+                            {showUpdateButton[`${item.project.id}-shop_drawing`] ? (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleConfirmUpdate(item.project.id, 'shop_drawing', 'Gambar Kerja')}
+                                  className="flex-1 bg-green-600 hover:bg-green-700 text-xs"
+                                >
+                                  Update ke {tempProgress[`${item.project.id}-shop_drawing`]}%
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleCancelUpdate(item.project.id, 'shop_drawing')}
+                                  className="text-xs"
+                                >
+                                  Batal
+                                </Button>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-slate-500 text-center italic">Klik di bar untuk ubah progress</p>
+                            )}
                           </div>
 
                           {/* Time Schedule Progress */}
@@ -619,27 +639,47 @@ const PlanningTeamDashboard = () => {
                                 <Calendar className="h-4 w-4 text-amber-600" />
                                 <span className="text-xs sm:text-sm font-semibold text-slate-800">Time Schedule</span>
                               </div>
-                              <span className="text-sm sm:text-base font-bold text-amber-600">{item.schedule_progress || 0}%</span>
+                              <span className="text-sm sm:text-base font-bold text-amber-600">
+                                {tempProgress[`${item.project.id}-schedule`] !== undefined ? tempProgress[`${item.project.id}-schedule`] : (item.schedule_progress || 0)}%
+                              </span>
                             </div>
-                            <div className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                              className="relative w-full h-6 bg-slate-100 rounded-full overflow-hidden cursor-pointer hover:ring-2 hover:ring-amber-400"
+                              onClick={(e) => handleProgressDrag(e, item.project.id, 'schedule', item.schedule_progress || 0)}
+                              title="Klik di bar untuk set progress"
+                            >
                               <div 
-                                className={`h-full ${getProgressColor(item.schedule_progress || 0)} transition-all duration-500 flex items-center justify-end pr-2`}
-                                style={{ width: `${item.schedule_progress || 0}%` }}
+                                className={`h-full ${getProgressColor(tempProgress[`${item.project.id}-schedule`] !== undefined ? tempProgress[`${item.project.id}-schedule`] : (item.schedule_progress || 0))} transition-all duration-300 flex items-center justify-end pr-2`}
+                                style={{ width: `${tempProgress[`${item.project.id}-schedule`] !== undefined ? tempProgress[`${item.project.id}-schedule`] : (item.schedule_progress || 0)}%` }}
                               >
-                                {(item.schedule_progress || 0) > 10 && (
-                                  <span className="text-white text-xs font-bold">{item.schedule_progress || 0}%</span>
+                                {((tempProgress[`${item.project.id}-schedule`] !== undefined ? tempProgress[`${item.project.id}-schedule`] : (item.schedule_progress || 0)) > 10) && (
+                                  <span className="text-white text-xs font-bold">
+                                    {tempProgress[`${item.project.id}-schedule`] !== undefined ? tempProgress[`${item.project.id}-schedule`] : (item.schedule_progress || 0)}%
+                                  </span>
                                 )}
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => openEditTaskProgress(item.project.id, 'schedule', item.schedule_progress || 0)}
-                              className="w-full text-xs"
-                            >
-                              <TrendingUp className="mr-1 h-3 w-3" />
-                              Update Progress
-                            </Button>
+                            {showUpdateButton[`${item.project.id}-schedule`] ? (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleConfirmUpdate(item.project.id, 'schedule', 'Time Schedule')}
+                                  className="flex-1 bg-green-600 hover:bg-green-700 text-xs"
+                                >
+                                  Update ke {tempProgress[`${item.project.id}-schedule`]}%
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleCancelUpdate(item.project.id, 'schedule')}
+                                  className="text-xs"
+                                >
+                                  Batal
+                                </Button>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-slate-500 text-center italic">Klik di bar untuk set progress</p>
+                            )}
                           </div>
                         </div>
                       </div>
