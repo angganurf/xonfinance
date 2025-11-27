@@ -655,7 +655,16 @@ const ProjectDetail = () => {
                 Task & Tugas
               </CardTitle>
             </CardHeader>
-          <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
+              {/* Progress Bar */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-medium text-slate-700">Progress</span>
+                  <span className="text-xs font-bold text-green-600">{taskProgress.toFixed(0)}%</span>
+                </div>
+                <Progress value={taskProgress} className="h-2" />
+                <p className="text-xs text-slate-500 mt-1.5">{tasks.filter(t => t.completed).length} dari {tasks.length} tugas selesai</p>
+              </div>
             {/* Task Progress */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
