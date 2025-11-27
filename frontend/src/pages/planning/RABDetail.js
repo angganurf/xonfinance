@@ -510,6 +510,13 @@ const RABDetail = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Tambah Kategori & Item buttons at bottom */}
+            <div className="mt-4 flex gap-2">
+              <Button onClick={addCategory} size="sm" variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Tambah Kategori
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
