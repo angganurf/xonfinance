@@ -79,6 +79,7 @@ const MobileNav = () => {
       return [
         { label: 'Home', path: '/planning', icon: Home },
         { label: 'RAB', path: '/planning/rab', icon: FileText },
+        { label: 'Harga Satuan', path: '/planning/unit-prices', icon: DollarSign },
         { label: 'Schedule', path: '/planning/schedule', icon: Calendar },
       ];
     }
