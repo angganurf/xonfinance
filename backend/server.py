@@ -1520,9 +1520,17 @@ async def create_rab_item(input: RABItemInput, user: User = Depends(get_current_
     
     return {"message": "RAB item created", "id": rab_item.id}
 
+@api_router.get("/rab-items")
+async def get_rab_items(rab_id: Optional[str] = None, user: User = Depends(get_current_user)):
+    query = {}
+    if rab_id:
+        query["rab_id"] = rab_id
+    items = await db.rab_items.find(query, {"_id": 0}).sort("item_number", 1).to_list(1000)
+    return items
+
 @api_router.get("/rab-items/{rab_id}")
-async def get_rab_items(rab_id: str, user: User = Depends(get_current_user)):
-    items = await db.rab_items.find({"rab_id": rab_id}, {"_id": 0}).to_list(1000)
+async def get_rab_items_by_id(rab_id: str, user: User = Depends(get_current_user)):
+    items = await db.rab_items.find({"rab_id": rab_id}, {"_id": 0}).sort("item_number", 1).to_list(1000)
     return items
 
 @api_router.patch("/rab-items/{item_id}")
