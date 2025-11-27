@@ -97,6 +97,17 @@ class Project(BaseModel):
     created_by: str
     created_at: datetime = Field(default_factory=lambda: now_wib())
 
+class UnitPrice(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    description: str  # Nama pekerjaan
+    unit: str  # Satuan (LS, M2, M3, M, dll)
+    price: float  # Harga satuan
+    category: str  # Kategori (persiapan, struktur, dinding, finishing, dll)
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: now_wib())
+    updated_at: Optional[datetime] = None
+
 class RAB(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -107,7 +118,10 @@ class RAB(BaseModel):
     location: Optional[str] = None
     status: str = "draft"  # draft, bidding_process, approved, rejected
     discount: float = 0.0
-    tax: float = 11.0  # percentage
+    tax_percentage: float = 0.0  # percentage (0-100)
+    subtotal: float = 0.0  # Jumlah sebelum pajak
+    tax_amount: float = 0.0  # Nilai pajak
+    total_price: float = 0.0  # Total setelah pajak
     created_by: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: now_wib())
     approved_at: Optional[datetime] = None
@@ -117,13 +131,14 @@ class RABItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     rab_id: str
-    project_id: Optional[str] = None  # Made optional to support frontend calls without project_id
-    category: str  # persiapan, struktur, dinding, finishing, etc (custom)
+    project_id: Optional[str] = None
+    category: str  # persiapan, struktur, dinding, finishing, etc
+    item_number: str  # A, B, C for category, 1, 2, 3 for items
     description: str
-    unit_price: float
-    quantity: float
-    unit: str  # m³, m, m²
-    total: float
+    unit: str  # LS, M2, M3, M, dll
+    volume: float  # Quantity
+    unit_price: float  # Harga satuan
+    total_price: float  # Volume x unit_price
     created_at: datetime = Field(default_factory=lambda: now_wib())
 
 class TransactionItem(BaseModel):
