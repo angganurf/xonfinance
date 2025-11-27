@@ -409,6 +409,18 @@ const ProjectDetail = () => {
           </span>
         </div>
 
+        {/* Description - Moved to Top */}
+        {project.description && (
+          <Card className="bg-blue-50 border-blue-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-blue-900">📋 Deskripsi Proyek</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{project.description}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Info Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           <Card>
