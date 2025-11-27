@@ -390,10 +390,6 @@ const ProjectDetail = () => {
     vendor: totalExpense > 0 ? (expensesByCategory.vendor / totalExpense) * 100 : 0,
   };
 
-  console.log('📊 Expenses by category:', expensesByCategory);
-  console.log('📈 Total expense:', totalExpense);
-  console.log('📊 Percentages:', expensePercentages);
-
   return (
     <Layout>
       <div className="space-y-4 md:space-y-6">
