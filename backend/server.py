@@ -788,6 +788,18 @@ async def update_task_progress(
     if task_type not in valid_tasks:
         raise HTTPException(status_code=400, detail="Invalid task type")
     
+    # Save progress report history
+    await db.progress_reports.insert_one({
+        "id": str(uuid.uuid4()),
+        "project_id": project_id,
+        "task_type": task_type,
+        "progress": progress,
+        "report": report,
+        "user_id": user.id,
+        "user_name": user.name,
+        "created_at": now_wib().isoformat()
+    })
+    
     # Update progress based on task type
     if task_type == "rab":
         # For RAB, we'll create/update a single record to track progress
@@ -795,7 +807,11 @@ async def update_task_progress(
         if existing:
             await db.rabs.update_one(
                 {"project_id": project_id},
-                {"$set": {"progress": progress}}
+                {"$set": {
+                    "progress": progress,
+                    "last_report": report,
+                    "updated_at": now_wib().isoformat()
+                }}
             )
         else:
             # Create a placeholder RAB with progress
@@ -803,6 +819,7 @@ async def update_task_progress(
                 "id": str(uuid.uuid4()),
                 "project_id": project_id,
                 "progress": progress,
+                "last_report": report,
                 "created_at": now_wib().isoformat()
             })
     
