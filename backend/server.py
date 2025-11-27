@@ -2992,14 +2992,19 @@ async def get_project_comments(project_id: str, user: User = Depends(get_current
 @api_router.post("/projects/{project_id}/comments")
 async def create_project_comment(
     project_id: str,
-    message: Optional[str] = "",
-    mentions: Optional[List[str]] = None,
+    message: Optional[str] = Form(""),
+    mentions: Optional[List[str]] = Form(default=None),
     images: List[UploadFile] = File(default=[]),
     user: User = Depends(get_current_user)
 ):
     """Create a new comment on a project with optional image attachments"""
     import re
     import aiofiles
+    
+    print(f"[DEBUG] Received comment request for project {project_id}")
+    print(f"[DEBUG] Message: {message}")
+    print(f"[DEBUG] Mentions: {mentions}")
+    print(f"[DEBUG] Images count: {len(images)}")
     
     # Validate that at least message or images are provided
     if not message.strip() and not images:
