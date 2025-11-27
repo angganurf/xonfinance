@@ -327,7 +327,11 @@ const RABList = () => {
                       </tr>
                     ) : (
                       filteredRabs.map((rab) => (
-                        <tr key={rab.id} className="border-b hover:bg-slate-50">
+                        <tr 
+                          key={rab.id} 
+                          className="border-b hover:bg-blue-50 cursor-pointer transition-colors"
+                          onClick={() => navigate(`/planning/rab/${rab.id}`)}
+                        >
                           <td className="py-3 font-medium">{rab.project_name}</td>
                           <td className="py-3">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -342,7 +346,7 @@ const RABList = () => {
                           <td className="py-3 text-sm text-slate-600">{rab.location || '-'}</td>
                           <td className="py-3">{getStatusBadge(rab.status)}</td>
                           <td className="py-3 text-sm text-slate-600">{formatDate(rab.created_at)}</td>
-                          <td className="py-3 text-right">
+                          <td className="py-3 text-right" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon">
@@ -350,7 +354,7 @@ const RABList = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => navigate(`/estimator/rab/${rab.id}`)}>
+                                <DropdownMenuItem onClick={() => navigate(`/planning/rab/${rab.id}`)}>
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit RAB
                                 </DropdownMenuItem>
