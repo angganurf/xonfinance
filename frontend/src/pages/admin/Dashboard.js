@@ -135,22 +135,6 @@ const AdminDashboard = () => {
       path: '/estimator',
       color: 'bg-green-500',
       stats: `${stats.totalProjects} proyek aktif`
-    },
-    {
-      title: 'Site Supervisor',
-      description: 'Pantau jadwal proyek',
-      icon: HardHat,
-      path: '/supervisor',
-      color: 'bg-orange-500',
-      stats: `${stats.totalProjects} proyek`
-    },
-    {
-      title: 'Employee',
-      description: 'Lihat tugas harian',
-      icon: UserCheck,
-      path: '/employee',
-      color: 'bg-purple-500',
-      stats: '-'
     }
   ];
 
