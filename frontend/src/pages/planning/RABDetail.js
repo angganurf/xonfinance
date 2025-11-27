@@ -312,7 +312,7 @@ const RABDetail = () => {
             </Button>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
-                {id && id !== 'new' ? 'Edit RAB' : 'Buat RAB Baru'}
+                {id && id !== 'new' && rab ? `Edit RAB: ${rab.project_name}` : 'Buat RAB Baru'}
               </h1>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">Rencana Anggaran Biaya</p>
             </div>
