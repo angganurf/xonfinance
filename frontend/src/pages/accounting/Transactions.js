@@ -207,7 +207,27 @@ const AccountingTransactions = () => {
       updatedItems[index].total = unitPrice * quantity;
     }
     
+    // Handle autocomplete for description
+    if (field === 'description') {
+      if (value.trim().length > 0) {
+        const filtered = itemNames.filter(name =>
+          name.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredSuggestions({ ...filteredSuggestions, [index]: filtered });
+        setShowSuggestions({ ...showSuggestions, [index]: filtered.length > 0 });
+      } else {
+        setShowSuggestions({ ...showSuggestions, [index]: false });
+      }
+    }
+    
     setBahanItems(updatedItems);
+  };
+  
+  const selectSuggestion = (index, suggestion) => {
+    const updatedItems = [...bahanItems];
+    updatedItems[index].description = suggestion;
+    setBahanItems(updatedItems);
+    setShowSuggestions({ ...showSuggestions, [index]: false });
   };
   
   const addBahanItem = () => {
